@@ -24,8 +24,13 @@ export class LazyLoadingLibraryService {
     script.type = 'text/javascript';
     script.src = url;
     script.onload = () => {
+      console.log(`Lib ${url} is loading`);
       this.loadedLibraries[url].next('');
       this.loadedLibraries[url].complete();
+    };
+    script.onerror = (err) => {
+      console.log(`Lib ${url} is not loading`);
+      this.loadedLibraries[url].error(`Error while loading Spotfire JS API`);
     };
 
     this.document.body.appendChild(script);

@@ -1,7 +1,7 @@
 // Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
 import {
   Component, Input, AfterViewInit, EventEmitter, ViewChild,
-  ElementRef, Output, OnChanges, SimpleChanges, ViewEncapsulation
+  ElementRef, Output, OnChanges, SimpleChanges, ViewEncapsulation, Renderer2
 } from '@angular/core';
 import { trigger, style, state, animate, transition } from '@angular/animations';
 
@@ -37,7 +37,6 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   @Input() path = 'Homepage';
   @Input() cust: SpotfireCustomization = new SpotfireCustomization();
   @Input() version = '7.12';
-
   @ViewChild('spot', { read: ElementRef }) spot: ElementRef;
 
   // Optional configuration block
@@ -66,22 +65,64 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   view: any;
   longTime = false;
 
-  constructor(private service: LazyLoadingLibraryService) {
+  constructor(private renderer: Renderer2, private service: LazyLoadingLibraryService) {
     _.delay(() => this.longTime = true, 3000);
     console.log('SPOT URL', this.url);
   }
 
+  displayErrorMessage = (message: string) => {
+    console.error('ERROR:', message);
+    setTimeout(() => {
+      const div = this.renderer.createElement('div');
+      const text = this.renderer.createText(message);
+      const span = this.renderer.createElement('span');
+      const clear = this.renderer.createElement('span');
+      const br = this.renderer.createElement('br');
+      const link = this.renderer.createElement('a');
+      const lien = this.renderer.createText(`Open Spotfire`);
+      this.renderer.appendChild(link, lien);
+      this.renderer.setAttribute(link, 'target', 'other_frame');
+      this.renderer.setAttribute(link, 'title', `Visit ${this.url} in an other tab`);
+      this.renderer.setAttribute(link, 'href', this.url);
+      this.renderer.appendChild(span, text);
+
+
+      this.renderer.appendChild(div, span);
+      this.renderer.appendChild(div, link);
+      this.renderer.appendChild(div, clear);
+
+      this.renderer.setStyle(span, 'line-height', '2');
+
+      this.renderer.setStyle(link, 'border', '1px solid #062e79');
+      this.renderer.setStyle(link, 'border-radius', '8px');
+      this.renderer.setStyle(link, 'background', '#0081cb');
+      this.renderer.setStyle(link, 'color', 'white');
+      this.renderer.setStyle(link, 'padding', '5px 10px');
+      this.renderer.setStyle(link, 'text-decoration', 'none');
+
+      this.renderer.setStyle(clear, 'clear', 'both');
+
+      this.renderer.setStyle(div, 'border', '2px dashed salmon');
+      this.renderer.setStyle(div, 'padding', '20px');
+      this.renderer.setStyle(div, 'margin', '20px');
+      this.renderer.setStyle(div, 'font-family', 'monospace');
+      this.renderer.setStyle(div, 'display', 'flex');
+      this.renderer.setStyle(div, 'justify-content', 'space-between');
+      this.renderer.appendChild(this.spot.nativeElement, div);
+    }, 0);
+  }
   ngOnChanges(changes: SimpleChanges) {
     console.log('CHANGE', changes);
     if (changes.page) {
-  //    this.openPage(changes.page.currentValue);
+      //    this.openPage(changes.page.currentValue);
     }
   }
   ngAfterViewInit() {
     if (!this.url || this.url.length === 0) {
+      this.displayErrorMessage('URL is missing');
       console.error(`Url attribute must be provided!`);
+      return;
     }
-
 
     console.log('le SpotfireWrapper', this.url, this.path, this.page, this.markingEvent);
     // lazy load the spotfire js API
@@ -112,11 +153,13 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
               this.openPage(this.page);
 
-            } catch (err) { console.error('ERR:', err); }
+            } catch (err) {
+              this.displayErrorMessage(err);
+            }
           } else {
-            console.warn('Spotfire is not loaded');
+            this.displayErrorMessage('Spotfire is not loaded');
           }
-        });
+        }, err => this.displayErrorMessage(err));
     }, 1000);
   }
   private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
