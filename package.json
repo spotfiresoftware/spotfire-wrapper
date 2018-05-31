@@ -12,20 +12,15 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^6.0.0",
     "@angular/common": "^6.0.0",
     "@angular/compiler": "^6.0.0",
     "@angular/core": "^6.0.0",
     "@angular/elements": "^6.0.3",
-    "@angular/forms": "^6.0.0",
-    "@angular/http": "^6.0.0",
     "@angular/platform-browser": "^6.0.0",
     "@angular/platform-browser-dynamic": "^6.0.0",
-    "@angular/router": "^6.0.0",
     "@webcomponents/custom-elements": "^1.1.1",
     "core-js": "^2.5.4",
     "rxjs": "^6.0.0",
-    "underscore": "^1.9.0",
     "zone.js": "^0.8.26"
   },
   "devDependencies": {

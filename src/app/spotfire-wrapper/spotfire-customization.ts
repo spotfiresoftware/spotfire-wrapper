@@ -1,5 +1,4 @@
 // Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
-import * as _ from 'underscore';
 
 export class SpotfireCustomization {
   showAbout = false;
@@ -21,6 +20,8 @@ export class SpotfireCustomization {
   showUndoRedo = false;
   constructor(vars?: {}) {
     console.log('New SpotfireCustomization', vars);
-    _.each(vars, (v: boolean, key: string) => this[key] = v);
+    if (vars) {
+      Object.keys(vars).forEach(key => this[key] = vars[key]);
+    }
   }
 }
