@@ -4,23 +4,24 @@ import {
   ElementRef, Output, OnChanges, SimpleChanges, ViewEncapsulation, Renderer2
 } from '@angular/core';
 
-// import * as _ from 'underscore';
+import * as _ from 'underscore';
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
-import { SpotfireCustomization } from './spotfire-customization';
+import { SpotfireCustomization, SpotfireFilter } from './spotfire-customization';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, debounceTime } from 'rxjs/operators';
-
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
 
 declare let spotfire: any;
 const _SPOTFIRE = typeof spotfire === 'undefined' ? false : spotfire;
+
 @Component({
   template: `
+<div style=' font-size:10px; color:red; font-family:monospace' *ngIf="errorMessage">{{errorMessage}}</div>
+<div style=' font-size:10px; color:red; font-family:monospace' *ngIf="errorMessage">{{possibleValues}}</div>
 <div #spot></div>
 <code style='font-size:9px; color:#666; float:right'>{{url}}/{{path}}/{{page}}</code>`,
   encapsulation: ViewEncapsulation.Emulated
-
   //  encapsulation: ViewEncapsulation.Native   <-- Don't use encapsulation. with this spotfire dashboard is not shown !!
 })
 
@@ -28,16 +29,23 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   @Input() url: string;
   @Input() page: string;
   @Input() path = 'Homepage';
-  @Input() cust: SpotfireCustomization = new SpotfireCustomization();
+  @Input() customization: SpotfireCustomization | string; // = new SpotfireCustomization();
+  @Input() filters: Array<SpotfireFilter> | string; //  = new SpotfireFilter();
   @Input() version = '7.12';
+  @Input() config = {};
+  @Input() markingOn: { string: Array<String> } | string;
+  @Input() maxRows = 10;
   @ViewChild('spot', { read: ElementRef }) spot: ElementRef;
+
+  errorMessage = '';
+  possibleValues = '';
 
   // Optional configuration block
   private parameters = '';
   private reloadAnalysisInstance = false;
 
   // Optional configuration settings;
-  private customization: any;
+  private _customization: any;
   // private filteringSchemeName = '';
   private app: any;
 
@@ -60,13 +68,15 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
   constructor(private renderer: Renderer2, private service: LazyLoadingLibraryService) {
     setTimeout(() => this.longTime = true, 3000);
-    console.log('SPOT URL', this.url);
+    console.log('SPOT URL', this.url, 'CUST=', this.customization, typeof this.filters, 'FILTERS=', this.filters);
   }
 
-  displayErrorMessage = (message: string) => {
+  private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
+  private get isFilteringWiredUp() { return this.filteringEvent.observers.length > 0; }
+
+  displayErrorMessage = (message: string, withIframe = true) => {
     console.error('ERROR:', message);
     setTimeout(() => {
-      const withIframe = true;
       if (withIframe) {
         const iframe = this.renderer.createElement('iframe');
         this.renderer.setAttribute(iframe, 'src', `${this.url}/login.html`);
@@ -76,6 +86,11 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
         this.renderer.setStyle(iframe, 'width', '100%');
         this.renderer.setStyle(iframe, 'height', '600px');
         this.renderer.appendChild(this.spot.nativeElement, iframe);
+      } else if (message) {
+        this.errorMessage = message;
+        const div = this.renderer.createElement('div');
+        const text = this.renderer.createText(message);
+        this.renderer.appendChild(this.spot.nativeElement, div);
       } else {
         const div = this.renderer.createElement('div');
         const text = this.renderer.createText(message);
@@ -129,7 +144,22 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       return;
     }
 
-    console.log('le SpotfireWrapper', this.url, this.path, this.page, this.markingEvent);
+    if (typeof this.customization === 'string') {
+      this.customization = new SpotfireCustomization(JSON.parse(this.customization));
+    }
+    if (typeof this.filters === 'string') {
+      const f = JSON.parse(this.filters);
+
+      const allFilters: Array<SpotfireFilter> = [];
+      JSON.parse(this.filters).forEach(m => allFilters.push(new SpotfireFilter(m)));
+      this.filters = allFilters;
+    }
+
+    if (typeof this.markingOn === 'string') {
+      this.markingOn = JSON.parse(this.markingOn);
+    }
+
+    console.log('le SpotfireWrapper', this.url, this.path, this.page, this.markingOn);
     // lazy load the spotfire js API
     //
     setTimeout(() => {
@@ -137,24 +167,24 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
         .subscribe(() => {
           console.log(`goPage, Spotfire ${this.version} is LOADED !!!`, spotfire, this.spot);
           this.SPOTFIRE = spotfire;
-          console.log('SpotfireComponent', this.page, this.spot.nativeElement, this.cust);
+          console.log('SpotfireComponent', this.page, this.spot.nativeElement, this.customization);
 
           if (this.SPOTFIRE) {
             try {
               // Create a Unique ID for this Spotfire dashboard
               //
-              this.spot.nativeElement.id = new Date().getTime(); // _.uniqueId('spot');
+              this.spot.nativeElement.id = new Date().getTime();
               // Prepare Spotfire app with path/page/customization
               //
-              this.customization = new this.SPOTFIRE.webPlayer.Customization();
-              this.customization = this.cust;
+              this._customization = new this.SPOTFIRE.webPlayer.Customization();
+              this._customization = this.customization;
               this.app = new this.SPOTFIRE.webPlayer.Application(
-                this.url, this.customization, this.path,
+                this.url, this._customization, this.path,
                 this.parameters, this.reloadAnalysisInstance);
 
               // Customize based on user role
               //
-              console.log('SpotfireService openDocument', this.cust);
+              console.log('SpotfireService openDocument', this.customization);
 
               this.openPage(this.page);
 
@@ -170,6 +200,35 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   // private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
   // private get isFilteringWiredUp() { return this.filteringEvent.observers.length > 0; }
 
+  private updateMarking = (tName, mName, res) => {
+    if (_.size(res) > 0) {
+      console.log('[MARKING] un marking change', tName, mName, res);
+      // update the marked row if partial selection
+      //
+      if (!this.markedRows[mName]) {
+        this.markedRows[mName] = {};
+      }
+      if (!this.markedRows[mName][tName]) {
+        this.markedRows[mName][tName] = res;
+      } else {
+        _.extend(this.markedRows[mName][tName], res);
+      }
+      //    console.log('[MARKING] on publie', this.markedRows);
+      this.markerSubject.next(this.markedRows);
+    } else if (this.markedRows[mName] && this.markedRows[mName][tName]) {
+      // remove the marked row if no marking
+      //
+      //      console.log('[MARKING] remove marking change', this.markedRows[mName][tName]);
+      delete this.markedRows[mName][tName];
+      if (_.size(this.markedRows[mName]) === 0) {
+        delete this.markedRows[mName];
+      }
+      this.markerSubject.next(this.markedRows);
+    } else {
+      console.log('[MARKING] rien a faire', tName, mName, res);
+    }
+  }
+
   private openPage(page: string) {
     console.log('OpenPage', page, this.app);
     // Ask Spotfire library to display this path/page (with optional customization)
@@ -177,83 +236,118 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     if (!this.app) {
       throw new Error('Spotfire webapp is not created yet');
     }
+    console.log('SpotfireService openDocument', this.spot.nativeElement.id, `cnf=${page}`, this.config, this.app, this.customization);
+    const doc = this.app.openDocument(this.spot.nativeElement.id, page, this._customization);
+    this.marking = doc.marking;
+    this.data = doc.data;
+    if (this.isFilteringWiredUp) {
+      this.filtering = doc.filtering;
+      this.filtering.setFilters(this.filters, this.SPOTFIRE.webPlayer.filteringOperation.REPLACE);
+      this.loadFilters();
+      // setInterval(() => this.loadFilters(), 3000);
+      console.log('[SPOTFIRE] FILTER', this.filtering, this.filtering.getFilterColumn());
 
-    console.log('SpotfireService openDocument', this.spot.nativeElement.id, page, this.app, this.customization);
-    const doc = this.app.openDocument(this.spot.nativeElement.id, page, this.customization);
-    /*
-        if (this.isFilteringWiredUp) {
-          this.filtering = doc.filtering;
-          this.filtering.resetAllFilters();
-          setInterval(() => this.loadFilters(), 3000);
-          console.log('[SPOTFIRE] FILTER', this.filtering, this.filtering.getFilterColumn());
-    
-          // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
-          //
-          this.filter$.pipe(distinctUntilChanged()).subscribe(f => this.filteringEvent.emit(f));
-        }
+      // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
+      //
+      this.filter$.pipe(debounceTime(400), distinctUntilChanged()).subscribe(f => this.filteringEvent.emit(f));
+    }
 
-        if (this.isMarkingWiredUp) {
-          this.marking = doc.marking;
-          this.data = doc.data;
-          //      const datatable = doc.dataTable;
-          //      data.datatable.getDataTableProperties(d => console.log('datatable.getDataTableProperties', d));
-          //        datatable.getDataColumns(d => console.log('datatable.getDataColumns', d));
-          this.data.getActiveDataTable(d => console.log('openPage.getActiveDataTable', d));
-    
-          // for each table
-          //
-    
-          this.data.getDataTables(tables => {
-            console.log('openPage.getDataTables', tables);
-            _.each(tables, table => {
-              table['getDataColumns'](cols => console.log(` - openPage.getDataTable(${table['dataTableName']}).getDataColumns`, cols));
-              this.data.getDataTable(table['dataTableName'], dataTable => {
-    
-                // for each column
-                //
-                dataTable.getDataColumns(d => {
-                  console.log(`${table['dataTableName']}.getDataColumns`, _.pluck(d, 'dataColumnName'));
-                  this.marking.getMarkingNames(markingNames => {
-    
-                    // for each marking
-                    //
-                    _.each(markingNames, markingName =>
-                      this.marking.onChanged(markingName, table['dataTableName'], _.pluck(d, 'dataColumnName'), 10, res => {
-                        if (_.size(res) > 0) {
-                          // update the marked row if partial selection
-                          //
-                          if (!this.markedRows[table['dataTableName']]) {
-                            this.markedRows[table['dataTableName']] = res;
-                          } else {
-                            _.extend(this.markedRows[table['dataTableName']], res);
-                          }
-                        } else if (this.markedRows[table['dataTableName']]) {
-                          // remove the marked row if no marking
-                          //
-                          delete (this.markedRows[table['dataTableName']]);
-                        }
-                        this.markerSubject.next(this.markedRows);
-                      }));
+    if (this.isMarkingWiredUp) {
+
+      this.marker$.subscribe(f => {
+        console.log('J\'emet', f);
+        this.markingEvent.emit(f);
+      });
+      // this.marker$.pipe(distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))).subscribe(f => this.markingEvent.emit(f));
+
+      //      const datatable = doc.dataTable;
+      //      data.datatable.getDataTableProperties(d => console.log('datatable.getDataTableProperties', d));
+      //        datatable.getDataColumns(d => console.log('datatable.getDataColumns', d));
+      //  this.data.getActiveDataTable(d => console.log('openPage.getActiveDataTable', d));
+
+
+      if (this.markingOn) {
+        this.data.getDataTables(tables => {
+          const tNames = _.pluck(tables, 'dataTableName');
+          const tdiff = _.difference(_.keys(this.markingOn), tNames);
+
+          if (_.size(tdiff) > 0) {
+            this.errorMessage = `[spotfire-wrapper] Attribut marking-on contains unknwon table names: ${tdiff
+              .map(f => `'${f}'`).join(', ')}`;
+            this.possibleValues = `[spotfire-wrapper] APossible values for table names are: ${tNames
+              .map(f => `'${f}'`).join(', ')} `;
+            return;
+          }
+          _.each(tables, table => {
+            this.data.getDataTable(table['dataTableName'], dataTable => dataTable.getDataColumns(d => {
+              const cNames = _.pluck(d, 'dataColumnName');
+              const cdiff = _.difference(this.markingOn[table['dataTableName']], cNames);
+              if (_.size(cdiff) > 0) {
+                this.errorMessage = `[spotfire-wrapper] Attribut marking-on contains unknwon column names: ${cdiff
+                  .map(f => `'${f}'`).join(', ')}`;
+                this.possibleValues = `[spotfire-wrapper] Possible values for columns of table ${table['dataTableName']} are: ${cNames
+                  .map(f => `'${f}'`).join(', ')} `;
+                return;
+              }
+              this.marking.getMarkingNames(markingNames => _.each(markingNames, markingName => {
+                console.log('[MARKING] * MARKINGNAMES', markingNames);
+                _.each(this.markingOn, (columns: Array<string>, tName: string) => {
+                  console.log(`[MARKING] * register ${markingName}.${tName} `, columns);
+                  this.marking.onChanged(markingName, tName, columns, this.maxRows, res => this.updateMarking(tName, markingName, res));
+                });
+              }));
+            }));
+          });
+        });
+      } else {
+        // for each table
+        //
+
+        this.data.getDataTables(tables => {
+          console.log('[MARKING] openPage.getDataTables', tables);
+          _.each(tables, table => {
+            table['getDataColumns'](cols => console.log(` - openPage.getDataTable(${table['dataTableName']}).getDataColumns`, cols));
+            this.data.getDataTable(table['dataTableName'], dataTable => {
+
+              // for each column
+              //
+              dataTable.getDataColumns(d => {
+                console.log(`${table['dataTableName']}.getDataColumns`, d, _.pluck(d, 'dataColumnName'));
+
+
+                this.marking.getMarkingNames(markingNames => {
+                  console.log('[MARKING] MARKINGNAMES', markingNames);
+                  // for each marking
+                  //
+                  _.each(markingNames, markingName => {
+                    const columns = ['Volume', 'DATE', 'BRAND_NM', 'CHNL_GROUP']; //, 'DATE', 'CHNL_GROUP', 'TRADE_CHNL_DESC', 'PKG_CAT'];
+                    // const columns = _.pluck(d, 'dataColumnName');
+                    console.log(`[MARKING] register ${markingName}.${table['dataTableName']} `, columns);
+                    this.markedRows[markingName] = {};
+                    this.marking.onChanged(markingName, table['dataTableName'], columns, this.maxRows, res => {
+                      this.updateMarking(table['dataTableName'], markingName, res);
+
+                    });
                   });
+
                 });
               });
             });
           });
-    
-          // Subscribe to markingEvent and emit the result to the Output
-          //
-          this.marker$.pipe(debounceTime(400), distinctUntilChanged()).subscribe(f => {
-            console.log('On detect un chg de marker', f); this.markingEvent.emit(f);
-          });
-        }
-        */
+        });
+      }
+      // Subscribe to markingEvent and emit the result to the Output
+      //
+      //      this.marker$.pipe(debounceTime(400), distinctUntilChanged()).subscribe(f => this.markingEvent.emit(f));
+    }
   }
 
-  /*  private loadFilters() {
-      console.log('SpotfireComponent loadFilters', this.filterSubject);
-      this.filtering.getAllModifiedFilterColumns(
-        this.SPOTFIRE.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES, fs => {
-          this.filterSubject.next(fs);
-        });
-    }*/
+  private loadFilters() {
+    const ALL = this.SPOTFIRE.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES;
+    console.log('SpotfireComponent loadFilters', this.filterSubject);
+    this.filtering.getAllModifiedFilterColumns(ALL, fs => {
+      console.log(`Filter`, fs);
+      this.filterSubject.next(fs);
+    });
+  }
 }

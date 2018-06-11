@@ -1,28 +1,35 @@
 <html lang="en">
 
 <head>
-  <title>Demo Spotfire Wrapper</title>
+  <title>Demo Spotfire Wrapper - Samples</title>
 </head>
 
 <body>
-  <h1>Demo Spotfire Wrapper</h1>
+  <h1>Demo Spotfire&trade; Wrapper - Basic sample</h1>
 
+  &nbsp;<a href="./two.html">Next demo (Two dashboards)</a>
+
+  <p><b>spotfire-wrapper</b> is a static JavaScript library that provides a new HTML tag : <code>&lt;spotfire-wrapper&gt;</code></p>
+  
+  <p>To insert a spotfire dashboard into a web page, user needs to add the following HTML code:</p>
   <h2>Code:</h2>
   <pre style='border:2px dashed green; background-color:black; color:white; padding:20px;'>
-&lt;spotfire-wrapper 
-  url="http://ec2-54-93-169-187.eu-central-1.compute.amazonaws.com:7373/spotfire/wp"
-  path="cec-dashboards/Homepage" 
-  page="Homepage - Management"&gt;
-&lt;/spotfire-wrapper&gt;
-
-&lt;script src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"&gt;&lt;/script&gt;</pre>
-
+    &lt;<span style='color:yellow'>spotfire-wrapper</span>
+    <span style='color:red'>url</span>="https://spotfire-next.cloud.tibco.com/spotfire/wp"
+    <span style='color:red'>path</span>="Samples/Sales and Marketing" 
+    <span style='color:red'>page</span>="0"&gt;
+    &lt;/<span style='color:yellow'>spotfire-wrapper</span>&gt;
+    
+    &lt;<span style='color:yellow'>script</span> src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"&gt;&lt;/<span style='color:yellow'>script</span>&gt;</pre>
+    
+    <p><u>Note:</u> An account to access the Spotfire&trade; instance defined in <code>url</code> is required (here : <a href="https://spotfire-next.cloud.tibco.com/spotfire/wp" target="_otherframe">https://spotfire-next.cloud.tibco.com/spotfire/wp</a)</p>
   <h2>Result:</h2>
-  <spotfire-wrapper 
-    url="http://ec2-54-93-169-187.eu-central-1.compute.amazonaws.com:7373/spotfire/wp" 
-    path="cec-dashboards/Homepage"
-    page="Homepage - Management"></spotfire-wrapper>
+  <spotfire-wrapper url="https://spotfire-next.cloud.tibco.com/spotfire/wp" 
+    path="Samples/Sales and Marketing" 
+    page="0"></spotfire-wrapper>
   <script src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"></script>
-</body>
 
+  <a href='mailto:nderoche@tibco.com?subject=About%20spotfire-wrapper' target="_mailFrame">Contact : Nicolas Deroche</a>
+
+</body>
 </html>

@@ -1,0 +1,62 @@
+<html lang="en">
+
+<head>
+  <title>Demo Spotfire Wrapper - Samples</title>
+</head>
+
+<body>
+  <h1>Demo Spotfire&trade; Wrapper - Get Marking</h1>
+
+  <a a href="./filter.html">Previous Demo (Set filter)</a>&nbsp;
+
+  <p><code>marking-on</code> attribute is used to tell the library to get the marking for the corresponding columns.</p>
+  <p>The user gets the resulting marker with a javascript code (example in source code). Click on graphs and see JSON object printed in bottom of this page</p>
+
+
+  <h2>Code:</h2>
+  <pre style='border:2px dashed green; background-color:black; color:white; padding:20px;'>
+&lt;<span style='color:yellow'>spotfire-wrapper</span>
+    url="https://spotfire-next.cloud.tibco.com/spotfire/wp"
+    path="Samples/Sales and Marketing" 
+    <span style='color:red'>marking-on</span>='{"SalesAndMarketing": [ "Territory", "City", "BCG segmentation"]}'  
+    page="0"&gt;
+&lt;/<span style='color:yellow'>spotfire-wrapper</span>&gt;
+
+&lt;<span style='color:yellow'>script</span> src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"&gt;&lt;/<span style='color:yellow'>script</span>&gt;</pre>
+
+<code>marking-on</code> attribute lists, for each table, the column names that will be used by the marking
+<pre>
+  {
+    "<i>&lt;data table name&gt;</i>": [ "<i>&lt;col name&gt;</i>", ... , "<i>&lt;col name&gt;</i>" ],
+    ...
+    "<i>&lt;data table name&gt;</i>": [ "<i>&lt;col name&gt;</i>", ... , "<i>&lt;col name&gt;</i>" ]
+  }
+</pre>
+
+  <h2>Result:</h2>
+  <spotfire-wrapper id="id1" url="https://spotfire-next.cloud.tibco.com/spotfire/wp" 
+    path="Samples/Sales and Marketing" 
+    cust='{"showAuthor":true, "showFilterPanel":true, "showToolBar":true}'
+    marking-on='{"SalesAndMarketing": [ "Territory", "City", "BCG segmentation"]}'  
+    page="0"></spotfire-wrapper>
+
+  <script src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"></script>
+
+  <pre id="marker1"></pre>
+  <script>
+    const spotfireWrapper = document.getElementById("id1");
+    const result = document.getElementById("marker1");
+    // listen to the filteringEvent
+    spotfireWrapper.addEventListener('filteringEvent', event => console.log('[HTML] filteringEvent!', event.detail));
+    // listen to the markingEvent
+    spotfireWrapper.addEventListener('markingEvent', event => {
+      result.innerHTML = JSON.stringify(event.detail, null, '   ');
+      console.log('[HTML] markingEvent!', event.detail);
+    });
+  </script>
+
+<a href='mailto:nderoche@tibco.com?subject=About%20spotfire-wrapper' target="_mailFrame">Contact : Nicolas Deroche</a>
+
+</body>
+
+</html>

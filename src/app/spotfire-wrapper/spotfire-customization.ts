@@ -25,3 +25,32 @@ export class SpotfireCustomization {
     }
   }
 }
+
+export class SpotfireFilterSetting {
+  values: Array<string> = [];
+  lowValue = null;
+  highValue = null;
+  includeEmpty = true;
+  searchPattern = null;
+  hierarchyPaths = [];
+  constructor(vars?: {}) {
+    console.log('New SpotfireFilterSetting', vars);
+    if (vars) {
+      Object.keys(vars).forEach(key => this[key] = vars[key]);
+    }
+  }
+}
+
+export class SpotfireFilter {
+  filteringSchemeName = 'Filtering scheme';
+  dataTableName: string;
+  dataColumnName: string;
+  filterType: string;
+  filterSettings: Array<SpotfireFilterSetting>;
+  constructor(vars?: {}) {
+    console.log('New SpotfireFilter', vars);
+    if (vars) {
+      Object.keys(vars).forEach(key => this[key] = vars[key]);
+    }
+  }
+}
