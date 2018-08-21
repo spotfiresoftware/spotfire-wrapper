@@ -17,9 +17,9 @@ const _SPOTFIRE = typeof spotfire === 'undefined' ? false : spotfire;
 
 @Component({
   template: `
-<div style=' font-size:10px; color:red; font-family:monospace' *ngIf="errorMessage">{{errorMessage}}</div>
-<div style=' font-size:10px; color:red; font-family:monospace' *ngIf="errorMessage">{{possibleValues}}</div>
-<div #spot></div>
+<div style='font-size:10px; color:red; font-family:monospace' *ngIf="errorMessage">{{errorMessage}}</div>
+<div style='font-size:10px; color:red; font-family:monospace' *ngIf="errorMessage">{{possibleValues}}</div>
+<div style='height:100%' #spot></div>
 <code style='font-size:9px; color:#666; float:right'>{{url}}/{{path}}/{{page}}</code>`,
   encapsulation: ViewEncapsulation.Emulated
   //  encapsulation: ViewEncapsulation.Native   <-- Don't use encapsulation. with this spotfire dashboard is not shown !!
@@ -29,8 +29,8 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   @Input() url: string;
   @Input() page: string;
   @Input() path = 'Homepage';
-  @Input() customization: SpotfireCustomization | string; // = new SpotfireCustomization();
-  @Input() filters: Array<SpotfireFilter> | string; //  = new SpotfireFilter();
+  @Input() customization: SpotfireCustomization | string;
+  @Input() filters: Array<SpotfireFilter> | string;
   @Input() version = '7.12';
   @Input() config = {};
   @Input() markingOn: { string: Array<String> } | string;
@@ -132,12 +132,15 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     }, 0);
   }
   ngOnChanges(changes: SimpleChanges) {
-    console.log('CHANGE', changes);
-    if (changes.page) {
-      //    this.openPage(changes.page.currentValue);
+    if (this.app && changes.page) {
+      console.log('CHANGE', changes);
+      this.openPage(changes.page.currentValue);
     }
   }
   ngAfterViewInit() {
+    console.log('-----> ', this.path, this.page, 'has markingEvent:', this.markingEvent.observers.length > 0);
+    console.log('-----> ', this.path, this.page, 'has filterEvent:', this.filteringEvent.observers.length > 0);
+
     if (!this.url || this.url.length === 0) {
       this.displayErrorMessage('URL is missing');
       console.error(`Url attribute must be provided!`);
@@ -146,10 +149,10 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
     if (typeof this.customization === 'string') {
       this.customization = new SpotfireCustomization(JSON.parse(this.customization));
+    } else {
+      this.customization = new SpotfireCustomization(this.customization);
     }
     if (typeof this.filters === 'string') {
-      const f = JSON.parse(this.filters);
-
       const allFilters: Array<SpotfireFilter> = [];
       JSON.parse(this.filters).forEach(m => allFilters.push(new SpotfireFilter(m)));
       this.filters = allFilters;
@@ -158,14 +161,12 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     if (typeof this.markingOn === 'string') {
       this.markingOn = JSON.parse(this.markingOn);
     }
-
-    console.log('le SpotfireWrapper', this.url, this.path, this.page, this.markingOn);
     // lazy load the spotfire js API
     //
     setTimeout(() => {
       this.service.loadJs(`${this.url}/GetJavaScriptApi.ashx?Version=${this.version}`)
         .subscribe(() => {
-          console.log(`goPage, Spotfire ${this.version} is LOADED !!!`, spotfire, this.spot);
+          console.log(`Spotfire ${this.version} is LOADED !!!`, spotfire);
           this.SPOTFIRE = spotfire;
           console.log('SpotfireComponent', this.page, this.spot.nativeElement, this.customization);
 
@@ -197,8 +198,6 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
         }, err => this.displayErrorMessage(err));
     }, 1000);
   }
-  // private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
-  // private get isFilteringWiredUp() { return this.filteringEvent.observers.length > 0; }
 
   private updateMarking = (tName, mName, res) => {
     if (_.size(res) > 0) {
@@ -230,7 +229,6 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   }
 
   private openPage(page: string) {
-    console.log('OpenPage', page, this.app);
     // Ask Spotfire library to display this path/page (with optional customization)
     //
     if (!this.app) {
@@ -244,7 +242,6 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       this.filtering = doc.filtering;
       this.filtering.setFilters(this.filters, this.SPOTFIRE.webPlayer.filteringOperation.REPLACE);
       this.loadFilters();
-      // setInterval(() => this.loadFilters(), 3000);
       console.log('[SPOTFIRE] FILTER', this.filtering, this.filtering.getFilterColumn());
 
       // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
@@ -253,19 +250,12 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     }
 
     if (this.isMarkingWiredUp) {
-
       this.marker$.subscribe(f => {
         console.log('J\'emet', f);
         this.markingEvent.emit(f);
       });
-      // this.marker$.pipe(distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))).subscribe(f => this.markingEvent.emit(f));
 
-      //      const datatable = doc.dataTable;
-      //      data.datatable.getDataTableProperties(d => console.log('datatable.getDataTableProperties', d));
-      //        datatable.getDataColumns(d => console.log('datatable.getDataColumns', d));
-      //  this.data.getActiveDataTable(d => console.log('openPage.getActiveDataTable', d));
-
-
+      // this.data.getActiveDataTable(d => console.log('openPage.getActiveDataTable', d));
       if (this.markingOn) {
         this.data.getDataTables(tables => {
           const tNames = _.pluck(tables, 'dataTableName');
@@ -302,7 +292,6 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       } else {
         // for each table
         //
-
         this.data.getDataTables(tables => {
           console.log('[MARKING] openPage.getDataTables', tables);
           _.each(tables, table => {
@@ -312,11 +301,11 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
               // for each column
               //
               dataTable.getDataColumns(d => {
-                console.log(`${table['dataTableName']}.getDataColumns`, d, _.pluck(d, 'dataColumnName'));
+                console.log(`${table['dataTableName']}.getDataColumns`, _.pluck(d, 'dataColumnName'));
 
 
                 this.marking.getMarkingNames(markingNames => {
-                  console.log('[MARKING] MARKINGNAMES', markingNames);
+
                   // for each marking
                   //
                   _.each(markingNames, markingName => {
@@ -345,9 +334,6 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   private loadFilters() {
     const ALL = this.SPOTFIRE.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES;
     console.log('SpotfireComponent loadFilters', this.filterSubject);
-    this.filtering.getAllModifiedFilterColumns(ALL, fs => {
-      console.log(`Filter`, fs);
-      this.filterSubject.next(fs);
-    });
+    this.filtering.getAllModifiedFilterColumns(ALL, fs => this.filterSubject.next(fs));
   }
 }
