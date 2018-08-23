@@ -67,7 +67,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   longTime = false;
 
   constructor(private renderer: Renderer2, private service: LazyLoadingLibraryService) {
-    setTimeout(() => this.longTime = true, 3000);
+    setTimeout(() => this.longTime = true, 6000);
     console.log('SPOT URL', this.url, 'CUST=', this.customization, typeof this.filters, 'FILTERS=', this.filters);
   }
 
