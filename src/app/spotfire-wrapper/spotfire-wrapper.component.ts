@@ -7,7 +7,7 @@ import {
 import * as _ from 'underscore';
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from './spotfire-customization';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import { distinctUntilChanged, debounceTime } from 'rxjs/operators';
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
@@ -17,27 +17,28 @@ const _SPOTFIRE = typeof spotfire === 'undefined' ? false : spotfire;
 
 @Component({
   template: `
-<div style='font-size:10px; color:red; font-family:monospace' *ngIf="errorMessage">{{errorMessage}}</div>
-<div style='font-size:10px; color:red; font-family:monospace' *ngIf="errorMessage">{{possibleValues}}</div>
+<div style='font-size:10px; color:red; font-family:monospace' *ngIf="errorMessages.length > 0">{{errorMessages|json}}</div>
+<div style='font-size:10px; color:red; font-family:monospace' *ngIf="possibleValues">{{possibleValues}}</div>
 <div style='height:100%' #spot></div>
 <code style='font-size:9px; color:#666; float:right'>{{url}}/{{path}}/{{page}}</code>`,
   encapsulation: ViewEncapsulation.Emulated
   //  encapsulation: ViewEncapsulation.Native   <-- Don't use encapsulation. with this spotfire dashboard is not shown !!
+
 })
 
 export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   @Input() url: string;
   @Input() page: string;
+  @Input() sid: string;
   @Input() path = 'Homepage';
   @Input() customization: SpotfireCustomization | string;
   @Input() filters: Array<SpotfireFilter> | string;
-  @Input() version = '7.12';
+  private version = '7.14';
   @Input() config = {};
-  @Input() markingOn: { string: Array<String> } | string;
+  @Input() markingOn: { string: Array<String> };
   @Input() maxRows = 10;
   @ViewChild('spot', { read: ElementRef }) spot: ElementRef;
-
-  errorMessage = '';
+  errorMessages = [];
   possibleValues = '';
 
   // Optional configuration block
@@ -45,7 +46,6 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   private reloadAnalysisInstance = false;
 
   // Optional configuration settings;
-  private _customization: any;
   // private filteringSchemeName = '';
   private app: any;
 
@@ -73,10 +73,12 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
   private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
   private get isFilteringWiredUp() { return this.filteringEvent.observers.length > 0; }
-
   displayErrorMessage = (message: string, withIframe = true) => {
     console.error('ERROR:', message);
     setTimeout(() => {
+      if (message) {
+        this.errorMessages.push(message);
+      }
       if (withIframe) {
         const iframe = this.renderer.createElement('iframe');
         this.renderer.setAttribute(iframe, 'src', `${this.url}/login.html`);
@@ -86,17 +88,12 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
         this.renderer.setStyle(iframe, 'width', '100%');
         this.renderer.setStyle(iframe, 'height', '600px');
         this.renderer.appendChild(this.spot.nativeElement, iframe);
-      } else if (message) {
-        this.errorMessage = message;
-        const div = this.renderer.createElement('div');
-        const text = this.renderer.createText(message);
-        this.renderer.appendChild(this.spot.nativeElement, div);
       } else {
         const div = this.renderer.createElement('div');
         const text = this.renderer.createText(message);
         const span = this.renderer.createElement('span');
         const clear = this.renderer.createElement('span');
-        const br = this.renderer.createElement('br');
+        // const br = this.renderer.createElement('br');
         const link = this.renderer.createElement('a');
         const lien = this.renderer.createText(`Open Spotfire`);
 
@@ -164,39 +161,37 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     // lazy load the spotfire js API
     //
     setTimeout(() => {
-      this.service.loadJs(`${this.url}/GetJavaScriptApi.ashx?Version=${this.version}`)
-        .subscribe(() => {
-          console.log(`Spotfire ${this.version} is LOADED !!!`, spotfire);
-          this.SPOTFIRE = spotfire;
-          console.log('SpotfireComponent', this.page, this.spot.nativeElement, this.customization);
-
-          if (this.SPOTFIRE) {
-            try {
-              // Create a Unique ID for this Spotfire dashboard
-              //
-              this.spot.nativeElement.id = new Date().getTime();
-              // Prepare Spotfire app with path/page/customization
-              //
-              this._customization = new this.SPOTFIRE.webPlayer.Customization();
-              this._customization = this.customization;
-              this.app = new this.SPOTFIRE.webPlayer.Application(
-                this.url, this._customization, this.path,
-                this.parameters, this.reloadAnalysisInstance);
-
-              // Customize based on user role
-              //
-              console.log('SpotfireService openDocument', this.customization);
-
-              this.openPage(this.page);
-
-            } catch (err) {
-              this.displayErrorMessage(err);
-            }
-          } else {
-            this.displayErrorMessage('Spotfire is not loaded');
-          }
-        }, err => this.displayErrorMessage(err));
+      const sfLoaderUrl = `${this.url}/spotfire/js-api/loader.js`;
+      this.service.loadJs(sfLoaderUrl).subscribe(() => {
+        console.log(`Spotfire ${sfLoaderUrl} is LOADED !!!`, spotfire);
+        this.SPOTFIRE = spotfire;
+        console.log('SpotfireComponent', this.page, this.spot.nativeElement, this.customization);
+        if (this.SPOTFIRE) {
+          this.openPath(this.path);
+        } else {
+          this.displayErrorMessage('Spotfire is not loaded');
+        }
+      }, err => this.displayErrorMessage(err));
     }, 1000);
+  }
+  onReadyCallback = (response, newApp) => {
+    this.app = newApp;
+    if (response.status === 'OK') {
+      // The application is ready, meaning that the api is loaded and that the analysis path
+      // is validated for the current session(anonymous or logged in user)
+      this.openPage(this.page);
+    } else {
+      const errMsg = `Status not OK. ${response.status}: ${response.message}`;
+      console.log(errMsg);
+      this.displayErrorMessage(errMsg);
+    }
+  }
+
+  onCreateLoginElement = () => {
+    console.log('Creating the login element');
+    // Optionally create and return a div to host the login button
+    this.displayErrorMessage('Cannot login');
+    return null;
   }
 
   private updateMarking = (tName, mName, res) => {
@@ -227,15 +222,33 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       console.log('[MARKING] rien a faire', tName, mName, res);
     }
   }
+  private openPath(path: string) {
+    // Create a Unique ID for this Spotfire dashboard
+    //
+    this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
+    // Prepare Spotfire app with path/page/customization
+    //
+    this.app = new this.SPOTFIRE.webPlayer.createApplication(
+      this.url,
+      this.customization,
+      path,
+      this.parameters,
+      this.reloadAnalysisInstance,
+      this.version,
+      this.onReadyCallback,
+      this.onCreateLoginElement);
 
+  }
   private openPage(page: string) {
+    this.page = page;
     // Ask Spotfire library to display this path/page (with optional customization)
     //
     if (!this.app) {
       throw new Error('Spotfire webapp is not created yet');
     }
+
     console.log('SpotfireService openDocument', this.spot.nativeElement.id, `cnf=${page}`, this.config, this.app, this.customization);
-    const doc = this.app.openDocument(this.spot.nativeElement.id, page, this._customization);
+    const doc = this.app.openDocument(this.spot.nativeElement.id, page, this.customization);
     this.marking = doc.marking;
     this.data = doc.data;
     if (this.isFilteringWiredUp) {
@@ -262,8 +275,8 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
           const tdiff = _.difference(_.keys(this.markingOn), tNames);
 
           if (_.size(tdiff) > 0) {
-            this.errorMessage = `[spotfire-wrapper] Attribut marking-on contains unknwon table names: ${tdiff
-              .map(f => `'${f}'`).join(', ')}`;
+            this.errorMessages.push(`[spotfire-wrapper] Attribut marking-on contains unknwon table names: ${tdiff
+              .map(f => `'${f}'`).join(', ')}`);
             this.possibleValues = `[spotfire-wrapper] APossible values for table names are: ${tNames
               .map(f => `'${f}'`).join(', ')} `;
             return;
@@ -273,8 +286,8 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
               const cNames = _.pluck(d, 'dataColumnName');
               const cdiff = _.difference(this.markingOn[table['dataTableName']], cNames);
               if (_.size(cdiff) > 0) {
-                this.errorMessage = `[spotfire-wrapper] Attribut marking-on contains unknwon column names: ${cdiff
-                  .map(f => `'${f}'`).join(', ')}`;
+                this.errorMessages.push(`[spotfire-wrapper] Attribut marking-on contains unknwon column names: ${cdiff
+                  .map(f => `'${f}'`).join(', ')}`);
                 this.possibleValues = `[spotfire-wrapper] Possible values for columns of table ${table['dataTableName']} are: ${cNames
                   .map(f => `'${f}'`).join(', ')} `;
                 return;
@@ -302,8 +315,6 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
               //
               dataTable.getDataColumns(d => {
                 console.log(`${table['dataTableName']}.getDataColumns`, _.pluck(d, 'dataColumnName'));
-
-
                 this.marking.getMarkingNames(markingNames => {
 
                   // for each marking
