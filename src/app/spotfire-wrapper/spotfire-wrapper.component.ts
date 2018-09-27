@@ -5,6 +5,7 @@ import {
 } from '@angular/core';
 
 import * as _ from 'underscore';
+import { FormGroup, FormBuilder } from '@angular/forms';
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from './spotfire-customization';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
@@ -16,14 +17,12 @@ declare let spotfire: any;
 const _SPOTFIRE = typeof spotfire === 'undefined' ? false : spotfire;
 
 @Component({
-  template: `
-<div style='font-size:10px; color:red; font-family:monospace' *ngIf="errorMessages.length > 0">{{errorMessages|json}}</div>
-<div style='font-size:10px; color:red; font-family:monospace' *ngIf="possibleValues">{{possibleValues}}</div>
-<div style='height:100%' #spot></div>
-<code style='font-size:9px; color:#666; float:right'>{{url}}/{{path}}/{{page}}</code>`,
-  encapsulation: ViewEncapsulation.Emulated
-  //  encapsulation: ViewEncapsulation.Native   <-- Don't use encapsulation. with this spotfire dashboard is not shown !!
-
+  templateUrl: './spotfire-wrapper.component.html',
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: [
+   '../my-theme.scss',
+//    '../../../node_modules/@angular/material/prebuilt-themes/indigo-pink.css',
+    './spotfire-wrapper.component.scss']
 })
 
 export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
@@ -40,6 +39,9 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   @ViewChild('spot', { read: ElementRef }) spot: ElementRef;
   errorMessages = [];
   possibleValues = '';
+  edit = false;
+  form: FormGroup;
+  pages = [];
 
   // Optional configuration block
   private parameters = '';
@@ -65,11 +67,15 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
   view: any;
   longTime = false;
-
-  constructor(private renderer: Renderer2, private service: LazyLoadingLibraryService) {
+  shows = ['showAbout', 'showAnalysisInformationTool', 'showAuthor', 'showClose', 'showCustomizableHeader', 'showDodPanel',
+    'showExportFile', 'showExportVisualization', 'showFilterPanel', 'showHelp', 'showLogout', 'showPageNavigation',
+    'showAnalysisInfo', 'showReloadAnalysis', 'showStatusBar', 'showToolBar', 'showUndoRedo'];
+  constructor(private renderer: Renderer2,
+    private fb: FormBuilder, private service: LazyLoadingLibraryService) {
     setTimeout(() => this.longTime = true, 6000);
     console.log('SPOT URL', this.url, 'CUST=', this.customization, typeof this.filters, 'FILTERS=', this.filters);
   }
+  stopPropagation = (e) => e.stopPropagation();
 
   private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
   private get isFilteringWiredUp() { return this.filteringEvent.observers.length > 0; }
@@ -134,6 +140,20 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       this.openPage(changes.page.currentValue);
     }
   }
+  update = (e) => {
+    const c = _.omit(this.form.getRawValue(), (v, k: string) => !k.startsWith('show') || !v);
+    if (this.customization !== c || this.path !== this.form.get('path').value) {
+      this.customization = c;
+      this.pages = [];
+      this.openPath(this.form.get('path').value);
+    } else if (this.page !== this.form.get('page').value) {
+      this.openPage(this.form.get('page').value);
+    }
+    this.path = this.form.get('path').value;
+    this.page = this.form.get('page').value;
+    this.edit = false;
+    e.stopPropagation();
+  }
   ngAfterViewInit() {
     console.log('-----> ', this.path, this.page, 'has markingEvent:', this.markingEvent.observers.length > 0);
     console.log('-----> ', this.path, this.page, 'has filterEvent:', this.filteringEvent.observers.length > 0);
@@ -149,6 +169,28 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     } else {
       this.customization = new SpotfireCustomization(this.customization);
     }
+
+    this.form = this.fb.group({
+      page: this.page, path: this.path,
+      showAbout: this.customization.showAbout,
+      showAnalysisInformationTool: this.customization.showAnalysisInformationTool,
+      showAuthor: this.customization.showAuthor, // this enable 'edit' button.
+      showClose: this.customization.showClose,
+      showCustomizableHeader: this.customization.showCustomizableHeader,
+      showDodPanel: this.customization.showDodPanel, // Details-on-Demand panel
+      showExportFile: this.customization.showExportFile,
+      showExportVisualization: this.customization.showExportVisualization,
+      showFilterPanel: this.customization.showFilterPanel,
+      showHelp: this.customization.showHelp,
+      showLogout: this.customization.showLogout,
+      showPageNavigation: this.customization.showPageNavigation,
+      showAnalysisInfo: this.customization.showAnalysisInfo,
+      showReloadAnalysis: this.customization.showReloadAnalysis,
+      showStatusBar: this.customization.showStatusBar,
+      showToolBar: this.customization.showToolBar,
+      showUndoRedo: this.customization.showUndoRedo
+    });
+
     if (typeof this.filters === 'string') {
       const allFilters: Array<SpotfireFilter> = [];
       JSON.parse(this.filters).forEach(m => allFilters.push(new SpotfireFilter(m)));
@@ -249,6 +291,9 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
     console.log('SpotfireService openDocument', this.spot.nativeElement.id, `cnf=${page}`, this.config, this.app, this.customization);
     const doc = this.app.openDocument(this.spot.nativeElement.id, page, this.customization);
+
+    doc.getPages(f => this.pages = _.pluck(f, 'pageTitle'));
+
     this.marking = doc.marking;
     this.data = doc.data;
     if (this.isFilteringWiredUp) {

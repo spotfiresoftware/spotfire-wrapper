@@ -113,5 +113,11 @@
       }
     }
   },
-  "defaultProject": "spotfire-wrapper"
+  "defaultProject": "spotfire-wrapper",
+  "schematics": {
+    "@schematics/angular:component": {
+      "prefix": "app",
+      "styleext": "scss"
+    }
+  }
 }

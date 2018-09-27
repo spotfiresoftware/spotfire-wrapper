@@ -1,4 +1,35 @@
-<p>
-  spotfire-wrapper works!
-  Hello={{toto}}
-</p>
+<div class="flip-container" [class.flipit]="edit">
+  <div class="flipper">
+    <div *ngIf="form" class="back" [formGroup]="form" (click)="stopPropagation($event)" style='box-shadow: inset 0px 0px 7px black'>
+      <mat-toolbar color="primary" fxLayout="row" fxLayoutAlign="space-between center">
+        <h3>Edit dashboard</h3>
+      </mat-toolbar>
+      <div class="flexcol">
+        <mat-form-field>
+          <input matInput type="text" formControlName="path" placeholder="path">
+        </mat-form-field>
+        <mat-form-field>
+          <mat-select formControlName="page" placeholder="page">
+            <mat-option *ngFor="let p of pages" [value]="p">{{p}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <h3>Customization</h3>
+        <div class="flexrow">
+          <mat-checkbox *ngFor="let s of shows" [formControlName]="s">Show {{s|slice:4}}</mat-checkbox>
+        </div>
+        <div class="flexrow">
+          <button mat-flat-button (click)="edit=!edit;stopPropagation($event)">Close</button>
+          <button [disabled]="form.pristine" mat-flat-button color="accent" (click)="update($event)">Update</button>
+        </div>
+      </div>
+    </div>
+    <div class="front">
+      <div style='font-size:10px; color:red; font-family:monospace' *ngIf="errorMessages.length > 0">{{errorMessages|json}}</div>
+      <div style='font-size:10px; color:red; font-family:monospace' *ngIf="possibleValues">{{possibleValues}}</div>
+      <div style='height:100%' #spot></div>
+      <div class="editdiv"> {{url}}/{{path}}/{{page}}
+        <span (click)='edit=!edit;stopPropagation($event)'>edit</span>
+      </div>
+    </div>
+  </div>
+</div>
