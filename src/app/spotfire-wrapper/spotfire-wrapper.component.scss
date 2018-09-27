@@ -54,13 +54,18 @@ display:flex; flex-flow:column;
     flex: 0 0 (100%/3)
   }
 }
-
+$blu:#0081cb;
 .editdiv {
   font-size:9px; color:#666; float:right; padding:10px;
   font-family: monospace;
   span {
-    cursor:pointer;font-size:10px; border: 1px solid #0081cb;
+    font-size:10px; border: 1px solid $blu;
       border-radius: 5px;
-      padding: 0 5px; color:#0081cb
+      padding: 0 5px; color:$blu;
+      &:hover {
+        cursor:pointer;
+        color:white;
+        background-color: $blu;
+      }
   }
 }

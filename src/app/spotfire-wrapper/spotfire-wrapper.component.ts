@@ -10,6 +10,8 @@ import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from './spotfire-customization';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import { distinctUntilChanged, debounceTime } from 'rxjs/operators';
+import { LocalStorageService } from 'angular-2-local-storage';
+
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
 
@@ -20,8 +22,8 @@ const _SPOTFIRE = typeof spotfire === 'undefined' ? false : spotfire;
   templateUrl: './spotfire-wrapper.component.html',
   encapsulation: ViewEncapsulation.None,
   styleUrls: [
-   '../my-theme.scss',
-//    '../../../node_modules/@angular/material/prebuilt-themes/indigo-pink.css',
+    '../my-theme.scss',
+    //    '../../../node_modules/@angular/material/prebuilt-themes/indigo-pink.css',
     './spotfire-wrapper.component.scss']
 })
 
@@ -70,7 +72,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   shows = ['showAbout', 'showAnalysisInformationTool', 'showAuthor', 'showClose', 'showCustomizableHeader', 'showDodPanel',
     'showExportFile', 'showExportVisualization', 'showFilterPanel', 'showHelp', 'showLogout', 'showPageNavigation',
     'showAnalysisInfo', 'showReloadAnalysis', 'showStatusBar', 'showToolBar', 'showUndoRedo'];
-  constructor(private renderer: Renderer2,
+  constructor(private renderer: Renderer2, private localStorageService: LocalStorageService,
     private fb: FormBuilder, private service: LazyLoadingLibraryService) {
     setTimeout(() => this.longTime = true, 6000);
     console.log('SPOT URL', this.url, 'CUST=', this.customization, typeof this.filters, 'FILTERS=', this.filters);
@@ -145,8 +147,18 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     if (this.customization !== c || this.path !== this.form.get('path').value) {
       this.customization = c;
       this.pages = [];
+
+      if (this.sid) {
+        this.localStorageService.set(`${this.sid}.path`, this.form.get('path').value);
+        this.localStorageService.set(`${this.sid}.page`, this.form.get('page').value);
+        this.localStorageService.set(`${this.sid}.cust`, c);
+      }
       this.openPath(this.form.get('path').value);
     } else if (this.page !== this.form.get('page').value) {
+
+      if (this.sid) {
+        this.localStorageService.set(`${this.sid}.page`, this.form.get('page').value);
+      }
       this.openPage(this.form.get('page').value);
     }
     this.path = this.form.get('path').value;
@@ -155,6 +167,17 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     e.stopPropagation();
   }
   ngAfterViewInit() {
+    if (this.sid) {
+      if (this.localStorageService.get(`${this.sid}.path`)) {
+        this.path = this.localStorageService.get(`${this.sid}.path`);
+      }
+      if (this.localStorageService.get(`${this.sid}.cust`)) {
+        this.customization = this.localStorageService.get(`${this.sid}.cust`);
+      }
+      if (this.localStorageService.get(`${this.sid}.page`)) {
+        this.page = this.localStorageService.get(`${this.sid}.page`);
+      }
+    }
     console.log('-----> ', this.path, this.page, 'has markingEvent:', this.markingEvent.observers.length > 0);
     console.log('-----> ', this.path, this.page, 'has filterEvent:', this.filteringEvent.observers.length > 0);
 
@@ -169,6 +192,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     } else {
       this.customization = new SpotfireCustomization(this.customization);
     }
+
 
     this.form = this.fb.group({
       page: this.page, path: this.path,
