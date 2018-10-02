@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 
 import * as _ from 'underscore';
-import { FormGroup, FormBuilder } from '@angular/forms';
+import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from './spotfire-customization';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
@@ -14,6 +14,33 @@ import { LocalStorageService } from 'angular-2-local-storage';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
+
+class DocMetadata {
+  contentSize: number;
+  size: number;
+  sizeUnit = 'B';
+
+  created: Date;
+  description: string;
+  lastModified: Date;
+  path: string;
+  title: string;
+  constructor(p) {
+    this.contentSize = parseInt(p['contentSize'], 10);
+    if (this.contentSize > (1024 * 1024)) {
+      this.size = this.contentSize / (1024 * 1024);
+      this.sizeUnit = 'MB';
+    } else if (this.contentSize > 1024) {
+      this.size = this.contentSize / 1024;
+      this.sizeUnit = 'KB';
+    }
+    this.created = new Date(p.created);
+    this.lastModified = new Date(p.lastModified);
+    this.description = p.description;
+    this.path = p.path;
+    this.title = p.title;
+  }
+}
 
 declare let spotfire: any;
 const _SPOTFIRE = typeof spotfire === 'undefined' ? false : spotfire;
@@ -41,6 +68,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   @ViewChild('spot', { read: ElementRef }) spot: ElementRef;
   errorMessages = [];
   possibleValues = '';
+  metadata: DocMetadata;
   edit = false;
   form: FormGroup;
   pages = [];
@@ -62,7 +90,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   private markerSubject = new BehaviorSubject<{}>({});
   public marker$: Observable<{}> = this.markerSubject.asObservable();
   @Output() markingEvent: EventEmitter<any> = new EventEmitter(false);
-
+  public dataTables = {};
   private markedRows = {};
   private data: any;
   public SPOTFIRE = _SPOTFIRE;
@@ -142,16 +170,36 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       this.openPage(changes.page.currentValue);
     }
   }
+
+  private setFlts() {
+    if (typeof this.filters === 'string') {
+      const allFilters: Array<SpotfireFilter> = [];
+      JSON.parse(this.filters).forEach(m => allFilters.push(new SpotfireFilter(m)));
+      this.filters = allFilters;
+    }
+  }
   update = (e) => {
     const c = _.omit(this.form.getRawValue(), (v, k: string) => !k.startsWith('show') || !v);
-    if (this.customization !== c || this.path !== this.form.get('path').value) {
+    if (this.customization !== c ||
+      this.path !== this.form.get('path').value || true) {
       this.customization = c;
       this.pages = [];
-
+      const allFilters: Array<SpotfireFilter> = [];
+      _.each(this.form.get('filters').value, (filter, dataTableName) => {
+        _.each(filter, (values, dataColumnName) => {
+          allFilters.push(new SpotfireFilter({
+            dataTableName: dataTableName,
+            dataColumnName: dataColumnName,
+            filterSettings: { values: values }
+          }));
+        });
+      });
+      this.filters = allFilters;
       if (this.sid) {
         this.localStorageService.set(`${this.sid}.path`, this.form.get('path').value);
         this.localStorageService.set(`${this.sid}.page`, this.form.get('page').value);
         this.localStorageService.set(`${this.sid}.cust`, c);
+        this.localStorageService.set(`${this.sid}.flts`, this.filters);
       }
       this.openPath(this.form.get('path').value);
     } else if (this.page !== this.form.get('page').value) {
@@ -167,6 +215,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     e.stopPropagation();
   }
   ngAfterViewInit() {
+    this.setFlts();
     if (this.sid) {
       if (this.localStorageService.get(`${this.sid}.path`)) {
         this.path = this.localStorageService.get(`${this.sid}.path`);
@@ -174,8 +223,11 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       if (this.localStorageService.get(`${this.sid}.cust`)) {
         this.customization = this.localStorageService.get(`${this.sid}.cust`);
       }
-      if (this.localStorageService.get(`${this.sid}.page`)) {
-        this.page = this.localStorageService.get(`${this.sid}.page`);
+      if (this.localStorageService.get(`${this.sid}.cust`)) {
+        this.customization = this.localStorageService.get(`${this.sid}.cust`);
+      }
+      if (this.localStorageService.get(`${this.sid}.flts`)) {
+        this.filters = this.localStorageService.get(`${this.sid}.flts`);
       }
     }
     console.log('-----> ', this.path, this.page, 'has markingEvent:', this.markingEvent.observers.length > 0);
@@ -212,14 +264,10 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       showReloadAnalysis: this.customization.showReloadAnalysis,
       showStatusBar: this.customization.showStatusBar,
       showToolBar: this.customization.showToolBar,
-      showUndoRedo: this.customization.showUndoRedo
+      showUndoRedo: this.customization.showUndoRedo,
+      filters: this.fb.group({})
     });
 
-    if (typeof this.filters === 'string') {
-      const allFilters: Array<SpotfireFilter> = [];
-      JSON.parse(this.filters).forEach(m => allFilters.push(new SpotfireFilter(m)));
-      this.filters = allFilters;
-    }
 
     if (typeof this.markingOn === 'string') {
       this.markingOn = JSON.parse(this.markingOn);
@@ -306,6 +354,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
   }
   private openPage(page: string) {
+    console.log('SpotfireCmp openPage', page, this.filters);
     this.page = page;
     // Ask Spotfire library to display this path/page (with optional customization)
     //
@@ -315,22 +364,55 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
     console.log('SpotfireService openDocument', this.spot.nativeElement.id, `cnf=${page}`, this.config, this.app, this.customization);
     const doc = this.app.openDocument(this.spot.nativeElement.id, page, this.customization);
-
+    doc.getDocumentMetadata(g => this.metadata = new DocMetadata(g));
     doc.getPages(f => this.pages = _.pluck(f, 'pageTitle'));
 
     this.marking = doc.marking;
+    //  this.marking.getMarkingNames(g => console.log('SFINFO', 'getMarkingNames() = ', g));
     this.data = doc.data;
     if (this.isFilteringWiredUp) {
       this.filtering = doc.filtering;
       this.filtering.setFilters(this.filters, this.SPOTFIRE.webPlayer.filteringOperation.REPLACE);
       this.loadFilters();
-      console.log('[SPOTFIRE] FILTER', this.filtering, this.filtering.getFilterColumn());
+      console.log('[SPOTFIRE] FILTER', this.filters, this.filtering);
 
       // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
       //
       this.filter$.pipe(debounceTime(400), distinctUntilChanged()).subscribe(f => this.filteringEvent.emit(f));
     }
 
+    // get Table info
+    //
+    this.data.getDataTables(tables => {
+      _.each(tables, table => {
+        const fil: FormGroup = this.form.get('filters') as FormGroup;
+        this.data.getDataTable(table['dataTableName'], dataTable => dataTable.getDataColumns(d => {
+          console.log('SFINFO', `getDataTable(${table['dataTableName']}`, d);
+          //      this.dataTables[table['dataTableName']] = {};
+          // only get the values of String columns, and only those which have less than 21 possible values
+          _.each(d, r => {
+            if (r.dataType === 'String') {
+              r.getDistinctValues(0, 25, vals => {
+                console.log('SFINFO', 'getDistinctValues', r, vals);
+                if (vals.count > 1 && vals.count < 20) {
+                  if (!this.dataTables[table['dataTableName']]) {
+                    this.dataTables[table['dataTableName']] = {};
+                  }
+                  const flt = _.find(this.filters, f =>
+                    f.dataTableName === table['dataTableName'] && f.dataColumnName === r.dataColumnName);
+                  if (!fil.contains(table['dataTableName'])) {
+                    fil.addControl(table['dataTableName'], new FormGroup({}));
+                  }
+                  const fil2: FormGroup = fil.get(table['dataTableName']) as FormGroup;
+                  fil2.addControl(r.dataColumnName, new FormControl(flt ? flt.filterSettings.values : null));
+                  this.dataTables[table['dataTableName']][r.dataColumnName] = vals.values;
+                }
+              });
+            }
+          });
+        }));
+      });
+    });
     if (this.isMarkingWiredUp) {
       this.marker$.subscribe(f => {
         console.log('J\'emet', f);
@@ -346,7 +428,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
           if (_.size(tdiff) > 0) {
             this.errorMessages.push(`[spotfire-wrapper] Attribut marking-on contains unknwon table names: ${tdiff
               .map(f => `'${f}'`).join(', ')}`);
-            this.possibleValues = `[spotfire-wrapper] APossible values for table names are: ${tNames
+            this.possibleValues = `[spotfire-wrapper] Possible values for table names are: ${tNames
               .map(f => `'${f}'`).join(', ')} `;
             return;
           }
@@ -389,7 +471,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
                   // for each marking
                   //
                   _.each(markingNames, markingName => {
-                    const columns = ['Volume', 'DATE', 'BRAND_NM', 'CHNL_GROUP']; //, 'DATE', 'CHNL_GROUP', 'TRADE_CHNL_DESC', 'PKG_CAT'];
+                    const columns = ['Volume', 'DATE', 'BRAND_NM', 'CHNL_GROUP'];
                     // const columns = _.pluck(d, 'dataColumnName');
                     console.log(`[MARKING] register ${markingName}.${table['dataTableName']} `, columns);
                     this.markedRows[markingName] = {};

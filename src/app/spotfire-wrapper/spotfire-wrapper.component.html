@@ -1,10 +1,17 @@
 <div class="flip-container" [class.flipit]="edit">
   <div class="flipper">
-    <div *ngIf="form" class="back" [formGroup]="form" (click)="stopPropagation($event)" style='box-shadow: inset 0px 0px 7px black'>
+    <div *ngIf="form && metadata && dataTables" class="back" [formGroup]="form" (click)="stopPropagation($event)" style='box-shadow: inset 0px 0px 7px black'>
       <mat-toolbar color="primary" fxLayout="row" fxLayoutAlign="space-between center">
-        <h3>Edit dashboard</h3>
+        <h3>{{metadata.title}}</h3>
       </mat-toolbar>
       <div class="flexcol">
+        <h4>{{metadata.description}}</h4>
+        <ul>
+          <li>Size: {{metadata.size|number:'1.1-1'}}{{metadata.sizeUnit}}</li>
+          <li>Created on {{metadata.created|date:'medium'}}</li>
+          <li *ngIf="metadata.lastModified.getTime() > metadata.created.getTime()">Modified on
+            {{metadata.lastModified|date:'medium'}}</li>
+        </ul>
         <mat-form-field>
           <input matInput type="text" formControlName="path" placeholder="path">
         </mat-form-field>
@@ -17,6 +24,23 @@
         <div class="flexrow">
           <mat-checkbox *ngFor="let s of shows" [formControlName]="s">Show {{s|slice:4}}</mat-checkbox>
         </div>
+        <h3>Filters</h3>
+        <div formGroupName="filters">
+          <div *ngFor="let table of dataTables | keyvalue" [formGroupName]="table.key">
+            <h4>{{table.key}}:</h4>
+            <mat-form-field *ngFor="let column of table.value | keyvalue">
+              <mat-select [placeholder]="column.key" multiple [formControlName]="column.key">
+                <mat-option *ngFor="let val of column.value" [value]="val">{{val}}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <!--
+        <h3>Marking</h3>
+        <pre>{{markingOn|json}}</pre>
+        <pre>{{dataTables|json}}</pre>
+        <pre>{{form.value|json}}</pre>
+      -->
         <div class="flexrow">
           <button mat-flat-button (click)="edit=!edit;stopPropagation($event)">Close</button>
           <button [disabled]="form.pristine" mat-flat-button color="accent" (click)="update($event)">Update</button>

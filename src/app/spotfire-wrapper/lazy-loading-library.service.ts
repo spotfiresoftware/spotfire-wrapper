@@ -30,7 +30,7 @@ export class LazyLoadingLibraryService {
     };
     script.onerror = (err) => {
       console.log(`Lib ${url} is not loading`);
-      this.loadedLibraries[url].error(`Error while loading Spotfire JS API`);
+      this.loadedLibraries[url].error(`Error while loading Spotfire JS API: ${err}`);
     };
 
     this.document.body.appendChild(script);
