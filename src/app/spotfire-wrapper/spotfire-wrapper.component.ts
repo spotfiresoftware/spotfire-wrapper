@@ -14,7 +14,24 @@ import { LocalStorageService } from 'angular-2-local-storage';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
-
+const CUSTLABELS = {
+  showAbout: 'Show the about menu item',
+  showAnalysisInformationTool: 'Show the analysis information tool menu item',
+  showAuthor: 'Show the button for enabling authoring',
+  showClose: 'Show the analysis close menu item',
+  showCustomizableHeader: 'Show the customizable header',
+  showDodPanel: 'Show the details on demand panel in the visualization.',
+  showExportFile: 'Show the export file menu item',
+  showExportVisualization: 'Show the export visualization menu item',
+  showFilterPanel: 'Show the filter panel.',
+  showHelp: 'Show the help menu item',
+  showLogout: 'Show the logout menu item',
+  showPageNavigation: 'Show the page navigation controls in the analysis',
+  showReloadAnalysis: 'Show the Reload analysis button in the toolbar',
+  showStatusBar: 'Show status bar in the Web Player',
+  showToolBar: 'Show the analysis toolbar and menu',
+  showUndoRedo: 'Show the undo/redo menu item'
+};
 class DocMetadata {
   contentSize: number;
   size: number;
@@ -97,9 +114,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
   view: any;
   longTime = false;
-  shows = ['showAbout', 'showAnalysisInformationTool', 'showAuthor', 'showClose', 'showCustomizableHeader', 'showDodPanel',
-    'showExportFile', 'showExportVisualization', 'showFilterPanel', 'showHelp', 'showLogout', 'showPageNavigation',
-    'showAnalysisInfo', 'showReloadAnalysis', 'showStatusBar', 'showToolBar', 'showUndoRedo'];
+  custLabels = CUSTLABELS;
   constructor(private renderer: Renderer2, private localStorageService: LocalStorageService,
     private fb: FormBuilder, private service: LazyLoadingLibraryService) {
     setTimeout(() => this.longTime = true, 6000);
@@ -166,7 +181,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   }
   ngOnChanges(changes: SimpleChanges) {
     if (this.app && changes.page) {
-      console.log('CHANGE', changes);
+      console.log('SpotfireWrapperComponent ngOnChanges', changes);
       this.openPage(changes.page.currentValue);
     }
   }
@@ -179,10 +194,16 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     }
   }
   update = (e) => {
-    const c = _.omit(this.form.getRawValue(), (v, k: string) => !k.startsWith('show') || !v);
-    if (this.customization !== c ||
-      this.path !== this.form.get('path').value || true) {
-      this.customization = c;
+    this.edit = false;
+    e.stopPropagation();
+    const isD = (z) => this.form.get(z).dirty;
+    console.log('SpotfireWrapperComponent Update',
+      `u:${isD('url')}, p:${isD('path')}, a:${isD('page')}, f:${isD('filters')}, c:${isD('cust')}`);
+    if (isD('url') || isD('path') || isD('filters') || isD('cust')) {
+      this.url = isD('url') ? this.form.get('url').value : this.url;
+      this.path = isD('path') ? this.form.get('path').value : this.path;
+      this.page = isD('page') ? this.form.get('page').value : this.page;
+      this.customization = _.omit(this.form.get('cust').value, v => !v);
       this.pages = [];
       const allFilters: Array<SpotfireFilter> = [];
       _.each(this.form.get('filters').value, (filter, dataTableName) => {
@@ -196,23 +217,21 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       });
       this.filters = allFilters;
       if (this.sid) {
+        this.localStorageService.set(`${this.sid}.url`, this.form.get('url').value);
         this.localStorageService.set(`${this.sid}.path`, this.form.get('path').value);
         this.localStorageService.set(`${this.sid}.page`, this.form.get('page').value);
-        this.localStorageService.set(`${this.sid}.cust`, c);
+        this.localStorageService.set(`${this.sid}.cust`, this.customization);
         this.localStorageService.set(`${this.sid}.flts`, this.filters);
       }
-      this.openPath(this.form.get('path').value);
-    } else if (this.page !== this.form.get('page').value) {
-
+      this.openPath(this.path);
+    } else if (isD('page')) {
+      // if only page has changed, just refresh it
+      //
       if (this.sid) {
         this.localStorageService.set(`${this.sid}.page`, this.form.get('page').value);
       }
       this.openPage(this.form.get('page').value);
     }
-    this.path = this.form.get('path').value;
-    this.page = this.form.get('page').value;
-    this.edit = false;
-    e.stopPropagation();
   }
   ngAfterViewInit() {
     this.setFlts();
@@ -247,24 +266,26 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
 
     this.form = this.fb.group({
-      page: this.page, path: this.path,
-      showAbout: this.customization.showAbout,
-      showAnalysisInformationTool: this.customization.showAnalysisInformationTool,
-      showAuthor: this.customization.showAuthor, // this enable 'edit' button.
-      showClose: this.customization.showClose,
-      showCustomizableHeader: this.customization.showCustomizableHeader,
-      showDodPanel: this.customization.showDodPanel, // Details-on-Demand panel
-      showExportFile: this.customization.showExportFile,
-      showExportVisualization: this.customization.showExportVisualization,
-      showFilterPanel: this.customization.showFilterPanel,
-      showHelp: this.customization.showHelp,
-      showLogout: this.customization.showLogout,
-      showPageNavigation: this.customization.showPageNavigation,
-      showAnalysisInfo: this.customization.showAnalysisInfo,
-      showReloadAnalysis: this.customization.showReloadAnalysis,
-      showStatusBar: this.customization.showStatusBar,
-      showToolBar: this.customization.showToolBar,
-      showUndoRedo: this.customization.showUndoRedo,
+      url: this.url, page: this.page, path: this.path,
+      cust: this.fb.group({
+        showAbout: this.customization.showAbout,
+        showAnalysisInformationTool: this.customization.showAnalysisInformationTool,
+        showAuthor: this.customization.showAuthor, // this enable 'edit' button.
+        showClose: this.customization.showClose,
+        showCustomizableHeader: this.customization.showCustomizableHeader,
+        showDodPanel: this.customization.showDodPanel, // Details-on-Demand panel
+        showExportFile: this.customization.showExportFile,
+        showExportVisualization: this.customization.showExportVisualization,
+        showFilterPanel: this.customization.showFilterPanel,
+        showHelp: this.customization.showHelp,
+        showLogout: this.customization.showLogout,
+        showPageNavigation: this.customization.showPageNavigation,
+        showAnalysisInfo: this.customization.showAnalysisInfo,
+        showReloadAnalysis: this.customization.showReloadAnalysis,
+        showStatusBar: this.customization.showStatusBar,
+        showToolBar: this.customization.showToolBar,
+        showUndoRedo: this.customization.showUndoRedo
+      }),
       filters: this.fb.group({})
     });
 
@@ -337,6 +358,8 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     }
   }
   private openPath(path: string) {
+    this.path = path;
+    console.log(`SpotfireWrapperComponent openPath(${path})`);
     // Create a Unique ID for this Spotfire dashboard
     //
     this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
@@ -354,7 +377,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
   }
   private openPage(page: string) {
-    console.log('SpotfireCmp openPage', page, this.filters);
+    console.log(`SpotfireWrapperComponent openPage(${page})`);
     this.page = page;
     // Ask Spotfire library to display this path/page (with optional customization)
     //
@@ -365,8 +388,18 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     console.log('SpotfireService openDocument', this.spot.nativeElement.id, `cnf=${page}`, this.config, this.app, this.customization);
     const doc = this.app.openDocument(this.spot.nativeElement.id, page, this.customization);
     doc.getDocumentMetadata(g => this.metadata = new DocMetadata(g));
+    doc.getDocumentProperties(g => console.log('--> getDocumentProperties', g));
+    doc.getPages(g => console.log('--> getPages', g));
+    doc.getBookmarks(g => console.log('--> getBookmarks', g));
+    doc.getBookmarkNames(g => console.log('--> getBookmarkNames', g));
+    doc.getReports(g => console.log('--> getReports', g));
+    doc.getDocumentMetadata(g => console.log('--> getDocumentMetadata', g));
     doc.getPages(f => this.pages = _.pluck(f, 'pageTitle'));
-
+    doc.getActivePage(g => {
+      console.log('--> getActivePage', g, this.form.getRawValue());
+      this.form.get('page').patchValue(g.pageTitle);
+    });
+    //   doc.exportActiveVisualAsImage(100, 200);
     this.marking = doc.marking;
     //  this.marking.getMarkingNames(g => console.log('SFINFO', 'getMarkingNames() = ', g));
     this.data = doc.data;

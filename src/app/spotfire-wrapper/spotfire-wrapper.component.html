@@ -1,11 +1,11 @@
 <div class="flip-container" [class.flipit]="edit">
   <div class="flipper">
-    <div *ngIf="form && metadata && dataTables" class="back" [formGroup]="form" (click)="stopPropagation($event)" style='box-shadow: inset 0px 0px 7px black'>
+    <div *ngIf="form && metadata && dataTables" class="back" [formGroup]="form" (click)="stopPropagation($event)">
       <mat-toolbar color="primary" fxLayout="row" fxLayoutAlign="space-between center">
         <h3>{{metadata.title}}</h3>
       </mat-toolbar>
       <div class="flexcol">
-        <h4>{{metadata.description}}</h4>
+        <h4>{{metadata.description||'no description'}}</h4>
         <ul>
           <li>Size: {{metadata.size|number:'1.1-1'}}{{metadata.sizeUnit}}</li>
           <li>Created on {{metadata.created|date:'medium'}}</li>
@@ -13,26 +13,31 @@
             {{metadata.lastModified|date:'medium'}}</li>
         </ul>
         <mat-form-field>
-          <input matInput type="text" formControlName="path" placeholder="path">
+          <input matInput type="text" formControlName="url" placeholder="WebPlayer server root url">
         </mat-form-field>
         <mat-form-field>
-          <mat-select formControlName="page" placeholder="page">
+          <input matInput type="text" formControlName="path" placeholder="Analysis path">
+        </mat-form-field>
+        <mat-form-field>
+          <mat-select formControlName="page" placeholder="Document page">
             <mat-option *ngFor="let p of pages" [value]="p">{{p}}</mat-option>
           </mat-select>
         </mat-form-field>
-        <h3>Customization</h3>
-        <div class="flexrow">
-          <mat-checkbox *ngFor="let s of shows" [formControlName]="s">Show {{s|slice:4}}</mat-checkbox>
+        <h3>Customization information</h3>
+        <div class="flexrow" formGroupName="cust">
+          <mat-checkbox *ngFor="let s of custLabels | keyvalue" [formControlName]="s.key">{{s.value}}</mat-checkbox>
         </div>
-        <h3>Filters</h3>
-        <div formGroupName="filters">
-          <div *ngFor="let table of dataTables | keyvalue" [formGroupName]="table.key">
-            <h4>{{table.key}}:</h4>
-            <mat-form-field *ngFor="let column of table.value | keyvalue">
-              <mat-select [placeholder]="column.key" multiple [formControlName]="column.key">
-                <mat-option *ngFor="let val of column.value" [value]="val">{{val}}</mat-option>
-              </mat-select>
-            </mat-form-field>
+        <div formGroupName="filters" *ngIf="dataTables">
+          <h3>Filters</h3>
+          <div *ngFor="let table of dataTables | keyvalue" [formGroupName]="table.key" class="flexrow">
+            <div>
+              <h4>{{table.key}}:</h4>
+              <mat-form-field *ngFor="let column of table.value | keyvalue">
+                <mat-select [placeholder]="column.key" multiple [formControlName]="column.key">
+                  <mat-option *ngFor="let val of column.value" [value]="val">{{val}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
           </div>
         </div>
         <!--
@@ -41,10 +46,11 @@
         <pre>{{dataTables|json}}</pre>
         <pre>{{form.value|json}}</pre>
       -->
-        <div class="flexrow">
-          <button mat-flat-button (click)="edit=!edit;stopPropagation($event)">Close</button>
-          <button [disabled]="form.pristine" mat-flat-button color="accent" (click)="update($event)">Update</button>
-        </div>
+      </div>
+      <div style='border-top:1px solid #ccc; padding: 20px 30px; text-align:right'>
+        <button mat-flat-button (click)="edit=!edit;stopPropagation($event)">Close</button>
+        &nbsp;&nbsp;
+        <button [disabled]="form.pristine" mat-flat-button color="accent" (click)="update($event)">Update</button>
       </div>
     </div>
     <div class="front">

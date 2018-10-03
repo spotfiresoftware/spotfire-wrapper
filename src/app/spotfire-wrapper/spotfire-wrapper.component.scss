@@ -36,6 +36,8 @@
   /* back, initially hidden pane */
   .back {
     transform: rotateY(180deg);
+    box-shadow: inset 0px 0px 7px black;
+    overflow: scroll;
   }
 }
 
@@ -51,7 +53,12 @@ display:flex; flex-flow:column;
   display:flex; flex-flow:row wrap;
   > * {
     margin-top:10px;
-    flex: 0 0 (100%/3)
+    flex: 0 0 (100%/2)
+  }
+  > button {
+    margin-top:10px;
+    margin-left:20px;
+    flex: 0 0 1
   }
 }
 $blu:#0081cb;
