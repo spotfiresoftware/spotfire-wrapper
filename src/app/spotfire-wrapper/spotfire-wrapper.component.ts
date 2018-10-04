@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 
 import * as _ from 'underscore';
-import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
+import { FormGroup, FormBuilder, FormControl, Validators, FormArray } from '@angular/forms';
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from './spotfire-customization';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
@@ -42,20 +42,22 @@ class DocMetadata {
   lastModified: Date;
   path: string;
   title: string;
-  constructor(p) {
-    this.contentSize = parseInt(p['contentSize'], 10);
-    if (this.contentSize > (1024 * 1024)) {
-      this.size = this.contentSize / (1024 * 1024);
-      this.sizeUnit = 'MB';
-    } else if (this.contentSize > 1024) {
-      this.size = this.contentSize / 1024;
-      this.sizeUnit = 'KB';
+  constructor(p?) {
+    if (p) {
+      this.contentSize = parseInt(p['contentSize'], 10);
+      if (this.contentSize > (1024 * 1024)) {
+        this.size = this.contentSize / (1024 * 1024);
+        this.sizeUnit = 'MB';
+      } else if (this.contentSize > 1024) {
+        this.size = this.contentSize / 1024;
+        this.sizeUnit = 'KB';
+      }
+      this.created = new Date(p.created);
+      this.lastModified = new Date(p.lastModified);
+      this.description = p.description;
+      this.path = p.path;
+      this.title = p.title;
     }
-    this.created = new Date(p.created);
-    this.lastModified = new Date(p.lastModified);
-    this.description = p.description;
-    this.path = p.path;
-    this.title = p.title;
   }
 }
 
@@ -75,7 +77,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   @Input() url: string;
   @Input() page: string;
   @Input() sid: string;
-  @Input() path = 'Homepage';
+  @Input() path: string;
   @Input() customization: SpotfireCustomization | string;
   @Input() filters: Array<SpotfireFilter> | string;
   private version = '7.14';
@@ -199,8 +201,10 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     const isD = (z) => this.form.get(z).dirty;
     console.log('SpotfireWrapperComponent Update',
       `u:${isD('url')}, p:${isD('path')}, a:${isD('page')}, f:${isD('filters')}, c:${isD('cust')}`);
-    if (isD('url') || isD('path') || isD('filters') || isD('cust')) {
-      this.url = isD('url') ? this.form.get('url').value : this.url;
+
+    if (isD('url')) {
+      this.openWebPlayer(this.form.get('url').value, this.form.get('path').value, _.omit(this.form.get('cust').value, v => !v));
+    } else if (isD('path') || isD('filters') || isD('cust')) {
       this.path = isD('path') ? this.form.get('path').value : this.path;
       this.page = isD('page') ? this.form.get('page').value : this.page;
       this.customization = _.omit(this.form.get('cust').value, v => !v);
@@ -252,11 +256,6 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     console.log('-----> ', this.path, this.page, 'has markingEvent:', this.markingEvent.observers.length > 0);
     console.log('-----> ', this.path, this.page, 'has filterEvent:', this.filteringEvent.observers.length > 0);
 
-    if (!this.url || this.url.length === 0) {
-      this.displayErrorMessage('URL is missing');
-      console.error(`Url attribute must be provided!`);
-      return;
-    }
 
     if (typeof this.customization === 'string') {
       this.customization = new SpotfireCustomization(JSON.parse(this.customization));
@@ -266,7 +265,9 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
 
     this.form = this.fb.group({
-      url: this.url, page: this.page, path: this.path,
+      url: [this.url, Validators.required],
+      path: [this.path, Validators.required],
+      page: this.fb.control({ value: this.page, disabled: !this.url }),
       cust: this.fb.group({
         showAbout: this.customization.showAbout,
         showAnalysisInformationTool: this.customization.showAnalysisInformationTool,
@@ -286,28 +287,22 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
         showToolBar: this.customization.showToolBar,
         showUndoRedo: this.customization.showUndoRedo
       }),
-      filters: this.fb.group({})
+      filters: this.fb.group({}),
+      marking: this.fb.group({})
     });
-
 
     if (typeof this.markingOn === 'string') {
       this.markingOn = JSON.parse(this.markingOn);
     }
-    // lazy load the spotfire js API
-    //
-    setTimeout(() => {
-      const sfLoaderUrl = `${this.url}/spotfire/js-api/loader.js`;
-      this.service.loadJs(sfLoaderUrl).subscribe(() => {
-        console.log(`Spotfire ${sfLoaderUrl} is LOADED !!!`, spotfire);
-        this.SPOTFIRE = spotfire;
-        console.log('SpotfireComponent', this.page, this.spot.nativeElement, this.customization);
-        if (this.SPOTFIRE) {
-          this.openPath(this.path);
-        } else {
-          this.displayErrorMessage('Spotfire is not loaded');
-        }
-      }, err => this.displayErrorMessage(err));
-    }, 1000);
+    if (!this.url || this.url.length === 0) {
+      // this.displayErrorMessage('URL is missing');
+      console.log(`Url attribute is not provided, flip the dashboard and display form!`);
+      this.edit = true;
+      this.metadata = new DocMetadata();
+      return;
+    }
+
+    this.openWebPlayer(this.url, this.path, this.customization);
   }
   onReadyCallback = (response, newApp) => {
     this.app = newApp;
@@ -356,6 +351,28 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     } else {
       console.log('[MARKING] rien a faire', tName, mName, res);
     }
+  }
+  private openWebPlayer(url: string, path: string, custo: SpotfireCustomization) {
+    this.url = url;
+    this.path = path;
+    this.customization = custo;
+    console.log(`SpotfireWrapperComponent openWebPlayer(${url})`);
+
+    // lazy load the spotfire js API
+    //
+    setTimeout(() => {
+      const sfLoaderUrl = `${this.url}/spotfire/js-api/loader.js`;
+      this.service.loadJs(sfLoaderUrl).subscribe(() => {
+        console.log(`Spotfire ${sfLoaderUrl} is LOADED !!!`, spotfire);
+        this.SPOTFIRE = spotfire;
+        console.log('SpotfireComponent', this.page, this.spot.nativeElement, this.customization);
+        if (this.SPOTFIRE) {
+          this.openPath(this.path);
+        } else {
+          this.displayErrorMessage('Spotfire is not loaded');
+        }
+      }, err => this.displayErrorMessage(err));
+    }, 1000);
   }
   private openPath(path: string) {
     this.path = path;
@@ -417,28 +434,32 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     // get Table info
     //
     this.data.getDataTables(tables => {
+      const fil: FormGroup = this.form.get('filters') as FormGroup;
+      const mar: FormGroup = this.form.get('marking') as FormGroup;
       _.each(tables, table => {
-        const fil: FormGroup = this.form.get('filters') as FormGroup;
-        this.data.getDataTable(table['dataTableName'], dataTable => dataTable.getDataColumns(d => {
-          console.log('SFINFO', `getDataTable(${table['dataTableName']}`, d);
-          //      this.dataTables[table['dataTableName']] = {};
+        const tname = table['dataTableName'];
+        this.data.getDataTable(tname, dataTable => dataTable.getDataColumns(d => {
+          console.log('SFINFO', `getDataTable(${tname})`, d);
+
+          //      this.dataTables[tname] = {};
           // only get the values of String columns, and only those which have less than 21 possible values
           _.each(d, r => {
             if (r.dataType === 'String') {
+              const mak = _.find(this.markingOn, (__, k: string) => k === tname);
+              mar.addControl(tname, new FormControl(mak ? mak : null));
               r.getDistinctValues(0, 25, vals => {
                 console.log('SFINFO', 'getDistinctValues', r, vals);
                 if (vals.count > 1 && vals.count < 20) {
-                  if (!this.dataTables[table['dataTableName']]) {
-                    this.dataTables[table['dataTableName']] = {};
+                  if (!this.dataTables[tname]) {
+                    this.dataTables[tname] = {};
                   }
-                  const flt = _.find(this.filters, f =>
-                    f.dataTableName === table['dataTableName'] && f.dataColumnName === r.dataColumnName);
-                  if (!fil.contains(table['dataTableName'])) {
-                    fil.addControl(table['dataTableName'], new FormGroup({}));
+                  const flt = _.find(this.filters, f => f.dataTableName === tname && f.dataColumnName === r.dataColumnName);
+                  if (!fil.contains(tname)) {
+                    fil.addControl(tname, new FormGroup({}));
                   }
-                  const fil2: FormGroup = fil.get(table['dataTableName']) as FormGroup;
+                  const fil2: FormGroup = fil.get(tname) as FormGroup;
                   fil2.addControl(r.dataColumnName, new FormControl(flt ? flt.filterSettings.values : null));
-                  this.dataTables[table['dataTableName']][r.dataColumnName] = vals.values;
+                  this.dataTables[tname][r.dataColumnName] = vals.values;
                 }
               });
             }
@@ -480,7 +501,8 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
                 console.log('[MARKING] * MARKINGNAMES', markingNames);
                 _.each(this.markingOn, (columns: Array<string>, tName: string) => {
                   console.log(`[MARKING] * register ${markingName}.${tName} `, columns);
-                  this.marking.onChanged(markingName, tName, columns, this.maxRows, res => this.updateMarking(tName, markingName, res));
+                  this.marking.onChanged(markingName, tName, columns, this.maxRows,
+                    res => this.updateMarking(tName, markingName, res));
                 });
               }));
             }));
@@ -489,36 +511,35 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       } else {
         // for each table
         //
-        this.data.getDataTables(tables => {
-          console.log('[MARKING] openPage.getDataTables', tables);
-          _.each(tables, table => {
-            table['getDataColumns'](cols => console.log(` - openPage.getDataTable(${table['dataTableName']}).getDataColumns`, cols));
-            this.data.getDataTable(table['dataTableName'], dataTable => {
+        if (false) {
+          this.data.getDataTables(tables => {
+            console.log('[MARKING] openPage.getDataTables', tables);
+            _.each(tables, table => {
+              table['getDataColumns'](cols => console.log(` - openPage.getDataTable(${table['dataTableName']}).getDataColumns`, cols));
+              this.data.getDataTable(table['dataTableName'], dataTable => {
 
-              // for each column
-              //
-              dataTable.getDataColumns(d => {
-                console.log(`${table['dataTableName']}.getDataColumns`, _.pluck(d, 'dataColumnName'));
-                this.marking.getMarkingNames(markingNames => {
-
-                  // for each marking
-                  //
-                  _.each(markingNames, markingName => {
-                    const columns = ['Volume', 'DATE', 'BRAND_NM', 'CHNL_GROUP'];
-                    // const columns = _.pluck(d, 'dataColumnName');
-                    console.log(`[MARKING] register ${markingName}.${table['dataTableName']} `, columns);
-                    this.markedRows[markingName] = {};
-                    this.marking.onChanged(markingName, table['dataTableName'], columns, this.maxRows, res => {
-                      this.updateMarking(table['dataTableName'], markingName, res);
-
+                // for each column
+                //
+                dataTable.getDataColumns(d => {
+                  console.log(`${table['dataTableName']}.getDataColumns`, _.pluck(d, 'dataColumnName'));
+                  this.marking.getMarkingNames(markingNames => {
+                    // for each marking
+                    //
+                    _.each(markingNames, markingName => {
+                      const columns = ['Volume', 'DATE', 'BRAND_NM', 'CHNL_GROUP'];
+                      // const columns = _.pluck(d, 'dataColumnName');
+                      console.log(`[MARKING] register ${markingName}.${table['dataTableName']} `, columns);
+                      this.markedRows[markingName] = {};
+                      this.marking.onChanged(markingName, table['dataTableName'], columns, this.maxRows, res => {
+                        this.updateMarking(table['dataTableName'], markingName, res);
+                      });
                     });
                   });
-
                 });
               });
             });
           });
-        });
+        }
       }
       // Subscribe to markingEvent and emit the result to the Output
       //

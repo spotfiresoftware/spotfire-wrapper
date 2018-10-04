@@ -2,55 +2,69 @@
   <div class="flipper">
     <div *ngIf="form && metadata && dataTables" class="back" [formGroup]="form" (click)="stopPropagation($event)">
       <mat-toolbar color="primary" fxLayout="row" fxLayoutAlign="space-between center">
-        <h3>{{metadata.title}}</h3>
+        <h3 style='flex-grow:1'>{{metadata.title||'Add a new dashboard'}}</h3>
+        <div style='display:flex; flex-direction:column; align-items:flex-end'>
+          <span class="mat-caption" *ngIf="metadata.size">
+            {{metadata.size|number:'1.1-1'}}{{metadata.sizeUnit}}
+          </span>
+          <span class="mat-caption" *ngIf="metadata.lastModified?.getTime() < metadata.created?.getTime()">
+            {{metadata.created|date:'medium'}}
+          </span>
+          <span class="mat-caption" *ngIf="metadata.lastModified?.getTime() >= metadata.created?.getTime()">
+            {{metadata.lastModified|date:'medium'}}
+          </span>
+        </div>
+
       </mat-toolbar>
       <div class="flexcol">
-        <h4>{{metadata.description||'no description'}}</h4>
-        <ul>
-          <li>Size: {{metadata.size|number:'1.1-1'}}{{metadata.sizeUnit}}</li>
-          <li>Created on {{metadata.created|date:'medium'}}</li>
-          <li *ngIf="metadata.lastModified.getTime() > metadata.created.getTime()">Modified on
-            {{metadata.lastModified|date:'medium'}}</li>
-        </ul>
+        <h4 *ngIf="metadata.description">{{metadata.description}}</h4>
         <mat-form-field>
-          <input matInput type="text" formControlName="url" placeholder="WebPlayer server root url">
+          <input matInput type="url" formControlName="url" required placeholder="WebPlayer server root url">
         </mat-form-field>
         <mat-form-field>
-          <input matInput type="text" formControlName="path" placeholder="Analysis path">
+          <input matInput type="text" formControlName="path" required placeholder="Analysis path">
         </mat-form-field>
         <mat-form-field>
           <mat-select formControlName="page" placeholder="Document page">
             <mat-option *ngFor="let p of pages" [value]="p">{{p}}</mat-option>
           </mat-select>
         </mat-form-field>
-        <h3>Customization information</h3>
-        <div class="flexrow" formGroupName="cust">
+        <h3>Customization information:</h3>
+        <div class="flexrow" formGroupName="cust" style='zoom:0.8'>
           <mat-checkbox *ngFor="let s of custLabels | keyvalue" [formControlName]="s.key">{{s.value}}</mat-checkbox>
         </div>
         <div formGroupName="filters" *ngIf="dataTables">
-          <h3>Filters</h3>
-          <div *ngFor="let table of dataTables | keyvalue" [formGroupName]="table.key" class="flexrow">
-            <div>
-              <h4>{{table.key}}:</h4>
+          <h3>Filters:</h3>
+          <div class="flexrow" style='zoom:0.8'>
+            <span *ngFor="let table of dataTables | keyvalue" [formGroupName]="table.key">
               <mat-form-field *ngFor="let column of table.value | keyvalue">
-                <mat-select [placeholder]="column.key" multiple [formControlName]="column.key">
+                <mat-select [placeholder]="table.key+'/'+column.key" multiple [formControlName]="column.key">
                   <mat-option *ngFor="let val of column.value" [value]="val">{{val}}</mat-option>
                 </mat-select>
               </mat-form-field>
-            </div>
+            </span>
+          </div>
+        </div>
+        <div formGroupName="marking" *ngIf="dataTables">
+          <h3>Marking:</h3>
+          <div class="flexrow" style='zoom:0.8'>
+            <mat-form-field *ngFor="let table of dataTables | keyvalue">
+              <mat-select [placeholder]="table.key" multiple [formControlName]="table.key">
+                <mat-option *ngFor="let column of table.value | keyvalue" [value]="column.key">{{column.key}}</mat-option>
+              </mat-select>
+            </mat-form-field>
           </div>
         </div>
         <!--
-        <h3>Marking</h3>
         <pre>{{markingOn|json}}</pre>
         <pre>{{dataTables|json}}</pre>
         <pre>{{form.value|json}}</pre>
-      -->
+        -->
       </div>
       <div style='border-top:1px solid #ccc; padding: 20px 30px; text-align:right'>
         <button mat-flat-button (click)="edit=!edit;stopPropagation($event)">Close</button>
         &nbsp;&nbsp;
-        <button [disabled]="form.pristine" mat-flat-button color="accent" (click)="update($event)">Update</button>
+        <button [disabled]="form.pristine || form.invalid" mat-flat-button color="accent" (click)="update($event)">Update</button>
       </div>
     </div>
     <div class="front">

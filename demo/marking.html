@@ -5,12 +5,20 @@
 </head>
 
 <body>
-  <h1>Demo Spotfire&trade; Wrapper - Get Marking</h1>
-
-  <a a href="./filter.html">Previous Demo (Set filter)</a>&nbsp;
+  <h1>Demo Spotfire&trade; Wrapper - Get Marking
+    <select onchange="location=this.value" style='float:right'>
+      <option value="index.html">Basic sample with one dashboard</option>
+      <option value="two.html">With two dashboards</option>
+      <option value="cust.html">Customize dashboards</option>
+      <option value="filter.html">Set Filter</option>
+      <option selected value="marking.html">Get Marking</option>
+      <option value="new.html">Attach new dashboard</option>
+    </select>
+  </h1>
 
   <p><code>marking-on</code> attribute is used to tell the library to get the marking for the corresponding columns.</p>
-  <p>The user gets the resulting marker with a javascript code (example in source code). Click on graphs and see JSON object printed in bottom of this page</p>
+  <p>The user gets the resulting marker with a javascript code (example in source code). Click on graphs and see JSON
+    object printed in bottom of this page</p>
 
 
   <h2>Code:</h2>
@@ -24,25 +32,31 @@
 
 &lt;<span style='color:yellow'>script</span> src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"&gt;&lt;/<span style='color:yellow'>script</span>&gt;</pre>
 
-<code>marking-on</code> attribute lists, for each table, the column names that will be used by the marking
-<pre>
-  {
-    "<i>&lt;data table name&gt;</i>": [ "<i>&lt;col name&gt;</i>", ... , "<i>&lt;col name&gt;</i>" ],
-    ...
-    "<i>&lt;data table name&gt;</i>": [ "<i>&lt;col name&gt;</i>", ... , "<i>&lt;col name&gt;</i>" ]
-  }
-</pre>
-
+  <div style='float:left; width:50%'>
+    <code>marking-on</code> attribute lists, for each table, the column names that will be used by the marking
+    <pre style='font-size:0.8em'>
+     {
+       "<i>&lt;data table name&gt;</i>": [ "<i>&lt;col name&gt;</i>", ... , "<i>&lt;col name&gt;</i>" ],
+       ...
+       "<i>&lt;data table name&gt;</i>": [ "<i>&lt;col name&gt;</i>", ... , "<i>&lt;col name&gt;</i>" ]
+      }
+    </pre>
+  </div>
+  <div style='float:right; width:50%'>
+    <u>Selected rows made in dashboard:</u>
+    <pre id="marker1" style='font-size:0.8em'></pre>
+  </div>
+  <div style='clear:both'></div>
   <h2>Result:</h2>
-  <spotfire-wrapper sid="sid2" id="id1" url="https://spotfire-next.cloud.tibco.com" 
-    path="Samples/Sales and Marketing" 
-    customization='{"showAuthor":true, "showFilterPanel":true, "showToolBar":true}'
-    marking-on='{"Supermarket Stock excel - Sheet1": [ "Type", "Jan", "Aug"]}'  
-    page="0"></spotfire-wrapper>
+
+  <spotfire-wrapper sid="sid2" id="id1" 
+                    url="https://spotfire-next.cloud.tibco.com"
+                    path="Samples/Sales and Marketing"
+                    customization='{"showAuthor":true, "showFilterPanel":true, "showToolBar":true}' marking-on='{"Supermarket Stock excel - Sheet1": [ "Type", "Jan", "Aug"]}'
+                    page="0"></spotfire-wrapper>
 
   <script src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"></script>
 
-  <pre id="marker1"></pre>
   <script>
     const spotfireWrapper = document.getElementById("id1");
     const result = document.getElementById("marker1");
@@ -55,8 +69,7 @@
     });
   </script>
 
-<a href='mailto:nderoche@tibco.com?subject=About%20spotfire-wrapper' target="_mailFrame">Contact : Nicolas Deroche</a>
+  <a href='mailto:nderoche@tibco.com?subject=About%20spotfire-wrapper' target="_mailFrame">Contact : Nicolas Deroche</a>
 
 </body>
-
 </html>

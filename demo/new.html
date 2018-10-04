@@ -5,7 +5,7 @@
 </head>
 
 <body>
-  <h1>Demo Spotfire&trade; Wrapper - Basic sample
+  <h1>Demo Spotfire&trade; Wrapper - Attach a new dashboard
     <select onchange="location=this.value" style='float:right'>
       <option selected value="index.html">Basic sample with one dashboard</option>
       <option value="two.html">With two dashboards</option>
@@ -14,7 +14,6 @@
       <option value="marking.html">Get Marking</option>
       <option value="new.html">Attach new dashboard</option>
     </select>
-
   </h1>
 
   <p><b>spotfire-wrapper</b> is a static JavaScript library that provides a new HTML tag : <code>&lt;spotfire-wrapper&gt;</code></p>
@@ -22,22 +21,17 @@
   <p>To insert a spotfire dashboard into a web page, user needs to add the following HTML code:</p>
   <h2>Code:</h2>
   <pre style='border:2px dashed green; background-color:black; color:white; padding:20px;'>
-    &lt;<span style='color:yellow'>spotfire-wrapper</span>
-    <span style='color:red'>url</span>="https://spotfire-next.cloud.tibco.com"
-    <span style='color:red'>path</span>="Samples/Sales and Marketing" 
-    &lt;/<span style='color:yellow'>spotfire-wrapper</span>&gt;
+    &lt;<span style='color:yellow'>spotfire-wrapper</span>&lt;/<span style='color:yellow'>spotfire-wrapper</span>&gt;
     
     &lt;<span style='color:yellow'>script</span> src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"&gt;&lt;/<span style='color:yellow'>script</span>&gt;</pre>
 
   <p><u>Note:</u> An account to access the Spotfire&trade; instance defined in <code>url</code> is required (here : <a
        href="https://spotfire-next.cloud.tibco.com" target="_otherframe">https://spotfire-next.cloud.tibco.com</a></p>
   <h2>Result:</h2>
-  <spotfire-wrapper 
-    url="https://spotfire-next.cloud.tibco.com" 
-    path="Samples/Sales and Marketing"></spotfire-wrapper>
+
+  <spotfire-wrapper></spotfire-wrapper>
 
   <script src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"></script>
-
 
   <a href='mailto:nderoche@tibco.com?subject=About%20spotfire-wrapper' target="_mailFrame">Contact : Nicolas Deroche</a>
 
