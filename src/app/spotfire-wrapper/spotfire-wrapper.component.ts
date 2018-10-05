@@ -1,68 +1,22 @@
 // Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
 import {
   Component, Input, AfterViewInit, EventEmitter, ViewChild,
-  ElementRef, Output, OnChanges, SimpleChanges, ViewEncapsulation, Renderer2
+  ElementRef, Output, OnChanges, SimpleChanges, ViewEncapsulation
 } from '@angular/core';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 
 import * as _ from 'underscore';
-import { FormGroup, FormBuilder, FormControl, Validators, FormArray } from '@angular/forms';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { LocalStorageService } from 'angular-2-local-storage';
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from './spotfire-customization';
-import { Observable, BehaviorSubject, Subscription } from 'rxjs';
-import { distinctUntilChanged, debounceTime } from 'rxjs/operators';
-import { LocalStorageService } from 'angular-2-local-storage';
+import { DocMetadata, Application, Data, Document, CUSTLABELS } from './spotfire-webplayer';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
-const CUSTLABELS = {
-  showAbout: 'Show the about menu item',
-  showAnalysisInformationTool: 'Show the analysis information tool menu item',
-  showAuthor: 'Show the button for enabling authoring',
-  showClose: 'Show the analysis close menu item',
-  showCustomizableHeader: 'Show the customizable header',
-  showDodPanel: 'Show the details on demand panel in the visualization.',
-  showExportFile: 'Show the export file menu item',
-  showExportVisualization: 'Show the export visualization menu item',
-  showFilterPanel: 'Show the filter panel.',
-  showHelp: 'Show the help menu item',
-  showLogout: 'Show the logout menu item',
-  showPageNavigation: 'Show the page navigation controls in the analysis',
-  showReloadAnalysis: 'Show the Reload analysis button in the toolbar',
-  showStatusBar: 'Show status bar in the Web Player',
-  showToolBar: 'Show the analysis toolbar and menu',
-  showUndoRedo: 'Show the undo/redo menu item'
-};
-class DocMetadata {
-  contentSize: number;
-  size: number;
-  sizeUnit = 'B';
-
-  created: Date;
-  description: string;
-  lastModified: Date;
-  path: string;
-  title: string;
-  constructor(p?) {
-    if (p) {
-      this.contentSize = parseInt(p['contentSize'], 10);
-      if (this.contentSize > (1024 * 1024)) {
-        this.size = this.contentSize / (1024 * 1024);
-        this.sizeUnit = 'MB';
-      } else if (this.contentSize > 1024) {
-        this.size = this.contentSize / 1024;
-        this.sizeUnit = 'KB';
-      }
-      this.created = new Date(p.created);
-      this.lastModified = new Date(p.lastModified);
-      this.description = p.description;
-      this.path = p.path;
-      this.title = p.title;
-    }
-  }
-}
 
 declare let spotfire: any;
-const _SPOTFIRE = typeof spotfire === 'undefined' ? false : spotfire;
 
 @Component({
   templateUrl: './spotfire-wrapper.component.html',
@@ -95,29 +49,23 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   // Optional configuration block
   private parameters = '';
   private reloadAnalysisInstance = false;
+  private document: Document;
+  private app: Application;
 
-  // Optional configuration settings;
-  // private filteringSchemeName = '';
-  private app: any;
-
-  private filtering: any;
   private filterSubject = new BehaviorSubject<Array<{}>>([]);
   public filter$: Observable<Array<{}>> = this.filterSubject.asObservable();
   @Output() filteringEvent: EventEmitter<any> = new EventEmitter(false);
 
-  private marking: any;
   private markerSubject = new BehaviorSubject<{}>({});
   public marker$: Observable<{}> = this.markerSubject.asObservable();
   @Output() markingEvent: EventEmitter<any> = new EventEmitter(false);
   public dataTables = {};
   private markedRows = {};
-  private data: any;
-  public SPOTFIRE = _SPOTFIRE;
 
   view: any;
   longTime = false;
   custLabels = CUSTLABELS;
-  constructor(private renderer: Renderer2, private localStorageService: LocalStorageService,
+  constructor(private localStorageService: LocalStorageService,
     private fb: FormBuilder, private service: LazyLoadingLibraryService) {
     setTimeout(() => this.longTime = true, 6000);
     console.log('SPOT URL', this.url, 'CUST=', this.customization, typeof this.filters, 'FILTERS=', this.filters);
@@ -126,61 +74,11 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
   private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
   private get isFilteringWiredUp() { return this.filteringEvent.observers.length > 0; }
-  displayErrorMessage = (message: string, withIframe = true) => {
+  displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
-    setTimeout(() => {
-      if (message) {
-        this.errorMessages.push(message);
-      }
-      if (withIframe) {
-        const iframe = this.renderer.createElement('iframe');
-        this.renderer.setAttribute(iframe, 'src', `${this.url}/login.html`);
-        this.renderer.setAttribute(iframe, 'allowfullscreen', 'true');
-        this.renderer.setAttribute(iframe, 'title', `${this.url}`);
-        this.renderer.setStyle(iframe, 'border', '0');
-        this.renderer.setStyle(iframe, 'width', '100%');
-        this.renderer.setStyle(iframe, 'height', '600px');
-        this.renderer.appendChild(this.spot.nativeElement, iframe);
-      } else {
-        const div = this.renderer.createElement('div');
-        const text = this.renderer.createText(message);
-        const span = this.renderer.createElement('span');
-        const clear = this.renderer.createElement('span');
-        // const br = this.renderer.createElement('br');
-        const link = this.renderer.createElement('a');
-        const lien = this.renderer.createText(`Open Spotfire`);
-
-        this.renderer.appendChild(link, lien);
-        this.renderer.setAttribute(link, 'target', 'other_frame');
-        this.renderer.setAttribute(link, 'title', `Visit ${this.url} in an other tab`);
-        this.renderer.setAttribute(link, 'href', this.url);
-        this.renderer.appendChild(span, text);
-
-        this.renderer.appendChild(div, span);
-        this.renderer.appendChild(div, link);
-        this.renderer.appendChild(div, clear);
-
-        this.renderer.setStyle(span, 'line-height', '2');
-
-        this.renderer.setStyle(link, 'border', '1px solid #062e79');
-        this.renderer.setStyle(link, 'border-radius', '8px');
-        this.renderer.setStyle(link, 'background', '#0081cb');
-        this.renderer.setStyle(link, 'color', 'white');
-        this.renderer.setStyle(link, 'padding', '5px 10px');
-        this.renderer.setStyle(link, 'text-decoration', 'none');
-
-        this.renderer.setStyle(clear, 'clear', 'both');
-
-        this.renderer.setStyle(div, 'border', '2px dashed salmon');
-        this.renderer.setStyle(div, 'padding', '20px');
-        this.renderer.setStyle(div, 'margin', '20px');
-        this.renderer.setStyle(div, 'font-family', 'monospace');
-        this.renderer.setStyle(div, 'display', 'flex');
-        this.renderer.setStyle(div, 'justify-content', 'space-between');
-        this.renderer.appendChild(this.spot.nativeElement, div);
-      }
-    }, 0);
+    this.errorMessages.push(message);
   }
+
   ngOnChanges(changes: SimpleChanges) {
     if (this.app && changes.page) {
       console.log('SpotfireWrapperComponent ngOnChanges', changes);
@@ -210,8 +108,8 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       this.customization = _.omit(this.form.get('cust').value, v => !v);
       this.pages = [];
       const allFilters: Array<SpotfireFilter> = [];
-      _.each(this.form.get('filters').value, (filter, dataTableName) => {
-        _.each(filter, (values, dataColumnName) => {
+      _.each(this.form.get('filters').value, (flt, dataTableName) => {
+        _.each(flt, (values, dataColumnName) => {
           allFilters.push(new SpotfireFilter({
             dataTableName: dataTableName,
             dataColumnName: dataColumnName,
@@ -263,30 +161,11 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       this.customization = new SpotfireCustomization(this.customization);
     }
 
-
     this.form = this.fb.group({
       url: [this.url, Validators.required],
       path: [this.path, Validators.required],
       page: this.fb.control({ value: this.page, disabled: !this.url }),
-      cust: this.fb.group({
-        showAbout: this.customization.showAbout,
-        showAnalysisInformationTool: this.customization.showAnalysisInformationTool,
-        showAuthor: this.customization.showAuthor, // this enable 'edit' button.
-        showClose: this.customization.showClose,
-        showCustomizableHeader: this.customization.showCustomizableHeader,
-        showDodPanel: this.customization.showDodPanel, // Details-on-Demand panel
-        showExportFile: this.customization.showExportFile,
-        showExportVisualization: this.customization.showExportVisualization,
-        showFilterPanel: this.customization.showFilterPanel,
-        showHelp: this.customization.showHelp,
-        showLogout: this.customization.showLogout,
-        showPageNavigation: this.customization.showPageNavigation,
-        showAnalysisInfo: this.customization.showAnalysisInfo,
-        showReloadAnalysis: this.customization.showReloadAnalysis,
-        showStatusBar: this.customization.showStatusBar,
-        showToolBar: this.customization.showToolBar,
-        showUndoRedo: this.customization.showUndoRedo
-      }),
+      cust: this.fb.group(this.customization),
       filters: this.fb.group({}),
       marking: this.fb.group({})
     });
@@ -305,14 +184,14 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     this.openWebPlayer(this.url, this.path, this.customization);
   }
   onReadyCallback = (response, newApp) => {
-    this.app = newApp;
+    this.app.setApp(newApp);
     if (response.status === 'OK') {
       // The application is ready, meaning that the api is loaded and that the analysis path
       // is validated for the current session(anonymous or logged in user)
       this.openPage(this.page);
     } else {
       const errMsg = `Status not OK. ${response.status}: ${response.message}`;
-      console.log(errMsg);
+      console.error('onReadyCallback', errMsg, response);
       this.displayErrorMessage(errMsg);
     }
   }
@@ -363,10 +242,8 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     setTimeout(() => {
       const sfLoaderUrl = `${this.url}/spotfire/js-api/loader.js`;
       this.service.loadJs(sfLoaderUrl).subscribe(() => {
-        console.log(`Spotfire ${sfLoaderUrl} is LOADED !!!`, spotfire);
-        this.SPOTFIRE = spotfire;
-        console.log('SpotfireComponent', this.page, this.spot.nativeElement, this.customization);
-        if (this.SPOTFIRE) {
+        console.log(`Spotfire ${sfLoaderUrl} is LOADED !!!`, spotfire, this.page, this.spot.nativeElement, this.customization);
+        if (spotfire) {
           this.openPath(this.path);
         } else {
           this.displayErrorMessage('Spotfire is not loaded');
@@ -382,17 +259,11 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
     // Prepare Spotfire app with path/page/customization
     //
-    this.app = new this.SPOTFIRE.webPlayer.createApplication(
-      this.url,
-      this.customization,
-      path,
-      this.parameters,
-      this.reloadAnalysisInstance,
-      this.version,
-      this.onReadyCallback,
-      this.onCreateLoginElement);
-
+    this.app = new Application(this.url,
+      this.customization, path, this.parameters, this.reloadAnalysisInstance,
+      this.version, this.onReadyCallback, this.onCreateLoginElement);
   }
+
   private openPage(page: string) {
     console.log(`SpotfireWrapperComponent openPage(${page})`);
     this.page = page;
@@ -403,153 +274,115 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     }
 
     console.log('SpotfireService openDocument', this.spot.nativeElement.id, `cnf=${page}`, this.config, this.app, this.customization);
-    const doc = this.app.openDocument(this.spot.nativeElement.id, page, this.customization);
-    doc.getDocumentMetadata(g => this.metadata = new DocMetadata(g));
-    doc.getDocumentProperties(g => console.log('--> getDocumentProperties', g));
-    doc.getPages(g => console.log('--> getPages', g));
-    doc.getBookmarks(g => console.log('--> getBookmarks', g));
-    doc.getBookmarkNames(g => console.log('--> getBookmarkNames', g));
-    doc.getReports(g => console.log('--> getReports', g));
-    doc.getDocumentMetadata(g => console.log('--> getDocumentMetadata', g));
-    doc.getPages(f => this.pages = _.pluck(f, 'pageTitle'));
-    doc.getActivePage(g => {
-      console.log('--> getActivePage', g, this.form.getRawValue());
-      this.form.get('page').patchValue(g.pageTitle);
-    });
-    //   doc.exportActiveVisualAsImage(100, 200);
-    this.marking = doc.marking;
-    //  this.marking.getMarkingNames(g => console.log('SFINFO', 'getMarkingNames() = ', g));
-    this.data = doc.data;
-    if (this.isFilteringWiredUp) {
-      this.filtering = doc.filtering;
-      this.filtering.setFilters(this.filters, this.SPOTFIRE.webPlayer.filteringOperation.REPLACE);
-      this.loadFilters();
-      console.log('[SPOTFIRE] FILTER', this.filters, this.filtering);
+    // this.doc = this.app.openDocument(this.spot.nativeElement.id, page, this.customization);
 
-      // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
-      //
-      this.filter$.pipe(debounceTime(400), distinctUntilChanged()).subscribe(f => this.filteringEvent.emit(f));
+    this.document = this.app.getDocument(this.spot.nativeElement.id, page, this.customization);
+    this.document.getDocumentMetadata$().subscribe(g => this.metadata = g);
+    /*  this.document.getDocumentProperties$().subscribe(g => console.log('--> getDocumentProperties', g));
+      this.document.getPages$().subscribe(g => console.log('--> getPages', g));
+      this.document.getBookmarks$().subscribe(g => console.log('--> getBookmarks', g));
+      this.document.getBookmarkNames$().subscribe(g => console.log('--> getBookmarkNames', g));
+      this.document.getReports$().subscribe(g => console.log('--> getReports', g));
+      */
+    this.document.getPages$().subscribe(f => this.pages = _.pluck(f, 'pageTitle'));
+    this.document.getActivePage$().subscribe(g => this.form.get('page').patchValue(g.pageTitle));
+
+    //   this.doc.exportActiveVisualAsImage(100, 200);
+    // this.marking = this.document.marking;
+    //  this.marking.getMarkingNames(g => console.log('SFINFO', 'getMarkingNames() = ', g));
+    if (this.filters) {
+      this.document.filtering.setFilters(this.filters);
+      this.loadFilters();
+      console.log('[SPOTFIRE] FILTER', this.filters, this.document.getFiltering());
     }
 
     // get Table info
     //
-    this.data.getDataTables(tables => {
-      const fil: FormGroup = this.form.get('filters') as FormGroup;
-      const mar: FormGroup = this.form.get('marking') as FormGroup;
-      _.each(tables, table => {
-        const tname = table['dataTableName'];
-        this.data.getDataTable(tname, dataTable => dataTable.getDataColumns(d => {
-          console.log('SFINFO', `getDataTable(${tname})`, d);
+    this.document.data.getAllTables$().subscribe(tables => {
+      console.log('getAllTables$ returns', tables, this.filters, this.markingOn);
+      const toList = (g) => g.map(f => `'${f}'`).join(', '),
+        errTxt1 = '[spotfire-wrapper] Attribut marking-on contains unknwon',
+        errTxt2 = '[spotfire-wrapper] Possible values for',
+        fil: FormGroup = this.form.get('filters') as FormGroup,
+        mar: FormGroup = this.form.get('marking') as FormGroup,
+        tNames = _.keys(tables),
+        tdiff = this.markingOn ? _.difference(_.keys(this.markingOn), tNames) : [];
+      console.log('Tables : ', tNames, tdiff, fil);
 
-          //      this.dataTables[tname] = {};
-          // only get the values of String columns, and only those which have less than 21 possible values
-          _.each(d, r => {
-            if (r.dataType === 'String') {
-              const mak = _.find(this.markingOn, (__, k: string) => k === tname);
-              mar.addControl(tname, new FormControl(mak ? mak : null));
-              r.getDistinctValues(0, 25, vals => {
-                console.log('SFINFO', 'getDistinctValues', r, vals);
-                if (vals.count > 1 && vals.count < 20) {
-                  if (!this.dataTables[tname]) {
-                    this.dataTables[tname] = {};
-                  }
-                  const flt = _.find(this.filters, f => f.dataTableName === tname && f.dataColumnName === r.dataColumnName);
-                  if (!fil.contains(tname)) {
-                    fil.addControl(tname, new FormGroup({}));
-                  }
-                  const fil2: FormGroup = fil.get(tname) as FormGroup;
-                  fil2.addControl(r.dataColumnName, new FormControl(flt ? flt.filterSettings.values : null));
-                  this.dataTables[tname][r.dataColumnName] = vals.values;
-                }
-              });
+      if (_.size(tdiff) > 0) {
+        this.errorMessages.push(`${errTxt1} table names: ${toList(tdiff)}`);
+        this.possibleValues = `${errTxt2} table names are: ${toList(tNames)} `;
+        //        return;
+      }
+
+      // Update marking and filters fields
+      //
+      _.each(tables, (columns, tname) => {
+        mar.addControl(tname, new FormControl(this.markingOn ? this.markingOn[tname] : null));
+        if (!fil.contains(tname)) {
+          fil.addControl(tname, new FormGroup({}));
+        }
+        const frm: FormGroup = fil.get(tname) as FormGroup;
+        const cNames = _.keys(columns);
+        /*
+        console.log('Columns : ', cNames, this.markingOn);
+        if (this.markingOn) {
+          const cdiff = this.markingOn[tname] ? _.difference(this.markingOn[tname], cNames) : [];
+          console.log('Columns : ', cNames, cdiff);
+          if (_.size(cdiff) > 0) {
+            this.errorMessages.push(`${errTxt1} column names: ${toList(cdiff)}`);
+            this.possibleValues = `${errTxt2} columns of table ${tname} are: ${toList(cNames)} `;
+            //          return;
+          }
+        }
+        */
+
+        _.each(cNames, cname => {
+          const flt = _.findWhere(this.filters, { dataTableName: tname, dataColumnName: cname });
+          frm.addControl(cname, new FormControl(flt ? flt.filterSettings.values : null));
+        });
+      });
+
+      if (this.markingOn) {
+        this.document.marking.getMarkingNames$().subscribe(markingNames => _.each(markingNames, markingName => {
+          _.each(this.markingOn, (xolumns: Array<string>, tName: string) => {
+            if (xolumns.length === 1 && xolumns[0] === '*') {
+              xolumns = _.keys(tables[tName]);
             }
+            console.log(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(xolumns)}, ${this.maxRows})`);
+            this.document.marking.onChanged$(markingName, tName, xolumns, this.maxRows).subscribe(
+              f => {
+                console.log('----> updateMarking$', f);
+                this.updateMarking(tName, markingName, f);
+              });
           });
         }));
-      });
-    });
-    if (this.isMarkingWiredUp) {
-      this.marker$.subscribe(f => {
-        console.log('J\'emet', f);
-        this.markingEvent.emit(f);
-      });
-
-      // this.data.getActiveDataTable(d => console.log('openPage.getActiveDataTable', d));
-      if (this.markingOn) {
-        this.data.getDataTables(tables => {
-          const tNames = _.pluck(tables, 'dataTableName');
-          const tdiff = _.difference(_.keys(this.markingOn), tNames);
-
-          if (_.size(tdiff) > 0) {
-            this.errorMessages.push(`[spotfire-wrapper] Attribut marking-on contains unknwon table names: ${tdiff
-              .map(f => `'${f}'`).join(', ')}`);
-            this.possibleValues = `[spotfire-wrapper] Possible values for table names are: ${tNames
-              .map(f => `'${f}'`).join(', ')} `;
-            return;
-          }
-          _.each(tables, table => {
-            this.data.getDataTable(table['dataTableName'], dataTable => dataTable.getDataColumns(d => {
-              const cNames = _.pluck(d, 'dataColumnName');
-              const cdiff = _.difference(this.markingOn[table['dataTableName']], cNames);
-              if (_.size(cdiff) > 0) {
-                this.errorMessages.push(`[spotfire-wrapper] Attribut marking-on contains unknwon column names: ${cdiff
-                  .map(f => `'${f}'`).join(', ')}`);
-                this.possibleValues = `[spotfire-wrapper] Possible values for columns of table ${table['dataTableName']} are: ${cNames
-                  .map(f => `'${f}'`).join(', ')} `;
-                return;
-              }
-              this.marking.getMarkingNames(markingNames => _.each(markingNames, markingName => {
-                console.log('[MARKING] * MARKINGNAMES', markingNames);
-                _.each(this.markingOn, (columns: Array<string>, tName: string) => {
-                  console.log(`[MARKING] * register ${markingName}.${tName} `, columns);
-                  this.marking.onChanged(markingName, tName, columns, this.maxRows,
-                    res => this.updateMarking(tName, markingName, res));
-                });
-              }));
-            }));
-          });
-        });
-      } else {
-        // for each table
-        //
-        if (false) {
-          this.data.getDataTables(tables => {
-            console.log('[MARKING] openPage.getDataTables', tables);
-            _.each(tables, table => {
-              table['getDataColumns'](cols => console.log(` - openPage.getDataTable(${table['dataTableName']}).getDataColumns`, cols));
-              this.data.getDataTable(table['dataTableName'], dataTable => {
-
-                // for each column
-                //
-                dataTable.getDataColumns(d => {
-                  console.log(`${table['dataTableName']}.getDataColumns`, _.pluck(d, 'dataColumnName'));
-                  this.marking.getMarkingNames(markingNames => {
-                    // for each marking
-                    //
-                    _.each(markingNames, markingName => {
-                      const columns = ['Volume', 'DATE', 'BRAND_NM', 'CHNL_GROUP'];
-                      // const columns = _.pluck(d, 'dataColumnName');
-                      console.log(`[MARKING] register ${markingName}.${table['dataTableName']} `, columns);
-                      this.markedRows[markingName] = {};
-                      this.marking.onChanged(markingName, table['dataTableName'], columns, this.maxRows, res => {
-                        this.updateMarking(table['dataTableName'], markingName, res);
-                      });
-                    });
-                  });
-                });
-              });
-            });
-          });
-        }
       }
+      this.dataTables = tables;
+    });
+
+    if (this.isFilteringWiredUp) {
+      console.log('isFilteringWiredUp');
+      // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
+      //
+      this.filter$.pipe(tap(f => console.log('j\'emet filter', f)))
+        .subscribe(f => this.filteringEvent.emit(f));
+    }
+
+    if (this.isMarkingWiredUp) {
+      console.log('isMarkingWiredUp');
       // Subscribe to markingEvent and emit the result to the Output
       //
-      //      this.marker$.pipe(debounceTime(400), distinctUntilChanged()).subscribe(f => this.markingEvent.emit(f));
+      this.marker$.pipe(tap(f => console.log('j\'emet marking', f)))
+        .subscribe(f => this.markingEvent.emit(f));
     }
   }
 
   private loadFilters() {
-    const ALL = this.SPOTFIRE.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES;
-    console.log('SpotfireComponent loadFilters', this.filterSubject);
-    this.filtering.getAllModifiedFilterColumns(ALL, fs => this.filterSubject.next(fs));
+    if (this.isFilteringWiredUp) {
+      const ALL = spotfire.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES;
+      console.log('SpotfireComponent loadFilters', this.filterSubject);
+      this.document.getFiltering().getAllModifiedFilterColumns(ALL, fs => this.filterSubject.next(fs));
+    }
   }
 }

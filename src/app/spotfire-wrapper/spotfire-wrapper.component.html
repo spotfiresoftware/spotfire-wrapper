@@ -30,12 +30,12 @@
           </mat-select>
         </mat-form-field>
         <h3>Customization information:</h3>
-        <div class="flexrow" formGroupName="cust" style='zoom:0.8'>
+        <div class="flexrow" formGroupName="cust">
           <mat-checkbox *ngFor="let s of custLabels | keyvalue" [formControlName]="s.key">{{s.value}}</mat-checkbox>
         </div>
         <div formGroupName="filters" *ngIf="dataTables">
           <h3>Filters:</h3>
-          <div class="flexrow" style='zoom:0.8'>
+          <div class="flexrow">
             <span *ngFor="let table of dataTables | keyvalue" [formGroupName]="table.key">
               <mat-form-field *ngFor="let column of table.value | keyvalue">
                 <mat-select [placeholder]="table.key+'/'+column.key" multiple [formControlName]="column.key">
@@ -47,7 +47,7 @@
         </div>
         <div formGroupName="marking" *ngIf="dataTables">
           <h3>Marking:</h3>
-          <div class="flexrow" style='zoom:0.8'>
+          <div class="flexrow">
             <mat-form-field *ngFor="let table of dataTables | keyvalue">
               <mat-select [placeholder]="table.key" multiple [formControlName]="table.key">
                 <mat-option *ngFor="let column of table.value | keyvalue" [value]="column.key">{{column.key}}</mat-option>
@@ -57,7 +57,7 @@
         </div>
         <!--
         <pre>{{markingOn|json}}</pre>
-        <pre>{{dataTables|json}}</pre>
+       <pre>{{dataTables|json}}</pre>
         <pre>{{form.value|json}}</pre>
         -->
       </div>
