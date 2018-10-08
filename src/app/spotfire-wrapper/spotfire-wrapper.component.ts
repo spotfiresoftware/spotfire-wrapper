@@ -5,13 +5,12 @@ import {
 } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 
-import * as _ from 'underscore';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { LocalStorageService } from 'angular-2-local-storage';
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from './spotfire-customization';
-import { DocMetadata, Application, Data, Document, CUSTLABELS } from './spotfire-webplayer';
+import { DocMetadata, Application, Document, CUSTLABELS } from './spotfire-webplayer';
+import { PersistanceService } from './persitence.service';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
@@ -19,12 +18,9 @@ import { DocMetadata, Application, Data, Document, CUSTLABELS } from './spotfire
 declare let spotfire: any;
 
 @Component({
-  templateUrl: './spotfire-wrapper.component.html',
+  templateUrl: 'spotfire-wrapper.component.html',
   encapsulation: ViewEncapsulation.None,
-  styleUrls: [
-    '../my-theme.scss',
-    //    '../../../node_modules/@angular/material/prebuilt-themes/indigo-pink.css',
-    './spotfire-wrapper.component.scss']
+  styleUrls: ['../my-theme.scss', './spotfire-wrapper.component.scss']
 })
 
 export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
@@ -65,20 +61,14 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   view: any;
   longTime = false;
   custLabels = CUSTLABELS;
-  constructor(private localStorageService: LocalStorageService,
-    private fb: FormBuilder, private service: LazyLoadingLibraryService) {
+
+  constructor(
+    private storSvc: PersistanceService,
+    private fb: FormBuilder,
+    private lazySvc: LazyLoadingLibraryService) {
     setTimeout(() => this.longTime = true, 6000);
     console.log('SPOT URL', this.url, 'CUST=', this.customization, typeof this.filters, 'FILTERS=', this.filters);
   }
-  stopPropagation = (e) => e.stopPropagation();
-
-  private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
-  private get isFilteringWiredUp() { return this.filteringEvent.observers.length > 0; }
-  displayErrorMessage = (message: string) => {
-    console.error('ERROR:', message);
-    this.errorMessages.push(message);
-  }
-
   ngOnChanges(changes: SimpleChanges) {
     if (this.app && changes.page) {
       console.log('SpotfireWrapperComponent ngOnChanges', changes);
@@ -86,79 +76,52 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     }
   }
 
-  private setFlts() {
+  stopPropagation = (e) => e.stopPropagation();
+  private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
+  private get isFilteringWiredUp() { return this.filteringEvent.observers.length > 0; }
+  private displayErrorMessage = (message: string) => {
+    console.error('ERROR:', message);
+    this.errorMessages.push(message);
+  }
+
+
+  ngAfterViewInit() {
     if (typeof this.filters === 'string') {
       const allFilters: Array<SpotfireFilter> = [];
       JSON.parse(this.filters).forEach(m => allFilters.push(new SpotfireFilter(m)));
       this.filters = allFilters;
     }
-  }
-  update = (e) => {
-    this.edit = false;
-    e.stopPropagation();
-    const isD = (z) => this.form.get(z).dirty;
-    console.log('SpotfireWrapperComponent Update',
-      `u:${isD('url')}, p:${isD('path')}, a:${isD('page')}, f:${isD('filters')}, c:${isD('cust')}`);
 
-    if (isD('url')) {
-      this.openWebPlayer(this.form.get('url').value, this.form.get('path').value, _.omit(this.form.get('cust').value, v => !v));
-    } else if (isD('path') || isD('filters') || isD('cust')) {
-      this.path = isD('path') ? this.form.get('path').value : this.path;
-      this.page = isD('page') ? this.form.get('page').value : this.page;
-      this.customization = _.omit(this.form.get('cust').value, v => !v);
-      this.pages = [];
-      const allFilters: Array<SpotfireFilter> = [];
-      _.each(this.form.get('filters').value, (flt, dataTableName) => {
-        _.each(flt, (values, dataColumnName) => {
-          allFilters.push(new SpotfireFilter({
-            dataTableName: dataTableName,
-            dataColumnName: dataColumnName,
-            filterSettings: { values: values }
-          }));
-        });
-      });
-      this.filters = allFilters;
-      if (this.sid) {
-        this.localStorageService.set(`${this.sid}.url`, this.form.get('url').value);
-        this.localStorageService.set(`${this.sid}.path`, this.form.get('path').value);
-        this.localStorageService.set(`${this.sid}.page`, this.form.get('page').value);
-        this.localStorageService.set(`${this.sid}.cust`, this.customization);
-        this.localStorageService.set(`${this.sid}.flts`, this.filters);
-      }
-      this.openPath(this.path);
-    } else if (isD('page')) {
-      // if only page has changed, just refresh it
-      //
-      if (this.sid) {
-        this.localStorageService.set(`${this.sid}.page`, this.form.get('page').value);
-      }
-      this.openPage(this.form.get('page').value);
-    }
-  }
-  ngAfterViewInit() {
-    this.setFlts();
     if (this.sid) {
-      if (this.localStorageService.get(`${this.sid}.path`)) {
-        this.path = this.localStorageService.get(`${this.sid}.path`);
+      this.storSvc.pfx = this.sid;
+      if (this.storSvc.get('path')) {
+        this.path = this.storSvc.get('path');
       }
-      if (this.localStorageService.get(`${this.sid}.cust`)) {
-        this.customization = this.localStorageService.get(`${this.sid}.cust`);
+      if (this.storSvc.get('page')) {
+        this.page = this.storSvc.get('page');
       }
-      if (this.localStorageService.get(`${this.sid}.cust`)) {
-        this.customization = this.localStorageService.get(`${this.sid}.cust`);
+      if (this.storSvc.get('cust')) {
+        this.customization = this.storSvc.get('cust');
       }
-      if (this.localStorageService.get(`${this.sid}.flts`)) {
-        this.filters = this.localStorageService.get(`${this.sid}.flts`);
+      if (this.storSvc.get('flts')) {
+        this.filters = this.storSvc.get('flts');
+      }
+      if (this.storSvc.get('mark')) {
+        this.markingOn = this.storSvc.get('mark');
       }
     }
     console.log('-----> ', this.path, this.page, 'has markingEvent:', this.markingEvent.observers.length > 0);
-    console.log('-----> ', this.path, this.page, 'has filterEvent:', this.filteringEvent.observers.length > 0);
+    console.log('-----> ', this.path, this.page, 'has filterEvent :', this.filteringEvent.observers.length > 0);
 
 
     if (typeof this.customization === 'string') {
       this.customization = new SpotfireCustomization(JSON.parse(this.customization));
     } else {
       this.customization = new SpotfireCustomization(this.customization);
+    }
+
+    if (typeof this.markingOn === 'string') {
+      this.markingOn = JSON.parse(this.markingOn);
     }
 
     this.form = this.fb.group({
@@ -170,19 +133,70 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
       marking: this.fb.group({})
     });
 
-    if (typeof this.markingOn === 'string') {
-      this.markingOn = JSON.parse(this.markingOn);
-    }
     if (!this.url || this.url.length === 0) {
       // this.displayErrorMessage('URL is missing');
       console.log(`Url attribute is not provided, flip the dashboard and display form!`);
       this.edit = true;
       this.metadata = new DocMetadata();
-      return;
+    } else {
+      this.openWebPlayer(this.url, this.path, this.customization);
     }
-
-    this.openWebPlayer(this.url, this.path, this.customization);
   }
+
+  /**
+   * Get Spotfire JavaScript API (webPlayer) from url
+   *
+   * When a componenet is initiated or url is updated, it lazy loads the library
+   * Once loaded it opens the path.
+   *
+   * @param url the webPlayer server url
+   * @param path the path to the page
+   * @param custo the initial customization info
+   */
+  private openWebPlayer(url: string, path: string, custo: SpotfireCustomization) {
+    this.url = url;
+    this.path = path;
+    this.customization = custo;
+    console.log(`SpotfireWrapperComponent openWebPlayer(${url})`);
+
+    // lazy load the spotfire js API
+    //
+    setTimeout(() => {
+      const sfLoaderUrl = `${this.url}/spotfire/js-api/loader.js`;
+      this.lazySvc.loadJs(sfLoaderUrl).subscribe(() => {
+        console.log(`Spotfire ${sfLoaderUrl} is LOADED !!!`, spotfire, this.page, this.spot.nativeElement, this.customization);
+        if (spotfire) {
+          this.openPath(this.path);
+        } else {
+          this.displayErrorMessage('Spotfire is not loaded');
+        }
+      }, err => this.displayErrorMessage(err));
+    }, 1000);
+  }
+
+  /**
+   * Open the path using JavaScript API (spotfire.webPlayer.createApplication)
+   *
+   * @param path the absolute analysis path
+   */
+  private openPath(path: string) {
+    this.path = path;
+    console.log(`SpotfireWrapperComponent openPath(${path})`);
+    // Create a Unique ID for this Spotfire dashboard
+    //
+    this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
+    // Prepare Spotfire app with path/page/customization
+    //
+    this.app = new Application(this.url, this.customization, path,
+      this.parameters, this.reloadAnalysisInstance,
+      this.version, this.onReadyCallback, this.onCreateLoginElement);
+  }
+
+  /**
+   * Callback played once Spotfire API responds to Application creation
+   *
+   * Will open the target page
+   */
   onReadyCallback = (response, newApp) => {
     this.app.setApp(newApp);
     if (response.status === 'OK') {
@@ -196,6 +210,10 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     }
   }
 
+  /**
+   * Callback played if Spotfire requires some login
+   *
+   */
   onCreateLoginElement = () => {
     console.log('Creating the login element');
     // Optionally create and return a div to host the login button
@@ -203,67 +221,11 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     return null;
   }
 
-  private updateMarking = (tName, mName, res) => {
-    if (_.size(res) > 0) {
-      console.log('[MARKING] un marking change', tName, mName, res);
-      // update the marked row if partial selection
-      //
-      if (!this.markedRows[mName]) {
-        this.markedRows[mName] = {};
-      }
-      if (!this.markedRows[mName][tName]) {
-        this.markedRows[mName][tName] = res;
-      } else {
-        _.extend(this.markedRows[mName][tName], res);
-      }
-      //    console.log('[MARKING] on publie', this.markedRows);
-      this.markerSubject.next(this.markedRows);
-    } else if (this.markedRows[mName] && this.markedRows[mName][tName]) {
-      // remove the marked row if no marking
-      //
-      //      console.log('[MARKING] remove marking change', this.markedRows[mName][tName]);
-      delete this.markedRows[mName][tName];
-      if (_.size(this.markedRows[mName]) === 0) {
-        delete this.markedRows[mName];
-      }
-      this.markerSubject.next(this.markedRows);
-    } else {
-      console.log('[MARKING] rien a faire', tName, mName, res);
-    }
-  }
-  private openWebPlayer(url: string, path: string, custo: SpotfireCustomization) {
-    this.url = url;
-    this.path = path;
-    this.customization = custo;
-    console.log(`SpotfireWrapperComponent openWebPlayer(${url})`);
-
-    // lazy load the spotfire js API
-    //
-    setTimeout(() => {
-      const sfLoaderUrl = `${this.url}/spotfire/js-api/loader.js`;
-      this.service.loadJs(sfLoaderUrl).subscribe(() => {
-        console.log(`Spotfire ${sfLoaderUrl} is LOADED !!!`, spotfire, this.page, this.spot.nativeElement, this.customization);
-        if (spotfire) {
-          this.openPath(this.path);
-        } else {
-          this.displayErrorMessage('Spotfire is not loaded');
-        }
-      }, err => this.displayErrorMessage(err));
-    }, 1000);
-  }
-  private openPath(path: string) {
-    this.path = path;
-    console.log(`SpotfireWrapperComponent openPath(${path})`);
-    // Create a Unique ID for this Spotfire dashboard
-    //
-    this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
-    // Prepare Spotfire app with path/page/customization
-    //
-    this.app = new Application(this.url,
-      this.customization, path, this.parameters, this.reloadAnalysisInstance,
-      this.version, this.onReadyCallback, this.onCreateLoginElement);
-  }
-
+  /**
+   * Open the Document page
+   *
+   * @param page the document page that will be displayed
+   */
   private openPage(page: string) {
     console.log(`SpotfireWrapperComponent openPage(${page})`);
     this.page = page;
@@ -279,22 +241,23 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     this.document = this.app.getDocument(this.spot.nativeElement.id, page, this.customization);
     this.document.getDocumentMetadata$().subscribe(g => this.metadata = g);
     /*  this.document.getDocumentProperties$().subscribe(g => console.log('--> getDocumentProperties', g));
-      this.document.getPages$().subscribe(g => console.log('--> getPages', g));
       this.document.getBookmarks$().subscribe(g => console.log('--> getBookmarks', g));
       this.document.getBookmarkNames$().subscribe(g => console.log('--> getBookmarkNames', g));
       this.document.getReports$().subscribe(g => console.log('--> getReports', g));
       */
-    this.document.getPages$().subscribe(f => this.pages = _.pluck(f, 'pageTitle'));
+    this.document.getPages$().subscribe(g => this.pages = g);
     this.document.getActivePage$().subscribe(g => this.form.get('page').patchValue(g.pageTitle));
 
     //   this.doc.exportActiveVisualAsImage(100, 200);
     // this.marking = this.document.marking;
     //  this.marking.getMarkingNames(g => console.log('SFINFO', 'getMarkingNames() = ', g));
     if (this.filters) {
-      this.document.filtering.setFilters(this.filters);
+      this.document.filtering.set(this.filters);
       this.loadFilters();
-      console.log('[SPOTFIRE] FILTER', this.filters, this.document.getFiltering());
+      console.log('[SPOTFIRE] FILTER', this.filters);
     }
+
+    const difference = (a, b) => b.filter(i => a.indexOf(i) < 0);
 
     // get Table info
     //
@@ -305,11 +268,11 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
         errTxt2 = '[spotfire-wrapper] Possible values for',
         fil: FormGroup = this.form.get('filters') as FormGroup,
         mar: FormGroup = this.form.get('marking') as FormGroup,
-        tNames = _.keys(tables),
-        tdiff = this.markingOn ? _.difference(_.keys(this.markingOn), tNames) : [];
+        tNames = Object.keys(tables),
+        tdiff = this.markingOn ? difference(Object.keys(this.markingOn), tNames) : [];
       console.log('Tables : ', tNames, tdiff, fil);
 
-      if (_.size(tdiff) > 0) {
+      if (tdiff.length > 0) {
         this.errorMessages.push(`${errTxt1} table names: ${toList(tdiff)}`);
         this.possibleValues = `${errTxt2} table names are: ${toList(tNames)} `;
         //        return;
@@ -317,17 +280,18 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
       // Update marking and filters fields
       //
-      _.each(tables, (columns, tname) => {
+      Object.keys(tables).forEach(tname => {
+        const columns = tables[tname];
         mar.addControl(tname, new FormControl(this.markingOn ? this.markingOn[tname] : null));
         if (!fil.contains(tname)) {
           fil.addControl(tname, new FormGroup({}));
         }
         const frm: FormGroup = fil.get(tname) as FormGroup;
-        const cNames = _.keys(columns);
+        const cNames = Object.keys(columns);
         /*
         console.log('Columns : ', cNames, this.markingOn);
         if (this.markingOn) {
-          const cdiff = this.markingOn[tname] ? _.difference(this.markingOn[tname], cNames) : [];
+          const cdiff = this.markingOn[tname] ? this.difference(this.markingOn[tname], cNames) : [];
           console.log('Columns : ', cNames, cdiff);
           if (_.size(cdiff) > 0) {
             this.errorMessages.push(`${errTxt1} column names: ${toList(cdiff)}`);
@@ -337,17 +301,25 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
         }
         */
 
-        _.each(cNames, cname => {
-          const flt = _.findWhere(this.filters, { dataTableName: tname, dataColumnName: cname });
-          frm.addControl(cname, new FormControl(flt ? flt.filterSettings.values : null));
+        cNames.forEach(cname => {
+          let flt2 = null;
+          (this.filters as SpotfireFilter[] || []).some(element => {
+            if (element.dataTableName === tname && element.dataColumnName === cname) {
+              flt2 = element;
+              return true;
+            }
+          });
+          frm.addControl(cname, new FormControl(flt2 ? flt2.filterSettings.values : null));
         });
       });
 
       if (this.markingOn) {
-        this.document.marking.getMarkingNames$().subscribe(markingNames => _.each(markingNames, markingName => {
-          _.each(this.markingOn, (xolumns: Array<string>, tName: string) => {
+        this.document.marking.getMarkingNames$().subscribe(markingNames => markingNames.forEach(markingName => {
+          Object.keys(this.markingOn).forEach(key => {
+            let xolumns: Array<string> = this.markingOn[key];
+            const tName = key;
             if (xolumns.length === 1 && xolumns[0] === '*') {
-              xolumns = _.keys(tables[tName]);
+              xolumns = Object.keys(tables[tName]);
             }
             console.log(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(xolumns)}, ${this.maxRows})`);
             this.document.marking.onChanged$(markingName, tName, xolumns, this.maxRows).subscribe(
@@ -378,11 +350,103 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     }
   }
 
+  /**
+   * Callback method played when marking changes are detected.
+   *
+   * Will gather all marking and emit an event back to caller.
+   *
+   */
+  private updateMarking = (tName, mName, res) => {
+    if (Object.keys(res).length > 0) {
+      console.log('[MARKING] un marking change', tName, mName, res);
+      // update the marked row if partial selection
+      //
+      if (!this.markedRows[mName]) {
+        this.markedRows[mName] = {};
+      }
+      if (!this.markedRows[mName][tName]) {
+        this.markedRows[mName][tName] = res;
+      } else {
+        this.markedRows[mName][tName] = Object.assign(this.markedRows[mName][tName], res);
+      }
+      //    console.log('[MARKING] on publie', this.markedRows);
+      this.markerSubject.next(this.markedRows);
+    } else if (this.markedRows[mName] && this.markedRows[mName][tName]) {
+      // remove the marked row if no marking
+      //
+      //      console.log('[MARKING] remove marking change', this.markedRows[mName][tName]);
+      delete this.markedRows[mName][tName];
+      if (Object.keys(this.markedRows[mName]).length === 0) {
+        delete this.markedRows[mName];
+      }
+      this.markerSubject.next(this.markedRows);
+    } else {
+      console.log('[MARKING] rien a faire', tName, mName, res);
+    }
+  }
+
+  /**
+   * Emit to caller the filters
+   */
   private loadFilters() {
     if (this.isFilteringWiredUp) {
       const ALL = spotfire.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES;
       console.log('SpotfireComponent loadFilters', this.filterSubject);
       this.document.getFiltering().getAllModifiedFilterColumns(ALL, fs => this.filterSubject.next(fs));
+    }
+  }
+
+  /**
+   * When user hits Update button, depending on what settings are modified, call the right level of
+   * method to update the dashboard
+   */
+  update = (e) => {
+    this.edit = false;
+    e.stopPropagation();
+    const isD = (z) => this.form.get(z).dirty;
+    const onlyTrueProps = (t) => Object.keys(t).filter(key => t[key] === true)
+      .reduce((obj, key) => { obj[key] = t[key]; return obj; }, {});
+    console.log('SpotfireWrapperComponent Update', this.form.getRawValue(),
+      `u:${isD('url')}, p:${isD('path')}, a:${isD('page')}, c:${isD('cust')}, f:${isD('filters')}, m:${isD('marking')}`);
+    const cus = new SpotfireCustomization(this.form.get('cust').value);
+    if (isD('url')) {
+      this.openWebPlayer(this.form.get('url').value, this.form.get('path').value, cus);
+    } else if (isD('path') || isD('filters') || isD('marking') || isD('cust')) {
+      this.path = isD('path') ? this.form.get('path').value : this.path;
+      this.page = isD('page') ? this.form.get('page').value : this.page;
+      console.log('Marking : ', this.form.get('marking').value);
+      this.customization = cus;
+      this.pages = [];
+      const allFilters: Array<SpotfireFilter> = [];
+      if (this.form.get('filters').value) {
+        const fltersValue = this.form.get('filters').value;
+        Object.keys(fltersValue).forEach(dataTableName => {
+          const flt = fltersValue[dataTableName];
+          Object.keys(flt).forEach(dataColumnName =>
+            allFilters.push(new SpotfireFilter({
+              dataTableName: dataTableName,
+              dataColumnName: dataColumnName,
+              filterSettings: { values: flt[dataColumnName] }
+            })));
+        });
+      }
+      this.filters = allFilters;
+      if (this.sid) {
+        this.storSvc.set('url', this.form.get('url').value);
+        this.storSvc.set('path', this.form.get('path').value);
+        this.storSvc.set('page', this.form.get('page').value);
+        this.storSvc.set('cust', onlyTrueProps(this.customization));
+        this.storSvc.set('flts', this.filters);
+        this.storSvc.set('mark', this.markingOn);
+      }
+      this.openPath(this.path);
+    } else if (isD('page')) {
+      // if only page has changed, just refresh it
+      //
+      if (this.sid) {
+        this.storSvc.set('page', this.form.get('page').value);
+      }
+      this.openPage(this.form.get('page').value);
     }
   }
 }

@@ -18,5 +18,3 @@ $theme:   mat-light-theme($primary, $accent);
 @include mat-form-field-theme($theme);
 @include mat-input-theme($theme);
 @include mat-select-theme($theme);
-@include mat-toolbar-theme($theme);
-@include mat-toolbar-theme($theme);

@@ -19,14 +19,13 @@ export class SpotfireCustomization {
   showToolBar = false;
   showUndoRedo = false;
   constructor(vars?: {}) {
-    console.log('New SpotfireCustomization', vars);
     if (vars) {
       Object.keys(vars).forEach(key => this[key] = vars[key]);
     }
   }
 }
 
-export class SpotfireFilterSetting {
+class SpotfireFilterSetting {
   values: Array<string> = [];
   lowValue = null;
   highValue = null;
@@ -34,7 +33,6 @@ export class SpotfireFilterSetting {
   searchPattern = null;
   hierarchyPaths = [];
   constructor(vars?: {}) {
-    console.log('New SpotfireFilterSetting', vars);
     if (vars) {
       Object.keys(vars).forEach(key => this[key] = vars[key]);
     }
@@ -48,7 +46,6 @@ export class SpotfireFilter {
   filterType: string;
   filterSettings: Array<SpotfireFilterSetting>;
   constructor(vars?: {}) {
-    console.log('New SpotfireFilter', vars);
     if (vars) {
       Object.keys(vars).forEach(key => this[key] = vars[key]);
     }

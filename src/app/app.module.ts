@@ -7,20 +7,15 @@ import { SpotfireWrapperComponent } from './spotfire-wrapper/spotfire-wrapper.co
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   MatFormFieldModule, MatInputModule, MatButtonModule,
-  MatSelectModule, MatToolbarModule, MatCheckboxModule
+  MatSelectModule, MatCheckboxModule
 } from '@angular/material';
-import { LocalStorageModule } from 'angular-2-local-storage';
 
-const matModules = [MatSelectModule, MatToolbarModule, MatCheckboxModule,
+const matModules = [MatSelectModule, MatCheckboxModule,
   MatButtonModule, MatFormFieldModule, MatInputModule];
 @NgModule({
   declarations: [SpotfireWrapperComponent],
   imports: [BrowserModule, NoopAnimationsModule, FormsModule, ReactiveFormsModule,
-    matModules,
-    LocalStorageModule.withConfig({
-      prefix: 'sw', // stands for Spotfire Wrapper
-      storageType: 'localStorage'
-    })],
+    matModules],
   entryComponents: [SpotfireWrapperComponent]
 })
 export class AppModule {

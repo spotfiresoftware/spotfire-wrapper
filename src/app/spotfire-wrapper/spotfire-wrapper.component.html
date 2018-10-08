@@ -1,8 +1,8 @@
 <div class="flip-container" [class.flipit]="edit">
   <div class="flipper">
     <div *ngIf="form && metadata && dataTables" class="back" [formGroup]="form" (click)="stopPropagation($event)">
-      <mat-toolbar color="primary" fxLayout="row" fxLayoutAlign="space-between center">
-        <h3 style='flex-grow:1'>{{metadata.title||'Add a new dashboard'}}</h3>
+      <div class="header">
+        <h3 class="mat-heading" style='flex-grow:1'>{{metadata.title||'Add a new dashboard'}}</h3>
         <div style='display:flex; flex-direction:column; align-items:flex-end'>
           <span class="mat-caption" *ngIf="metadata.size">
             {{metadata.size|number:'1.1-1'}}{{metadata.sizeUnit}}
@@ -14,8 +14,7 @@
             {{metadata.lastModified|date:'medium'}}
           </span>
         </div>
-
-      </mat-toolbar>
+      </div>
       <div class="flexcol">
         <h4 *ngIf="metadata.description">{{metadata.description}}</h4>
         <mat-form-field>
@@ -57,7 +56,7 @@
         </div>
         <!--
         <pre>{{markingOn|json}}</pre>
-       <pre>{{dataTables|json}}</pre>
+        <pre>{{dataTables|json}}</pre>
         <pre>{{form.value|json}}</pre>
         -->
       </div>
@@ -68,8 +67,8 @@
       </div>
     </div>
     <div class="front">
-      <div style='font-size:10px; color:red; font-family:monospace' *ngIf="errorMessages.length > 0">{{errorMessages|json}}</div>
-      <div style='font-size:10px; color:red; font-family:monospace' *ngIf="possibleValues">{{possibleValues}}</div>
+      <div class="err" *ngIf="errorMessages.length > 0">{{errorMessages|json}}</div>
+      <div class="err" *ngIf="possibleValues">{{possibleValues}}</div>
       <div style='height:100%' #spot></div>
       <div class="editdiv"> {{url}}/{{path}}/{{page}}
         <span (click)='edit=!edit;stopPropagation($event)'>edit</span>

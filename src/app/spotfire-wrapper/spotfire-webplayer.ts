@@ -1,9 +1,8 @@
 
 // Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
-import { Observable, forkJoin, of as observableOf } from 'rxjs';
+import { Observable, forkJoin, of as observableOf, zip } from 'rxjs';
 import { SpotfireCustomization } from './spotfire-customization';
-import { mergeMap, tap, pluck, map, filter } from 'rxjs/operators';
-import * as _ from 'underscore';
+import { mergeMap, tap, pluck, map } from 'rxjs/operators';
 
 declare let spotfire: any;
 
@@ -28,33 +27,29 @@ export const CUSTLABELS = {
 
 class PageState { index: number; pageTitle: string; }
 class DataTable { dataTableName: string; }
-class DataColumn { dataColumnName: string; dataTable: string; dataType: string; }
+class DataColumn { dataColumnName: string; dataTableName: string; dataType: string; values: {}; }
 class DistinctValues { count: number; values: Array<string>; }
 
 
-function doCall<T>(obj, meth: string, ...args): Observable<T> {
+function doCall<T>(obj, m: string, ...a): Observable<T> {
   return Observable.create(observer => {
-    // console.log('[OBS]', 'doCall obj=', obj, ', meth=', meth, ', arg=', args, typeof obj);
-    if (typeof obj[meth] !== 'function') {
-      console.error('[OBS]', 'pas de ', meth, 'sur ', obj);
-      observer.error(`pas de function ${meth} sur l'objet ${JSON.stringify(obj)}`);
-    }
-    if (!obj) {
-      observer.error(`No object to call ${meth} `);
+    // console.log('[OBS]', 'doCall obj=', obj, ', m=', m, ', arg=', args, typeof obj);
+    if (typeof obj[m] !== 'function' || !obj) {
+      console.error('[OBS]', 'pas de ', m, 'sur ', obj);
+      observer.error(`pas de function ${m} sur l'objet ${JSON.stringify(obj)}`);
     }
     try {
-      // console.log('[OBS]', `Call ${meth}(${args.join(',')})`, args.length);
+      // console.log('[OBS]', `Call ${m}(${args.join(',')})`, args.length);
       const p = (g: T) => { observer.next(g); observer.complete(); };
       const q = (g: T) => observer.next(g);
-      switch (args.length) {
-        case 0: return meth.startsWith('on') ? obj[meth]((g: T) => q(g)) : obj[meth]((g: T) => p(g));
-        case 1: return meth.startsWith('on') ? obj[meth](args[0], (g: T) => q(g)) : obj[meth](args[0], (g: T) => p(g));
-        case 2: return meth.startsWith('on') ? obj[meth](args[0], args[1], (g: T) => q(g)) : obj[meth](args[0], args[1], (g: T) => p(g));
-        case 3: return meth.startsWith('on') ? obj[meth](args[0], args[1], args[2], (g: T) => q(g)) :
-          obj[meth](args[0], args[1], args[2], (g: T) => p(g));
-        case 4: return meth.startsWith('on') ? obj[meth](args[0], args[1], args[2], args[3], (g: T) => q(g)) :
-          obj[meth](args[0], args[1], args[2], args[3], (g: T) => p(g));
-        default: observer.error(`Call ${meth}(${args.join(',')}) pb arguments`);
+      const s = m.startsWith('on');
+      switch (a.length) {
+        case 0: return s ? obj[m](q) : obj[m](p);
+        case 1: return s ? obj[m](a[0], q) : obj[m](a[0], p);
+        case 2: return s ? obj[m](a[0], a[1], q) : obj[m](a[0], a[1], p);
+        case 3: return s ? obj[m](a[0], a[1], a[2], q) : obj[m](a[0], a[1], a[2], p);
+        case 4: return s ? obj[m](a[0], a[1], a[2], a[3], q) : obj[m](a[0], a[1], a[2], a[3], p);
+        default: observer.error(`Call ${m}(${a.join(',')}) pb arguments`);
       }
     } catch (err) {
       console.warn('[OBS]', 'doCall erreur: ', err);
@@ -65,7 +60,6 @@ function doCall<T>(obj, meth: string, ...args): Observable<T> {
 
 export class Application {
   private _app;
-  private doc: Document;
   constructor(
     public url: string,
     public customization: SpotfireCustomization | string,
@@ -75,19 +69,13 @@ export class Application {
     public version: string,
     public onReadyCallback,
     public onCreateLoginElement) {
-    console.log('Application constructor');
     this._app = new spotfire.webPlayer.createApplication(this.url,
       this.customization, this.path, this.parameters, this.reloadAnalysisInstance,
       this.version, this.onReadyCallback, this.onCreateLoginElement);
   }
   setApp = (a) => this._app = a;
-
-  public getDocument(id, page, custo?): Document {
-    custo = custo ? custo : this.customization;
-    console.log('Application getDocument');
-    this.doc = new Document(this._app, id, page, this.customization);
-    return this.doc;
-  }
+  // getDocument(id, page, customization)
+  getDocument = (id, p, c?): Document => new Document(this._app, id, p, c ? c : this.customization)
 }
 
 export class Document {
@@ -102,32 +90,29 @@ export class Document {
     this.data = new Data(this._doc.data);
   }
   private do = <T>(m) => doCall<T>(this._doc, m);
-  public getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(
+  getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(
     map(g => new DocMetadata(g)))
-  public getDocumentProperties$ = () => this.do('getDocumentProperties');
-  public getPages$ = () => this.do('getPages');
-  public getBookmarks$ = () => this.do('getBookmarks');
-  public getBookmarkNames$ = () => this.do('getBookmarkNames');
-  public getReports$ = () => this.do('getReports');
-  public getActivePage$ = () => this.do<PageState>('getActivePage');
+  getPages$ = () => this.do('getPages').pipe(map(m => Object.keys(m).map(f => m[f].pageTitle)));
+  // getDocumentProperties$ = () => this.do('getDocumentProperties');
+  // getBookmarks$ = () => this.do('getBookmarks');
+  // getBookmarkNames$ = () => this.do('getBookmarkNames');
+  // getReports$ = () => this.do('getReports');
+  getActivePage$ = () => this.do<PageState>('getActivePage');
 
-  public getMarking = () => this.marking._marking;
-  public getFiltering = () => this.filtering._filtering;
-  public getData = () => this.data._data;
+  // getMarking = () => this.marking._marking;
+  getFiltering = () => this.filtering._filtering;
+  // getData = () => this.data._data;
 }
 
 class Marking {
   constructor(public _marking) { }
-  public getMarkingNames$ = () => doCall(this._marking, 'getMarkingNames');
-  public onChanged$ = (m, t, c, n) => doCall(this._marking, 'onChanged', m, t, c, n);
+  getMarkingNames$ = () => doCall<string[]>(this._marking, 'getMarkingNames').pipe(tap(f => console.log('getMarkingNames returns', f)));
+  onChanged$ = (m, t, c, n) => doCall(this._marking, 'onChanged', m, t, c, n);
 }
 
 class Filtering {
   constructor(public _filtering) { }
-  public setFilters = (flts) => {
-    console.log(' ----> FILTER:', flts, spotfire.webPlayer.filteringOperation.REPLACE);
-    this._filtering.setFilters(flts, spotfire.webPlayer.filteringOperation.REPLACE);
-  }
+  set = (flts) => this._filtering.setFilters(flts, spotfire.webPlayer.filteringOperation.REPLACE);
 }
 
 export class Data {
@@ -140,12 +125,12 @@ export class Data {
 
   private getDataColumns$ = (t) => doCall<DataColumn[]>(t, 'getDataColumns').pipe(
     mergeMap(columns => {
-      console.log('[OBS]', 'getDataColumns', columns, _.where(columns, { dataType: 'String' }));
       const obs = [];
-      _.each(_.where(columns, { dataType: 'String' }), col => {
-        // _.each(columns, col => {
-        obs.push(observableOf(col));
-        obs.push(this.getDistinctValues$(col).pipe(tap(g => col.values = g)));
+      columns.forEach((col: DataColumn) => {
+        if (col.dataType === 'String') {
+          obs.push(zip(...[observableOf(col), this.getDistinctValues$(col)],
+            (a: DataColumn, b) => ({ colName: a.dataColumnName, tabName: a.dataTableName, vals: b })));
+        }
       });
       return forkJoin(obs);
     }))
@@ -156,22 +141,18 @@ export class Data {
     //  tap(g => console.log('[OBS]', 'DistinctValues filtres', g)),
     pluck('values'))
 
-  public getAllTables$ = () => this.getDataTables$().pipe(
+  getAllTables$ = () => this.getDataTables$().pipe(
     mergeMap(tables => {
       const obs = [];
-      _.each(tables, table => obs.push(this.getDataTable$(table.dataTableName)));
+      tables.forEach(table => obs.push(this.getDataTable$(table.dataTableName)));
       return forkJoin(obs);
     }), map(tables => {
+      console.log('getAllTables RAW:', tables[0]);
       const dataTables = {};
-      _.each(tables, columns => {
-        // chunk columns, as columns is [ DataColumn, values, DataColumn, values, ...]
-        // whunk will do : [ [ DataColumn, values ], [ DataColumn, values ], ...]
-        _.each(_.chunk(columns, 2), ([datacol, values]) => {
-          const tname = datacol['dataTableName'];
-          const cname = datacol['dataColumnName'];
-          if (!dataTables[tname]) { dataTables[tname] = {}; }
-          dataTables[tname][cname] = values;
-        });
+      tables[0].forEach(columns => {
+        const tname = columns['tabName'];
+        if (!dataTables[tname]) { dataTables[tname] = {}; }
+        dataTables[tname][columns['colName']] = columns.vals;
       });
       return dataTables;
     }))
@@ -180,7 +161,6 @@ export class Data {
 export class DocMetadata {
   size: number;
   sizeUnit = 'B';
-
   contentSize: number;
   created: Date;
   description: string;

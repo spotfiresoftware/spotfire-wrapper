@@ -24,10 +24,8 @@
     "@angular/platform-browser": "^6.1.9",
     "@angular/platform-browser-dynamic": "^6.1.8",
     "@webcomponents/custom-elements": "^1.2.1",
-    "angular-2-local-storage": "^2.0.0",
     "core-js": "^2.5.4",
     "rxjs": "^6.3.3",
-    "underscore": "^1.9.1",
     "zone.js": "^0.8.26"
   },
   "devDependencies": {

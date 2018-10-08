@@ -31,6 +31,11 @@
     z-index: 2;
     /* for firefox 31 */
     transform: rotateY(0deg);
+    .err {
+      font-size:10px;
+      color:red; 
+      font-family:monospace
+    }
   }
 
   /* back, initially hidden pane */
@@ -63,6 +68,13 @@ display:flex; flex-flow:column;
   }
 }
 $blu:#0081cb;
+.header {
+  background:$blu;
+  color:white;
+  padding:5px 30px;
+  display:flex;
+  align-items: center;
+}
 .editdiv {
   font-size:9px; color:#666; float:right; padding:10px;
   font-family: monospace;
