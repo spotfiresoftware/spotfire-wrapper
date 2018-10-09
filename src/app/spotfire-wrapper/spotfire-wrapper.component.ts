@@ -94,6 +94,9 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
 
     if (this.sid) {
       this.storSvc.pfx = this.sid;
+      if (this.storSvc.get('url')) {
+        this.url = this.storSvc.get('url');
+      }
       if (this.storSvc.get('path')) {
         this.path = this.storSvc.get('path');
       }
@@ -110,8 +113,8 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
         this.markingOn = this.storSvc.get('mark');
       }
     }
-    console.log('-----> ', this.path, this.page, 'has markingEvent:', this.markingEvent.observers.length > 0);
-    console.log('-----> ', this.path, this.page, 'has filterEvent :', this.filteringEvent.observers.length > 0);
+    console.log('-----> ', this.path, this.page, this.sid, 'has markingEvent:', this.markingEvent.observers.length > 0);
+    console.log('-----> ', this.path, this.page, this.sid, 'has filterEvent :', this.filteringEvent.observers.length > 0);
 
 
     if (typeof this.customization === 'string') {
@@ -127,7 +130,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     this.form = this.fb.group({
       url: [this.url, Validators.required],
       path: [this.path, Validators.required],
-      page: this.fb.control({ value: this.page, disabled: !this.url }),
+      page: this.fb.control({ value: this.page, disabled: false }), // !this.url }),
       cust: this.fb.group(this.customization),
       filters: this.fb.group({}),
       marking: this.fb.group({})
@@ -181,7 +184,7 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
    */
   private openPath(path: string) {
     this.path = path;
-    console.log(`SpotfireWrapperComponent openPath(${path})`);
+    console.log(`SpotfireWrapperComponent openPath(${path})`, this.sid);
     // Create a Unique ID for this Spotfire dashboard
     //
     this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
