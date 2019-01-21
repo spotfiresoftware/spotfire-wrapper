@@ -1,8 +1,6 @@
 # Spotfire-wrapper
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.0.0.
-
-## Development server
+This project intends to provide a new HTML tag called Spotfire dashboard
 
 Run `ng serve --port=4204` for a dev server. Navigate to `http://localhost:4204/`. The app will automatically reload if you change any of the source files.
 
@@ -27,4 +25,6 @@ Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protrac
 
 ## Further help
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+Use Slack or email to send me any question or concern you have 
+
+Nicolas Deroche - part of **The Great Tibco Company**
