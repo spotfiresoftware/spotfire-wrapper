@@ -25,11 +25,12 @@
   <pre style='border:2px dashed green; background-color:black; color:white; padding:20px;'>
 &lt;<span style='color:yellow'>spotfire-wrapper</span>
     url="https://spotfire-next.cloud.tibco.com"
-    path="Samples/Introduction to Spotfire" 
-    <span style='color:red'>marking-on</span>='{"Supermarket Stock excel - Sheet1": [ "Type", "Jan", "Aug"]}' &gt;
+    path="Samples/Sales and Marketing" 
+    page="Effect of promotions"
+    <span style='color:red'>marking-on</span>='{"SalesAndMarketing": [ "BCG segmentation", "State"]}' &gt;
 &lt;/<span style='color:yellow'>spotfire-wrapper</span>&gt;
 
-&lt;<span style='color:yellow'>script</span> src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"&gt;&lt;/<span style='color:yellow'>script</span>&gt;</pre>
+&lt;<span style='color:yellow'>script</span> src="./spotfire-wrapper.js" type="text/javascript"&gt;&lt;/<span style='color:yellow'>script</span>&gt;</pre>
 
   <div style='float:left; width:50%'>
     <code>marking-on</code> attribute lists, for each table, the column names that will be used by the marking
@@ -50,12 +51,13 @@
 
   <spotfire-wrapper sid="sid2" id="id1" 
                     url="https://spotfire-next.cloud.tibco.com" 
-                    path="Samples/Introduction to Spotfire"
+                    path="Samples/Sales and Marketing"
+                    page="Effect of promotions"
                     customization='{"showAuthor":true, "showFilterPanel":true, "showToolBar":true}' 
-                    marking-on='{"Supermarket Stock excel - Sheet1": [ "Type", "Jan", "Aug" ]}'
+                    marking-on='{"SalesAndMarketing": [ "BCG segmentation", "State" ]}'
                     ></spotfire-wrapper>
 
-  <script src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js" type="text/javascript"></script>
+  <script src="./spotfire-wrapper.js" type="text/javascript"></script>
 
   <script>
     const spotfireWrapper = document.getElementById("id1");

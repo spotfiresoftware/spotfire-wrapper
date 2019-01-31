@@ -14,8 +14,7 @@ const matModules = [MatSelectModule, MatCheckboxModule,
   MatButtonModule, MatFormFieldModule, MatInputModule];
 @NgModule({
   declarations: [SpotfireWrapperComponent],
-  imports: [BrowserModule, NoopAnimationsModule, FormsModule, ReactiveFormsModule,
-    matModules],
+  imports: [BrowserModule, NoopAnimationsModule, FormsModule, ReactiveFormsModule, matModules],
   entryComponents: [SpotfireWrapperComponent]
 })
 export class AppModule {

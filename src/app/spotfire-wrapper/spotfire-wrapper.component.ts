@@ -243,7 +243,12 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     console.log('SpotfireService openDocument', this.spot.nativeElement.id, `cnf=${page}`, this.config, this.app, this.customization);
     // this.doc = this.app.openDocument(this.spot.nativeElement.id, page, this.customization);
 
+    // Here is the call to 'spotfire.webPlayer.createApplication'
+    //
     this.document = this.app.getDocument(this.spot.nativeElement.id, page, this.customization);
+
+    // then subscribe to observables to retrieves some info about the document
+    //
     this.document.getDocumentMetadata$().subscribe(g => this.metadata = g);
     /*  this.document.getDocumentProperties$().subscribe(g => console.log('--> getDocumentProperties', g));
       this.document.getBookmarks$().subscribe(g => console.log('--> getBookmarks', g));

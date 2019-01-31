@@ -75,7 +75,7 @@ export class Application {
   }
   setApp = (a) => this._app = a;
   // getDocument(id, page, customization)
-  getDocument = (id, p, c?): Document => new Document(this._app, id, p, c ? c : this.customization)
+  getDocument = (id, p, c?): Document => new Document(this._app, id, p, c ? c : this.customization);
 }
 
 export class Document {
