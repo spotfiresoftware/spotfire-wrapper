@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist",
+            "outputPath": "dist/app",
             "index": "demo/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -108,6 +108,39 @@
             "exclude": [
               "**/node_modules/**"
             ]
+          }
+        }
+      }
+    },
+    "container": {
+      "root": "",
+      "sourceRoot": "src_container",
+      "projectType": "application",
+      "prefix": "app",
+      "schematics": {
+        "@schematics/angular:component": {
+          "styleext": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/container_app",
+            "index": "src_container/index.html",
+            "main": "src_container/main.ts",
+            "polyfills": "src_container/polyfills.ts",
+            "tsConfig": "src_container/tsconfig.app.json",
+            "assets": [],
+            "styles": [],
+            "scripts": []
+          },
+          "configurations": {}
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "container:build"
           }
         }
       }

@@ -12,8 +12,19 @@ Run `npm run build:elements` to build the single js that will need to be moved t
 
 After building the JS library (step above), run `cd demo` and `cp ../elements/spotfire-wrapper.js .`
 
+Start a HTTP server : 
+> `python -m SimpleHTTPServer 4404` 
 
-Start a HTTP server : `python -m SimpleHTTPServer 4404` and navigale to `http://localhost:4404`, to see how to easily display a Spotfire dashboard
+and navigale to `http://localhost:4404`, to see how to easily display a Spotfire dashboard in raw html pages.
+
+## Use inside an other Angular app:
+To see how to include the AngularElement <spotfire-wrapper> inside another Angluar application (called here `container`):
+Run:
+> `ng serve container --port=4205 --open`
+
+It will open a browser to the container app (`http://localhost:4205/`).
+
+Note: the container code has been extremely simplified. Check the src_container/main.ts file
 
 ## Running unit tests
 
