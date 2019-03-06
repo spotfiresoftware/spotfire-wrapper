@@ -70,9 +70,9 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     console.log('SPOT URL', this.url, 'CUST=', this.customization, typeof this.filters, 'FILTERS=', this.filters);
   }
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.url) {
+    if (changes.url && changes.url.previousValue !== undefined && !changes.url.isFirstChange()) {
       this.openWebPlayer(changes.url.currentValue, changes.path.currentValue, new SpotfireCustomization());
-    } else if (this.app && changes.page) {
+    } else if (this.app && changes.page && changes.page.previousValue !== undefined && !changes.page.isFirstChange()) {
       this.openPage(changes.page.currentValue);
     }
   }
