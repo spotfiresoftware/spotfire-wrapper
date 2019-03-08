@@ -1,6 +1,6 @@
 // Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
 import {
-  Component, Input, AfterViewInit, EventEmitter, ViewChild,
+  Component, Input, EventEmitter, ViewChild,
   ElementRef, Output, OnChanges, SimpleChanges, ViewEncapsulation
 } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
@@ -23,7 +23,7 @@ declare let spotfire: any;
   styleUrls: ['../my-theme.scss', './spotfire-wrapper.component.scss']
 })
 
-export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
+export class SpotfireWrapperComponent implements OnChanges {
   @Input() url: string;
   @Input() page: string;
   @Input() sid: string;
@@ -67,13 +67,41 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
     private fb: FormBuilder,
     private lazySvc: LazyLoadingLibraryService) {
     setTimeout(() => this.longTime = true, 6000);
-    console.log('SPOT URL', this.url, 'CUST=', this.customization, typeof this.filters, 'FILTERS=', this.filters);
   }
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.url && changes.url.previousValue !== undefined && !changes.url.isFirstChange()) {
-      this.openWebPlayer(changes.url.currentValue, changes.path.currentValue, new SpotfireCustomization());
-    } else if (this.app && changes.page && changes.page.previousValue !== undefined && !changes.page.isFirstChange()) {
-      this.openPage(changes.page.currentValue);
+    if (typeof this.customization === 'string') {
+      this.customization = new SpotfireCustomization(JSON.parse(this.customization));
+    } else {
+      this.customization = new SpotfireCustomization(this.customization);
+    }
+
+    if (typeof this.filters === 'string') {
+      const allFilters: Array<SpotfireFilter> = [];
+      JSON.parse(this.filters).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
+      this.filters = allFilters;
+    }
+    if (typeof this.markingOn === 'string') {
+      this.markingOn = JSON.parse(this.markingOn);
+    }
+
+    this.form = this.fb.group({
+      url: [this.url, Validators.required],
+      path: [this.path, Validators.required],
+      page: this.fb.control({ value: this.page, disabled: false }), // !this.url }),
+      cust: this.fb.group(this.customization as SpotfireCustomization),
+      filters: this.fb.group({}),
+      marking: this.fb.group({})
+    });
+
+    console.log('ngOnChange', changes, this.url, this.path, this.customization, this.maxRows, this.app);
+    if (changes.url) {
+      this.openWebPlayer(this.url, this.path, this.customization);
+    } else if (this.app && changes.page) {
+      this.openPage(this.page);
+    } else {
+      console.log(`The Url attribute is not provided, flip the dashboard and display form!`);
+      this.edit = true;
+      this.metadata = new DocMetadata();
     }
   }
 
@@ -83,68 +111,6 @@ export class SpotfireWrapperComponent implements AfterViewInit, OnChanges {
   private displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
     this.errorMessages.push(message);
-  }
-
-
-  ngAfterViewInit() {
-    if (typeof this.filters === 'string') {
-      const allFilters: Array<SpotfireFilter> = [];
-      JSON.parse(this.filters).forEach(m => allFilters.push(new SpotfireFilter(m)));
-      this.filters = allFilters;
-    }
-
-    if (this.sid) {
-      this.storSvc.pfx = this.sid;
-      if (this.storSvc.get('url')) {
-        this.url = this.storSvc.get('url');
-      }
-      if (this.storSvc.get('path')) {
-        this.path = this.storSvc.get('path');
-      }
-      if (this.storSvc.get('page')) {
-        this.page = this.storSvc.get('page');
-      }
-      if (this.storSvc.get('cust')) {
-        this.customization = this.storSvc.get('cust');
-      }
-      if (this.storSvc.get('flts')) {
-        this.filters = this.storSvc.get('flts');
-      }
-      if (this.storSvc.get('mark')) {
-        this.markingOn = this.storSvc.get('mark');
-      }
-    }
-    console.log('-----> ', this.path, this.page, this.sid, 'has markingEvent:', this.markingEvent.observers.length > 0);
-    console.log('-----> ', this.path, this.page, this.sid, 'has filterEvent :', this.filteringEvent.observers.length > 0);
-
-
-    if (typeof this.customization === 'string') {
-      this.customization = new SpotfireCustomization(JSON.parse(this.customization));
-    } else {
-      this.customization = new SpotfireCustomization(this.customization);
-    }
-
-    if (typeof this.markingOn === 'string') {
-      this.markingOn = JSON.parse(this.markingOn);
-    }
-
-    this.form = this.fb.group({
-      url: [this.url, Validators.required],
-      path: [this.path, Validators.required],
-      page: this.fb.control({ value: this.page, disabled: false }), // !this.url }),
-      cust: this.fb.group(this.customization),
-      filters: this.fb.group({}),
-      marking: this.fb.group({})
-    });
-
-    if (!this.url || this.url.length === 0) {
-      // this.displayErrorMessage('URL is missing');
-      console.log(`Url attribute is not provided, flip the dashboard and display form!`);
-      this.edit = true;
-      this.metadata = new DocMetadata();
-    } else {
-      this.openWebPlayer(this.url, this.path, this.customization);
-    }
   }
 
   /**
