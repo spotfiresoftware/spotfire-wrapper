@@ -3,7 +3,7 @@ import { NgModule, Injector } from '@angular/core';
 import { createCustomElement } from '@angular/elements';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { SpotfireWrapperComponent } from './spotfire-wrapper/spotfire-wrapper.component';
+import { SpotfireWebplayerComponent } from 'projects/spotfire-webplayer/src/public_api';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   MatFormFieldModule, MatInputModule, MatButtonModule,
@@ -13,14 +13,14 @@ import {
 const matModules = [MatSelectModule, MatCheckboxModule,
   MatButtonModule, MatFormFieldModule, MatInputModule];
 @NgModule({
-  declarations: [SpotfireWrapperComponent],
+  declarations: [SpotfireWebplayerComponent],
   imports: [BrowserModule, NoopAnimationsModule, FormsModule, ReactiveFormsModule, matModules],
-  entryComponents: [SpotfireWrapperComponent]
+  entryComponents: [SpotfireWebplayerComponent]
 })
 export class AppModule {
   constructor(private injector: Injector) { }
   ngDoBootstrap() {
-    const el = createCustomElement(SpotfireWrapperComponent, { injector: this.injector });
+    const el = createCustomElement(SpotfireWebplayerComponent, { injector: this.injector });
     customElements.define('spotfire-wrapper', el);
   }
 }

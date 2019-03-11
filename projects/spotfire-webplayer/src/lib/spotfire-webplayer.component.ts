@@ -18,12 +18,12 @@ import { PersistanceService } from './persitence.service';
 declare let spotfire: any;
 
 @Component({
-  templateUrl: 'spotfire-wrapper.component.html',
+  templateUrl: 'spotfire-webplayer.component.html',
   encapsulation: ViewEncapsulation.None,
-  styleUrls: ['../my-theme.scss', './spotfire-wrapper.component.scss']
+  styleUrls: ['./my-theme.scss', './spotfire-webplayer.component.scss']
 })
 
-export class SpotfireWrapperComponent implements OnChanges {
+export class SpotfireWebplayerComponent implements OnChanges {
   @Input() url: string;
   @Input() page: string;
   @Input() sid: string;
@@ -128,7 +128,7 @@ export class SpotfireWrapperComponent implements OnChanges {
     this.url = url;
     this.path = path;
     this.customization = custo;
-    console.log(`SpotfireWrapperComponent openWebPlayer(${url})`);
+    console.log(`SpotfireWebplayerComponent openWebPlayer(${url})`);
 
     // lazy load the spotfire js API
     //
@@ -152,7 +152,7 @@ export class SpotfireWrapperComponent implements OnChanges {
    */
   private openPath(path: string) {
     this.path = path;
-    console.log(`SpotfireWrapperComponent openPath(${path})`, this.sid);
+    console.log(`SpotfireWebplayerComponent openPath(${path})`, this.sid);
     // Create a Unique ID for this Spotfire dashboard
     //
     this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
@@ -198,7 +198,7 @@ export class SpotfireWrapperComponent implements OnChanges {
    * @param page the document page that will be displayed
    */
   private openPage(page: string) {
-    console.log(`SpotfireWrapperComponent openPage(${page})`);
+    console.log(`SpotfireWebplayerComponent openPage(${page})`);
     this.page = page;
     // Ask Spotfire library to display this path/page (with optional customization)
     //
@@ -382,7 +382,7 @@ export class SpotfireWrapperComponent implements OnChanges {
     const isD = (z) => this.form.get(z).dirty;
     const onlyTrueProps = (t) => Object.keys(t).filter(key => t[key] === true)
       .reduce((obj, key) => { obj[key] = t[key]; return obj; }, {});
-    console.log('SpotfireWrapperComponent Update', this.form.getRawValue(),
+    console.log('SpotfireWebplayerComponent Update', this.form.getRawValue(),
       `u:${isD('url')}, p:${isD('path')}, a:${isD('page')}, c:${isD('cust')}, f:${isD('filters')}, m:${isD('marking')}`);
     const cus = new SpotfireCustomization(this.form.get('cust').value);
     if (isD('url')) {

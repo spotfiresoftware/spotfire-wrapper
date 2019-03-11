@@ -144,6 +144,41 @@
           }
         }
       }
+    },
+    "spotfire-webplayer": {
+      "root": "projects/spotfire-webplayer",
+      "sourceRoot": "projects/spotfire-webplayer/src",
+      "projectType": "library",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/spotfire-webplayer/tsconfig.lib.json",
+            "project": "projects/spotfire-webplayer/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/spotfire-webplayer/src/test.ts",
+            "tsConfig": "projects/spotfire-webplayer/tsconfig.spec.json",
+            "karmaConfig": "projects/spotfire-webplayer/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/spotfire-webplayer/tsconfig.lib.json",
+              "projects/spotfire-webplayer/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }
   },
   "defaultProject": "spotfire-wrapper",

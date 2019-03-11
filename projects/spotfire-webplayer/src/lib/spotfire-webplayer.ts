@@ -31,79 +31,6 @@ class DataColumn { dataColumnName: string; dataTableName: string; dataType: stri
 class DistinctValues { count: number; values: Array<string>; }
 
 
-function doCall<T>(obj, m: string, ...a): Observable<T> {
-  return Observable.create(observer => {
-    // console.log('[OBS]', 'doCall obj=', obj, ', m=', m, ', arg=', args, typeof obj);
-    if (typeof obj[m] !== 'function' || !obj) {
-      console.error('[OBS]', 'pas de ', m, 'sur ', obj);
-      observer.error(`pas de function ${m} sur l'objet ${JSON.stringify(obj)}`);
-    }
-    try {
-      // console.log('[OBS]', `Call ${m}(${args.join(',')})`, args.length);
-      const p = (g: T) => { observer.next(g); observer.complete(); };
-      const q = (g: T) => observer.next(g);
-      const s = m.startsWith('on');
-      switch (a.length) {
-        case 0: return s ? obj[m](q) : obj[m](p);
-        case 1: return s ? obj[m](a[0], q) : obj[m](a[0], p);
-        case 2: return s ? obj[m](a[0], a[1], q) : obj[m](a[0], a[1], p);
-        case 3: return s ? obj[m](a[0], a[1], a[2], q) : obj[m](a[0], a[1], a[2], p);
-        case 4: return s ? obj[m](a[0], a[1], a[2], a[3], q) : obj[m](a[0], a[1], a[2], a[3], p);
-        default: observer.error(`Call ${m}(${a.join(',')}) pb arguments`);
-      }
-    } catch (err) {
-      console.warn('[OBS]', 'doCall erreur: ', err);
-      observer.error(err);
-    }
-  });
-}
-
-export class Application {
-  private _app;
-  constructor(
-    public url: string,
-    public customization: SpotfireCustomization | string,
-    public path: string,
-    public parameters: string,
-    public reloadAnalysisInstance: boolean,
-    public version: string,
-    public onReadyCallback,
-    public onCreateLoginElement) {
-    this._app = new spotfire.webPlayer.createApplication(this.url,
-      this.customization, this.path, this.parameters, this.reloadAnalysisInstance,
-      this.version, this.onReadyCallback, this.onCreateLoginElement);
-  }
-  setApp = (a) => this._app = a;
-  // getDocument(id, page, customization)
-  getDocument = (id, p, c?): Document => new Document(this._app, id, p, c ? c : this.customization);
-}
-
-export class Document {
-  private _doc;
-  marking: Marking;
-  filtering: Filtering;
-  data: Data;
-  constructor(app, id, page, custo) {
-    this._doc = app.openDocument(id, page, custo);
-    this.marking = new Marking(this._doc.marking);
-    this.filtering = new Filtering(this._doc.filtering);
-    this.data = new Data(this._doc.data);
-  }
-  private do = <T>(m) => doCall<T>(this._doc, m);
-  getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(
-    map(g => new DocMetadata(g)))
-  getPages$ = () => this.do('getPages').pipe(map(m => Object.keys(m).map(f => m[f].pageTitle)));
-  // getDocumentProperties$ = () => this.do('getDocumentProperties');
-  // getBookmarks$ = () => this.do('getBookmarks');
-  // getBookmarkNames$ = () => this.do('getBookmarkNames');
-  // getReports$ = () => this.do('getReports');
-  getActivePage$ = () => this.do<PageState>('getActivePage');
-
-  // getMarking = () => this.marking._marking;
-  getFiltering = () => this.filtering._filtering;
-  // getData = () => this.data._data;
-}
-
 class Marking {
   constructor(public _marking) { }
   getMarkingNames$ = () => doCall<string[]>(this._marking, 'getMarkingNames').pipe(tap(f => console.log('getMarkingNames returns', f)));
@@ -185,4 +112,78 @@ export class DocMetadata {
       this.title = p.title;
     }
   }
+}
+
+export class Document {
+  private _doc;
+  marking: Marking;
+  filtering: Filtering;
+  data: Data;
+  constructor(app, id, page, custo) {
+    this._doc = app.openDocument(id, page, custo);
+    this.marking = new Marking(this._doc.marking);
+    this.filtering = new Filtering(this._doc.filtering);
+    this.data = new Data(this._doc.data);
+  }
+  private do = <T>(m) => doCall<T>(this._doc, m);
+  getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(
+    map(g => new DocMetadata(g)))
+  getPages$ = () => this.do('getPages').pipe(map(m => Object.keys(m).map(f => m[f].pageTitle)));
+  // getDocumentProperties$ = () => this.do('getDocumentProperties');
+  // getBookmarks$ = () => this.do('getBookmarks');
+  // getBookmarkNames$ = () => this.do('getBookmarkNames');
+  // getReports$ = () => this.do('getReports');
+  getActivePage$ = () => this.do<PageState>('getActivePage');
+
+  // getMarking = () => this.marking._marking;
+  getFiltering = () => this.filtering._filtering;
+  // getData = () => this.data._data;
+}
+
+
+function doCall<T>(obj, m: string, ...a): Observable<T> {
+  return Observable.create(observer => {
+    // console.log('[OBS]', 'doCall obj=', obj, ', m=', m, ', arg=', args, typeof obj);
+    if (typeof obj[m] !== 'function' || !obj) {
+      console.error('[OBS]', 'pas de ', m, 'sur ', obj);
+      observer.error(`pas de function ${m} sur l'objet ${JSON.stringify(obj)}`);
+    }
+    try {
+      // console.log('[OBS]', `Call ${m}(${args.join(',')})`, args.length);
+      const p = (g: T) => { observer.next(g); observer.complete(); };
+      const q = (g: T) => observer.next(g);
+      const s = m.startsWith('on');
+      switch (a.length) {
+        case 0: return s ? obj[m](q) : obj[m](p);
+        case 1: return s ? obj[m](a[0], q) : obj[m](a[0], p);
+        case 2: return s ? obj[m](a[0], a[1], q) : obj[m](a[0], a[1], p);
+        case 3: return s ? obj[m](a[0], a[1], a[2], q) : obj[m](a[0], a[1], a[2], p);
+        case 4: return s ? obj[m](a[0], a[1], a[2], a[3], q) : obj[m](a[0], a[1], a[2], a[3], p);
+        default: observer.error(`Call ${m}(${a.join(',')}) pb arguments`);
+      }
+    } catch (err) {
+      console.warn('[OBS]', 'doCall erreur: ', err);
+      observer.error(err);
+    }
+  });
+}
+
+export class Application {
+  private _app;
+  constructor(
+    public url: string,
+    public customization: SpotfireCustomization | string,
+    public path: string,
+    public parameters: string,
+    public reloadAnalysisInstance: boolean,
+    public version: string,
+    public onReadyCallback,
+    public onCreateLoginElement) {
+    this._app = new spotfire.webPlayer.createApplication(this.url,
+      this.customization, this.path, this.parameters, this.reloadAnalysisInstance,
+      this.version, this.onReadyCallback, this.onCreateLoginElement);
+  }
+  setApp = (a) => this._app = a;
+  // getDocument(id, page, customization)
+  getDocument = (id, p, c?): Document => new Document(this._app, id, p, c ? c : this.customization);
 }
