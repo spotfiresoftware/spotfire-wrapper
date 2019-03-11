@@ -18,7 +18,7 @@ import { PersistanceService } from './persitence.service';
 declare let spotfire: any;
 
 @Component({
-  templateUrl: 'spotfire-webplayer.component.html',
+  template: `<div style='height:100%; border:3px dotted green; border-radius:8px' #spot></div>`,
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./my-theme.scss', './spotfire-webplayer.component.scss']
 })
@@ -63,12 +63,14 @@ export class SpotfireWebplayerComponent implements OnChanges {
   custLabels = CUSTLABELS;
 
   constructor(
-    private storSvc: PersistanceService,
-    private fb: FormBuilder,
-    private lazySvc: LazyLoadingLibraryService) {
+    public fb: FormBuilder,
+    public lazySvc: LazyLoadingLibraryService,
+    public storSvc: PersistanceService) {
+    console.log('[SPOTFIRE-WEBPLAYER] Welcome !');
     setTimeout(() => this.longTime = true, 6000);
   }
   ngOnChanges(changes: SimpleChanges) {
+    console.log('[SPOTFIRE-WEBPLAYER] ngOnChanges', changes);
     if (typeof this.customization === 'string') {
       this.customization = new SpotfireCustomization(JSON.parse(this.customization));
     } else {

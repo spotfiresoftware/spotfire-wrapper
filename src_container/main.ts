@@ -2,6 +2,18 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';
 
+
+import { SpotfireWebplayerComponent } from 'spotfire-webplayer';
+import { ReactiveFormsModule } from '@angular/forms';
+
+@Component({
+  selector: 'my-spotfire',
+  template: `Override spotfire-wrapper template : <div class="mys" #spot></div>`,
+  styles: [`div.mys { width:600px; height:400px; background:#ebebeb; border-radius: 20px}`]
+})
+class MySpotfireWrapperComponent extends SpotfireWebplayerComponent { }
+
+
 @Component({
   selector: 'app-root',
   template: `
@@ -10,15 +22,33 @@ import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';
   Below, we use the <code>&lt;spotfire-wrapper&gt;</code> tag which is an AngularElement
   defined in the external javascript library <code>spotfire-library.js</code> loaded by index.html:
 </p>
+
+<h1>Default Template:</h1>
+<spotfire-webplayer
+  [url]="url"
+  [path]="path"
+  [page]="page"
+  [customization]="cust">
+</spotfire-webplayer>
+
+<h1>Template with configuration on back of the card:</h1>
 <spotfire-wrapper
   [url]="url"
   [path]="path"
   [page]="page"
-  [maxRows]="24"
+  [customization]="cust">
+</spotfire-wrapper>
+
+<h1>Specific template (with marking):</h1>
+<my-spotfire
+  [url]="url"
+  [path]="path"
+  [page]="page"
   [customization]="cust"
   [markingOn]="mon"
   (markingEvent)="onMarking($event)">
-</spotfire-wrapper>
+</my-spotfire>
+
 <pre>{{markedData|json}}</pre>
 `})
 class AppComponent {
@@ -32,15 +62,16 @@ class AppComponent {
 
   onMarking = (e: Event) => {
     console.log('[SRC_CONTAINER] onMarking returns', e);
-    this.markedData = e['detail'];
+    this.markedData = e;
   }
 }
 
 @NgModule({
   bootstrap: [AppComponent],
-  imports: [BrowserModule],
+  imports: [BrowserModule, ReactiveFormsModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  declarations: [AppComponent]
+  declarations: [AppComponent, MySpotfireWrapperComponent],
+  entryComponents: [MySpotfireWrapperComponent]
 })
 class AppModule { }
 

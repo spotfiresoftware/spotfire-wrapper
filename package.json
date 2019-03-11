@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build spotfire-webplayer && (cd dist/spotfire-webplayer/ ; npm pack) && npm install dist/spotfire-webplayer/spotfire-webplayer-0.0.1.tgz && npm run build:elements",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",

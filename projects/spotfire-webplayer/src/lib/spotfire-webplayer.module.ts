@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { SpotfireWebplayerComponent } from './spotfire-webplayer.component';
+import { SpotfireWrapperComponent } from './spotfire-wrapper.component';
+
 import {
   MatFormFieldModule, MatInputModule, MatButtonModule,
   MatSelectModule, MatToolbarModule, MatCheckboxModule
@@ -16,7 +18,8 @@ import { FlexLayoutModule } from '@angular/flex-layout';
   imports: [CommonModule, ReactiveFormsModule, FlexLayoutModule,
     MatSelectModule, MatToolbarModule, MatCheckboxModule,
     MatButtonModule, MatFormFieldModule, MatInputModule],
-  declarations: [SpotfireWebplayerComponent],
-  exports: [SpotfireWebplayerComponent]
+  declarations: [SpotfireWebplayerComponent, SpotfireWrapperComponent],
+  entryComponents: [SpotfireWebplayerComponent, SpotfireWrapperComponent],
+  exports: [SpotfireWebplayerComponent, SpotfireWrapperComponent]
 })
-export class SpotfireModule { }
+export class SpotfireWebplayerModule { }

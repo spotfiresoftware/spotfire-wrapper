@@ -66,9 +66,7 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
-            "styles": [
-              "styles.css"
-            ],
+            "styles": [],
             "scripts": [],
             "assets": [
               "src/favicon.ico",
@@ -149,7 +147,7 @@
       "root": "projects/spotfire-webplayer",
       "sourceRoot": "projects/spotfire-webplayer/src",
       "projectType": "library",
-      "prefix": "lib",
+      "prefix": "tibco",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",

@@ -3,24 +3,17 @@ import { NgModule, Injector } from '@angular/core';
 import { createCustomElement } from '@angular/elements';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { SpotfireWebplayerComponent } from 'projects/spotfire-webplayer/src/public_api';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
-  MatFormFieldModule, MatInputModule, MatButtonModule,
-  MatSelectModule, MatCheckboxModule
-} from '@angular/material';
+  SpotfireWebplayerModule,
+  SpotfireWrapperComponent as SwComp,
+  SpotfireWebplayerComponent as SpComp
+} from 'spotfire-webplayer';
 
-const matModules = [MatSelectModule, MatCheckboxModule,
-  MatButtonModule, MatFormFieldModule, MatInputModule];
-@NgModule({
-  declarations: [SpotfireWebplayerComponent],
-  imports: [BrowserModule, NoopAnimationsModule, FormsModule, ReactiveFormsModule, matModules],
-  entryComponents: [SpotfireWebplayerComponent]
-})
+@NgModule({ imports: [BrowserModule, NoopAnimationsModule, SpotfireWebplayerModule] })
 export class AppModule {
-  constructor(private injector: Injector) { }
+  constructor(private i: Injector) { }
   ngDoBootstrap() {
-    const el = createCustomElement(SpotfireWebplayerComponent, { injector: this.injector });
-    customElements.define('spotfire-wrapper', el);
+    customElements.define('spotfire-wrapper', createCustomElement(SwComp, { injector: this.i }));
+    customElements.define('spotfire-webplayer', createCustomElement(SpComp, { injector: this.i }));
   }
 }
