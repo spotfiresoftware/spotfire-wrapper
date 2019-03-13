@@ -1,6 +1,9 @@
 #!/bin/sh -e
 
-if [ ! -x aws ]
+which aws 
+aws=$?
+
+if [ $aws -eq 1 ]
 then
     echo "CAUTION: aws is not installed on this machine. Artefacts won't be published at https://s3-us-west-2.amazonaws.com/cec-library/"
     export WORKSPACE=$(PWD)
@@ -31,7 +34,7 @@ title "[spotfire-webplayer] Build the NPM package:"
 title "[spotfire-webplayer] Create the NPM package:"
 (cd dist/spotfire-webplayer/ ; npm pack)
 
-if [ -x aws ]
+if [ $aws -eq 0 ]
 then
     title "[spotfire-webplayer] Copy the NPM package to S3:"
     aws s3 cp ${WORKSPACE}/dist/spotfire-webplayer/spotfire-webplayer-0.0.1.tgz s3://cec-library/
@@ -43,7 +46,7 @@ npm install https://s3-us-west-2.amazonaws.com/cec-library/spotfire-webplayer-0.
 title "[spotfire-wrapper] Build the WebElement Library:"
 npm run build:elements
 
-if [ -x aws ]
+if [ $aws -eq 0 ]
 then
     title "[spotfire-wrapper] Copy the WebElement Library to S3:"
     aws s3 cp elements/spotfire-wrapper.js s3://cec-library/
