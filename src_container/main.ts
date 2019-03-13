@@ -5,6 +5,7 @@ import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';
 
 import { SpotfireWebplayerComponent } from 'spotfire-webplayer';
 import { ReactiveFormsModule } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'my-spotfire',
@@ -22,12 +23,17 @@ class MySpotfireWrapperComponent extends SpotfireWebplayerComponent { }
   Below, we use the <code>&lt;spotfire-wrapper&gt;</code> tag which is an AngularElement
   defined in the external javascript library <code>spotfire-library.js</code> loaded by index.html:
 </p>
-
 <h1>Default Template:</h1>
+<label>
+  Page:
+  <select [formControl]="name">
+    <option *ngFor="let p of pages" [value]="p">{{p}}</option>
+  </select>
+</label>
 <spotfire-webplayer
   [url]="url"
   [path]="path"
-  [page]="page"
+  [page]="name.value"
   [customization]="cust">
 </spotfire-webplayer>
 
@@ -59,6 +65,8 @@ class AppComponent {
   mon = { SalesAndMarketing: ['*'] };
   title = 'container';
   markedData = {};
+  name = new FormControl('Sales performance');
+  pages = [ 'Sales performance' , 'Territory analysis' , 'Effect of promotions'];
 
   onMarking = (e: Event) => {
     console.log('[SRC_CONTAINER] onMarking returns', e);
