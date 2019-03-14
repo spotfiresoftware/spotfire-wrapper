@@ -34,6 +34,7 @@ export class SpotfireWebplayerComponent implements OnChanges {
   @Input() config = {};
   @Input() markingOn: { string: Array<String> };
   @Input() maxRows = 10;
+  @Input() parameters = '';
   @ViewChild('spot', { read: ElementRef }) spot: ElementRef;
   errorMessages = [];
   possibleValues = '';
@@ -43,7 +44,6 @@ export class SpotfireWebplayerComponent implements OnChanges {
   pages = [];
 
   // Optional configuration block
-  private parameters = '';
   private reloadAnalysisInstance = false;
   private document: Document;
   private app: Application;
@@ -69,8 +69,8 @@ export class SpotfireWebplayerComponent implements OnChanges {
     console.log('[SPOTFIRE-WEBPLAYER] Welcome !');
     setTimeout(() => this.longTime = true, 6000);
   }
-  ngOnChanges(changes: SimpleChanges) {
-    console.log('[SPOTFIRE-WEBPLAYER] ngOnChanges', changes);
+  display(changes?: SimpleChanges) {
+    console.log('[SPOTFIRE-WEBPLAYER] Display', changes);
     if (typeof this.customization === 'string') {
       this.customization = new SpotfireCustomization(JSON.parse(this.customization));
     } else {
@@ -96,7 +96,7 @@ export class SpotfireWebplayerComponent implements OnChanges {
     });
 
     console.log('ngOnChange', changes, this.url, this.path, this.customization, this.maxRows, this.app);
-    if (changes.url) {
+    if (!changes || changes.url) {
       this.openWebPlayer(this.url, this.path, this.customization);
     } else if (this.app && changes.page) {
       this.openPage(this.page);
@@ -106,6 +106,7 @@ export class SpotfireWebplayerComponent implements OnChanges {
       this.metadata = new DocMetadata();
     }
   }
+  ngOnChanges = (changes: SimpleChanges) => this.display(changes);
 
   stopPropagation = (e) => e.stopPropagation();
   private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
@@ -160,7 +161,7 @@ export class SpotfireWebplayerComponent implements OnChanges {
     this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
     // Prepare Spotfire app with path/page/customization
     //
-    this.app = new Application(this.url, this.customization, path,
+    this.app = new Application(this.url, this.customization, this.path,
       this.parameters, this.reloadAnalysisInstance,
       this.version, this.onReadyCallback, this.onCreateLoginElement);
   }
@@ -229,7 +230,7 @@ export class SpotfireWebplayerComponent implements OnChanges {
     //   this.doc.exportActiveVisualAsImage(100, 200);
     // this.marking = this.document.marking;
     //  this.marking.getMarkingNames(g => console.log('SFINFO', 'getMarkingNames() = ', g));
-    if (this.filters) {
+    if (this.filters && this.document.filtering) {
       this.document.filtering.set(this.filters);
       this.loadFilters();
       console.log('[SPOTFIRE] FILTER', this.filters);
@@ -291,7 +292,7 @@ export class SpotfireWebplayerComponent implements OnChanges {
         });
       });
 
-      if (this.markingOn) {
+      if (this.markingOn && this.document.marking) {
         this.document.marking.getMarkingNames$().subscribe(markingNames => markingNames.forEach(markingName => {
           Object.keys(this.markingOn).forEach(key => {
             let xolumns: Array<string> = this.markingOn[key];
