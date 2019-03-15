@@ -45,8 +45,14 @@ else
     cp -f ${WORKSPACE}/dist/spotfire-webplayer/spotfire-webplayer-0.0.1.tgz ${WORKSPACE}/build/
 fi
 
-title "[spotfire-wrapper] Install the NPM package from S3 (used to build the WebElement Library):"
-npm install https://s3-us-west-2.amazonaws.com/cec-library/spotfire-webplayer-0.0.1.tgz
+if [ $aws -eq 0 ]
+then
+    title "[spotfire-wrapper] Install the NPM package from S3 (used to build the WebElement Library):"
+    npm install https://s3-us-west-2.amazonaws.com/cec-library/spotfire-webplayer-0.0.1.tgz
+else
+    title "[spotfire-wrapper] Install the NPM package from local path (used to build the WebElement Library):"
+    npm install ${WORKSPACE}/build/spotfire-webplayer-0.0.1.tgz
+fi
 
 title "[spotfire-wrapper] Build the WebElement Library:"
 npm run build:elements

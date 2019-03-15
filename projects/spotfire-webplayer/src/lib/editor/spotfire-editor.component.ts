@@ -7,7 +7,7 @@ import { PersistanceService } from '../persitence.service';
 import { SpotfireViewerComponent } from '../viewer/spotfire-viewer.component';
 
 @Component({
-    template: `<div style='height:100%; border:3px dotted green; border-radius:8px' #spot></div>`,
+    templateUrl: 'spotfire-editor.component.html',
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./my-theme.scss', './spotfire-editor.component.scss']
 })

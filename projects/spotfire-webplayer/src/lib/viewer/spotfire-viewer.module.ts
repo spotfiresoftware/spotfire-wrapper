@@ -11,4 +11,4 @@ import { SpotfireViewerComponent } from './spotfire-viewer.component';
   entryComponents: [SpotfireViewerComponent],
   exports: [SpotfireViewerComponent, CommonModule]
 })
-export class SpotfireWebplayerModule { }
+export class SpotfireViewerModule { }

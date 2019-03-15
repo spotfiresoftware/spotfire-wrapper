@@ -17,26 +17,30 @@
 
   </h1>
 
-  <p><b>spotfire-wrapper</b> is a static JavaScript library that provides a new HTML tag : <code>&lt;spotfire-wrapper&gt;</code></p>
+  <p><b>spotfire-wrapper</b> is a static JavaScript library that provides two new HTML tags : 
+    <ul>
+      <li><code>&lt;spotfire-viewer&gt;</code> : to display a dashboard</li>
+      <li><code>&lt;spotfire-editor&gt;</code> : to display a dashboard with a backpanel to configure it</li>
+    </ul>
 
   <p>To insert a spotfire dashboard into a web page, user needs to add the following HTML code:</p>
   <h2>Code:</h2>
   <pre style='border:2px dashed green; background-color:black; color:white; padding:20px;'>
-    &lt;<span style='color:yellow'>spotfire-wrapper</span>
+    &lt;<span style='color:yellow'>spotfire-viewer</span>
     <span style='color:red'>url</span>="https://spotfire-next.cloud.tibco.com"
     <span style='color:red'>path</span>="Samples/Introduction to Spotfire" 
     <span style='color:red'>page</span>="Example dashboard" 
-    &lt;/<span style='color:yellow'>spotfire-wrapper</span>&gt;
+    &lt;/<span style='color:yellow'>spotfire-viewer</span>&gt;
     
     &lt;<span style='color:yellow'>script</span> src="./spotfire-wrapper.js" &gt;&lt;/<span style='color:yellow'>script</span>&gt;</pre>
 
   <p><u>Note:</u> An account to access the Spotfire&trade; instance defined in <code>url</code> is required (here : <a
        href="https://spotfire-next.cloud.tibco.com" target="_otherframe">https://spotfire-next.cloud.tibco.com</a></p>
   <h2>Result:</h2>
-  <spotfire-wrapper 
+  <spotfire-viewer 
     url="https://spotfire-next.cloud.tibco.com" 
     path="Samples/Introduction to Spotfire"
-    page="Example dashboard"></spotfire-wrapper>
+    page="Example dashboard"></spotfire-viewer>
 
   <script src="./spotfire-wrapper.js"></script>
 

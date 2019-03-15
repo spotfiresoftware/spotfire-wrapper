@@ -9,11 +9,11 @@ import {
   MatSelectModule, MatToolbarModule, MatCheckboxModule
 } from '@angular/material';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { SpotfireWebplayerModule } from '../viewer/spotfire-viewer.module';
+import { SpotfireViewerModule } from '../viewer/spotfire-viewer.module';
 import { SpotfireEditorComponent } from './spotfire-editor.component';
 
 @NgModule({
-  imports: [SpotfireWebplayerModule, ReactiveFormsModule, FlexLayoutModule,
+  imports: [SpotfireViewerModule, ReactiveFormsModule, FlexLayoutModule,
     MatSelectModule, MatToolbarModule, MatCheckboxModule,
     MatButtonModule, MatFormFieldModule, MatInputModule],
   declarations: [SpotfireEditorComponent],

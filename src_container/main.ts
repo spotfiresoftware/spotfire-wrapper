@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';
 
 
-import { SpotfireWebplayerComponent } from 'spotfire-webplayer';
+import { SpotfireViewerComponent } from 'spotfire-webplayer';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormControl } from '@angular/forms';
 
@@ -12,7 +12,7 @@ import { FormControl } from '@angular/forms';
   template: `Override spotfire-wrapper template : <div class="mys" #spot></div>`,
   styles: [`div.mys { width:600px; height:400px; background:#ebebeb; border-radius: 20px}`]
 })
-class MySpotfireWrapperComponent extends SpotfireWebplayerComponent { }
+class MySpotfireWrapperComponent extends SpotfireViewerComponent { }
 
 
 @Component({
@@ -20,7 +20,7 @@ class MySpotfireWrapperComponent extends SpotfireWebplayerComponent { }
   template: `
 <h2>Angular app "{{title|uppercase}}"</h2>
 <p> {{url}} et {{path}}
-  Below, we use the <code>&lt;spotfire-wrapper&gt;</code> tag which is an AngularElement
+  Below, we use the <code>&lt;spotfire-viewer&gt;</code> and <code>&lt;spotfire-editor&gt;</code> tags which are AngularElement
   defined in the external javascript library <code>spotfire-library.js</code> loaded by index.html:
 </p>
 <h1>Default Template:</h1>
@@ -30,20 +30,20 @@ class MySpotfireWrapperComponent extends SpotfireWebplayerComponent { }
     <option *ngFor="let p of pages" [value]="p">{{p}}</option>
   </select>
 </label>
-<spotfire-webplayer
+<spotfire-viewer
   [url]="url"
   [path]="path"
   [page]="name.value"
   [customization]="cust">
-</spotfire-webplayer>
+</spotfire-viewer>
 
 <h1>Template with configuration on back of the card:</h1>
-<spotfire-wrapper
+<spotfire-editor
   [url]="url"
   [path]="path"
   [page]="page"
   [customization]="cust">
-</spotfire-wrapper>
+</spotfire-editor>
 
 <h1>Specific template (with marking):</h1>
 <my-spotfire

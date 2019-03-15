@@ -17,7 +17,7 @@ import { PersistanceService } from '../persitence.service';
 declare let spotfire: any;
 
 @Component({
-  template: `<div style='height:100%; border:3px dotted green; border-radius:8px' #spot></div>`,
+  templateUrl: 'spotfire-viewer.component.html',
   encapsulation: ViewEncapsulation.None
 })
 

@@ -23,12 +23,12 @@
 
   <h2>Code:</h2>
   <pre style='border:2px dashed green; background-color:black; color:white; padding:20px;'>
-&lt;<span style='color:yellow'>spotfire-wrapper</span>
+&lt;<span style='color:yellow'>spotfire-editor</span>
     url="https://spotfire-next.cloud.tibco.com"
     path="Samples/Sales and Marketing" 
     page="Effect of promotions"
     <span style='color:red'>marking-on</span>='{"SalesAndMarketing": [ "BCG segmentation", "State"]}' &gt;
-&lt;/<span style='color:yellow'>spotfire-wrapper</span>&gt;
+&lt;/<span style='color:yellow'>spotfire-editor</span>&gt;
 
 &lt;<span style='color:yellow'>script</span> src="./spotfire-wrapper.js" &gt;&lt;/<span style='color:yellow'>script</span>&gt;</pre>
 
@@ -49,13 +49,13 @@
   <div style='clear:both'></div>
   <h2>Result:</h2>
 
-  <spotfire-wrapper sid="sid2" id="id1" 
+  <spotfire-editor sid="sid2" id="id1" 
                     url="https://spotfire-next.cloud.tibco.com" 
                     path="Samples/Sales and Marketing"
                     page="Effect of promotions"
                     customization='{"showAuthor":true, "showFilterPanel":true, "showToolBar":true}' 
                     marking-on='{"SalesAndMarketing": [ "BCG segmentation", "State" ]}'
-                    ></spotfire-wrapper>
+                    ></spotfire-editor>
 
   <script src="./spotfire-wrapper.js"></script>
 

@@ -20,12 +20,12 @@
 
   <h2>Code:</h2>
   <pre style='border:2px dashed green; background-color:black; color:white; padding:20px;'>
-&lt;<span style='color:yellow'>spotfire-wrapper</span>
+&lt;<span style='color:yellow'>spotfire-viewer</span>
     url="https://spotfire-next.cloud.tibco.com"
     path="Samples/Introduction to Spotfire" 
     page="Sales Performance"
     <span style='color:red'>filters</span>='[{"dataTableName": "SalesAndMarketing", "dataColumnName": "State", "filterSettings": { "values": ["California", "Arizona"]}}]'&gt;
-&lt;/<span style='color:yellow'>spotfire-wrapper</span>&gt;
+&lt;/<span style='color:yellow'>spotfire-viewer</span>&gt;
 
 &lt;<span style='color:yellow'>script</span> src="./spotfire-wrapper.js" &gt;&lt;/<span style='color:yellow'>script</span>&gt;</pre>
 
@@ -43,13 +43,13 @@
 </pre>
 
   <h2>Result:</h2>
-  <spotfire-wrapper id="id1" sid="sid1" 
+  <spotfire-viewer id="id1" sid="sid1" 
                     url="https://spotfire-next.cloud.tibco.com"
                     path="Samples/Sales and Marketing"
                     page="Sales Performance"
                     customization='{"showAuthor":true, "showFilterPanel":true, "showToolBar":true}' 
-                    filters='[{"dataTableName": "SalesAndMarketing", "dataColumnName": "State", "filterSettings": { "values": ["California", "Arizona"]}}]'></spotfire-wrapper>
-  </spotfire-wrapper>
+                    filters='[{"dataTableName": "SalesAndMarketing", "dataColumnName": "State", "filterSettings": { "values": ["California", "Arizona"]}}]'></spotfire-viewer>
+  </spotfire-viewer>
 
   <script src="./spotfire-wrapper.js"></script>
 

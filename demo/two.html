@@ -16,37 +16,44 @@
     </select>
   </h1>
 
-  <p>Several dashboards can be inserted. Only one <code>script</code> tag needs to be placed after all <code>spotfire-wrapper</code>
+  <p>Several dashboards can be inserted. Only one <code>script</code> tag needs to be placed after all
+    <code>spotfire-wrapper</code>
     tags:</p>
 
   <h2>Code:</h2>
   <pre style='border:2px dashed green; background-color:black; color:white; padding:20px;'>
-&lt;<span style='color:yellow'>spotfire-wrapper</span>
+&lt;<span style='color:yellow'>spotfire-viewer</span>
     url="https://spotfire-next.cloud.tibco.com"
     path="<span style='color:pink'>Sample Data Functions/MATLAB/MATLAB_Correlation_Cars</span>"&gt;
     page="<span style='color:pink'></span>The Analysis</span>"
-&lt;/<span style='color:yellow'>spotfire-wrapper</span>&gt;
+&lt;/<span style='color:yellow'>spotfire-viewer</span>&gt;
 
-&lt;<span style='color:yellow'>spotfire-wrapper</span>
+&lt;<span style='color:yellow'>spotfire-editor</span>
     url="https://spotfire-next.cloud.tibco.com"
     path="<span style='color:pink'>Samples/Expense Analyzer Dashboard</span>" 
     page="<span style='color:pink'></span>Expense dashboard</span>"&gt;
-&lt;/<span style='color:yellow'>spotfire-wrapper</span>&gt;
+&lt;/<span style='color:yellow'>spotfire-editor</span>&gt;
 
 &lt;<span style='color:yellow'>script</span> src="./spotfire-wrapper.js" &gt;&lt;/<span style='color:yellow'>script</span>&gt;</pre>
 
   <h2>Result:</h2>
-    <spotfire-wrapper id="id1" 
+  <spotfire-viewer 
+    id="id1" 
     url="https://spotfire-next.cloud.tibco.com"
-    path="Sample Data Functions/MATLAB/MATLAB_Correlation_Cars"
+    path="Sample Data Functions/MATLAB/MATLAB_Correlation_Cars" 
     page="The Analysis">
-  </spotfire-wrapper>
+  </spotfire-viewer>
   <br><br>
-  <spotfire-wrapper url="https://spotfire-next.cloud.tibco.com" path="Samples/Expense Analyzer Dashboard" page="Expense dashboard"></spotfire-wrapper>
+  <spotfire-editor 
+    url="https://spotfire-next.cloud.tibco.com" 
+    path="Samples/Expense Analyzer Dashboard"
+    page="Expense dashboard">
+  </spotfire-editor>
 
   <script src="./spotfire-wrapper.js"></script>
 
   <a href='mailto:nderoche@tibco.com?subject=About%20spotfire-wrapper' target="_mailFrame">Contact : Nicolas Deroche</a>
 
 </body>
+
 </html>
