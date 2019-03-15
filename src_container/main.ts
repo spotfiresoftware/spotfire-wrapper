@@ -30,13 +30,15 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent { }
     <option *ngFor="let p of pages" [value]="p">{{p}}</option>
   </select>
 </label>
-<spotfire-viewer
+<spotfire-viewer style='display:block; height:500px'
   [url]="url"
   [path]="path"
   [page]="name.value"
-  [customization]="cust">
+  [customization]="cust"
+  [markingOn]="mon"
+  (markingEvent)="onMarking($event)">
 </spotfire-viewer>
-
+<!--
 <h1>Template with configuration on back of the card:</h1>
 <spotfire-editor
   [url]="url"
@@ -50,11 +52,9 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent { }
   [url]="url"
   [path]="path"
   [page]="page"
-  [customization]="cust"
-  [markingOn]="mon"
-  (markingEvent)="onMarking($event)">
+  [customization]="cust">
 </my-spotfire>
-
+-->
 <pre>{{markedData|json}}</pre>
 `})
 class AppComponent {
@@ -70,7 +70,7 @@ class AppComponent {
 
   onMarking = (e: Event) => {
     console.log('[SRC_CONTAINER] onMarking returns', e);
-    this.markedData = e;
+    this.markedData = e['detail'];
   }
 }
 
