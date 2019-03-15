@@ -1,6 +1,6 @@
 
 // Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
-import { Observable, forkJoin, of as observableOf, zip } from 'rxjs';
+import { Observable, forkJoin, of as observableOf, zip, BehaviorSubject } from 'rxjs';
 import { SpotfireCustomization } from './spotfire-customization';
 import { mergeMap, tap, pluck, map } from 'rxjs/operators';
 
@@ -33,7 +33,8 @@ class DistinctValues { count: number; values: Array<string>; }
 
 class Marking {
   constructor(public _marking) { }
-  getMarkingNames$ = () => doCall<string[]>(this._marking, 'getMarkingNames').pipe(tap(f => console.log('getMarkingNames returns', f)));
+  getMarkingNames$ = () => doCall<string[]>(this._marking, 'getMarkingNames')
+    .pipe(tap(f => console.log('[SPOTFIRE_WEBPLAYER] Marking.getMarkingNames returns', f)))
   onChanged$ = (m, t, c, n) => doCall(this._marking, 'onChanged', m, t, c, n);
 }
 
@@ -63,7 +64,7 @@ export class Data {
     }))
 
   private getDistinctValues$ = (t: DataColumn, s = 0, n = 20) => doCall<DistinctValues>(t, 'getDistinctValues', s, n).pipe(
-    tap(g => console.log('[OBS]', 'DistinctValues', g, g.count > 0 && g.count < 25)),
+    tap(g => console.log('[SPOTFIRE_WEBPLAYER] Data.DistinctValues$', g, g.count > 0 && g.count < 25)),
     // filter(g => g.count > 0 && g.count < 25),
     //  tap(g => console.log('[OBS]', 'DistinctValues filtres', g)),
     pluck('values'))
@@ -74,7 +75,7 @@ export class Data {
       tables.forEach(table => obs.push(this.getDataTable$(table.dataTableName)));
       return forkJoin(obs);
     }), map(tables => {
-      console.log('getAllTables RAW:', tables[0]);
+      console.log('[SPOTFIRE_WEBPLAYER] Data.getAllTables RAW:', tables[0]);
       const dataTables = {};
       tables[0].forEach(columns => {
         const tname = columns['tabName'];
@@ -121,9 +122,13 @@ export class Document {
   data: Data;
   constructor(app, id, page, custo) {
     this._doc = app.openDocument(id, page, custo);
-    this.marking = new Marking(this._doc.marking);
-    this.filtering = new Filtering(this._doc.filtering);
-    this.data = new Data(this._doc.data);
+    app.onOpened$().subscribe(doc => {
+      console.log(`[SPOTFIRE_WEBPLAYER] Document.onOpened$: page is now opened:`, doc);
+      this._doc = doc;
+      this.marking = new Marking(this._doc.marking);
+      this.filtering = new Filtering(this._doc.filtering);
+      this.data = new Data(this._doc.data);
+    });
   }
   private do = <T>(m) => doCall<T>(this._doc, m);
   getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(
@@ -145,8 +150,8 @@ function doCall<T>(obj, m: string, ...a): Observable<T> {
   return Observable.create(observer => {
     // console.log('[OBS]', 'doCall obj=', obj, ', m=', m, ', arg=', args, typeof obj);
     if (typeof obj[m] !== 'function' || !obj) {
-      console.error('[OBS]', 'pas de ', m, 'sur ', obj);
-      observer.error(`pas de function ${m} sur l'objet ${JSON.stringify(obj)}`);
+      console.error('[OBS]', `function '${m}' does not exist on `, obj);
+      observer.error(`function '${m}' does not exist on objet ${JSON.stringify(obj)}`);
     }
     try {
       // console.log('[OBS]', `Call ${m}(${args.join(',')})`, args.length);
@@ -169,7 +174,10 @@ function doCall<T>(obj, m: string, ...a): Observable<T> {
 }
 
 export class Application {
-  private _app;
+  private _app: any;
+  private readySubject = new BehaviorSubject<boolean>(false);
+  public ready$ = this.readySubject.asObservable();
+
   constructor(
     public url: string,
     public customization: SpotfireCustomization | string,
@@ -177,13 +185,27 @@ export class Application {
     public parameters: string,
     public reloadAnalysisInstance: boolean,
     public version: string,
-    public onReadyCallback,
     public onCreateLoginElement) {
     this._app = new spotfire.webPlayer.createApplication(this.url,
       this.customization, this.path, this.parameters, this.reloadAnalysisInstance,
       this.version, this.onReadyCallback, this.onCreateLoginElement);
   }
-  setApp = (a) => this._app = a;
-  // getDocument(id, page, customization)
-  getDocument = (id, p, c?): Document => new Document(this._app, id, p, c ? c : this.customization);
+
+  private onReadyCallback = (response, newApp) => {
+    console.log('[SPOTFIRE-WEBPLAYER] Application.onReadyCallback', response, newApp);
+    this._app = newApp;
+    if (response.status === 'OK') {
+      // The application is ready, meaning that the api is loaded and that the analysis path
+      // is validated for the current session(anonymous or logg ed in user)
+      this.readySubject.next(true);
+      this.readySubject.complete();
+    } else {
+      const errMsg = `Status not OK. ${response.status}: ${response.message}`;
+      console.error('[SPOTFIRE-WEBPLAYER] Application.onReadyCallback', errMsg, response);
+      this.readySubject.next(false);
+    }
+  }
+  onOpened$ = () => doCall(this._app, 'onOpened');
+  getDocument = (id, p, c?): Document => new Document(this, id, p, c ? c : this.customization);
+  openDocument = (id, page, custo) => this._app.openDocument(id, page, custo);
 }

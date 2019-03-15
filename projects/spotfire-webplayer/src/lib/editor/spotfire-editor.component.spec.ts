@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { SpotfireEditorComponent } from './spotfire-editor.component';
 
-import { SpotfireWebplayerComponent } from './spotfire-webplayer.component';
 
 describe('SpotfireWrapperComponent', () => {
-  let component: SpotfireWebplayerComponent;
-  let fixture: ComponentFixture<SpotfireWebplayerComponent>;
+  let component: SpotfireEditorComponent;
+  let fixture: ComponentFixture<SpotfireEditorComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SpotfireWebplayerComponent ]
+      declarations: [SpotfireEditorComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(SpotfireWebplayerComponent);
+    fixture = TestBed.createComponent(SpotfireEditorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

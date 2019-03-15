@@ -2,24 +2,22 @@
 
 // https://medium.com/@tomsu/how-to-build-a-library-for-angular-apps-4f9b38b0ed11
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-
-import { SpotfireWebplayerComponent } from './spotfire-webplayer.component';
-import { SpotfireWrapperComponent } from './spotfire-wrapper.component';
 
 import {
   MatFormFieldModule, MatInputModule, MatButtonModule,
   MatSelectModule, MatToolbarModule, MatCheckboxModule
 } from '@angular/material';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { SpotfireWebplayerModule } from '../viewer/spotfire-viewer.module';
+import { SpotfireEditorComponent } from './spotfire-editor.component';
 
 @NgModule({
-  imports: [CommonModule, ReactiveFormsModule, FlexLayoutModule,
+  imports: [SpotfireWebplayerModule, ReactiveFormsModule, FlexLayoutModule,
     MatSelectModule, MatToolbarModule, MatCheckboxModule,
     MatButtonModule, MatFormFieldModule, MatInputModule],
-  declarations: [SpotfireWebplayerComponent, SpotfireWrapperComponent],
-  entryComponents: [SpotfireWebplayerComponent, SpotfireWrapperComponent],
-  exports: [SpotfireWebplayerComponent, SpotfireWrapperComponent]
+  declarations: [SpotfireEditorComponent],
+  entryComponents: [SpotfireEditorComponent],
+  exports: [SpotfireEditorComponent]
 })
-export class SpotfireWebplayerModule { }
+export class SpotfireEditorModule { }
