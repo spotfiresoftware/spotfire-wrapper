@@ -28,7 +28,6 @@
     "@webcomponents/custom-elements": "^1.2.1",
     "core-js": "^2.6.5",
     "rxjs": "^6.4.0",
-    "spotfire-webplayer": "https://s3-us-west-2.amazonaws.com/cec-library/spotfire-webplayer-0.0.1.tgz",
     "tslib": "^1.9.3",
     "zone.js": "^0.8.29"
   },
