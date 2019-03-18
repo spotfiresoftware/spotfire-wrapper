@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/sh -x
 
 which aws 
 aws=$?
@@ -40,18 +40,18 @@ title "[spotfire-webplayer] Create the NPM package:"
 if [ $aws -eq 0 ]
 then
     title "[spotfire-webplayer] Copy the NPM package to S3:"
-    aws s3 cp ${WORKSPACE}/dist/spotfire-webplayer/spotfire-webplayer-0.0.1.tgz s3://cec-library/
+    aws s3 cp ${WORKSPACE}/dist/spotfire-webplayer/spotfire-webplayer-0.0.1.tgz s3://cec-library/spotfire-wrapper.tgz
 else
-    cp -f ${WORKSPACE}/dist/spotfire-webplayer/spotfire-webplayer-0.0.1.tgz ${WORKSPACE}/build/
+    cp -f ${WORKSPACE}/dist/spotfire-webplayer/spotfire-webplayer-0.0.1.tgz ${WORKSPACE}/build/spotfire-wrapper.tgz
 fi
 
 if [ $aws -eq 0 ]
 then
     title "[spotfire-wrapper] Install the NPM package from S3 (used to build the WebElement Library):"
-    npm install https://s3-us-west-2.amazonaws.com/cec-library/spotfire-webplayer-0.0.1.tgz
+    npm install https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.tgz --no-save
 else
     title "[spotfire-wrapper] Install the NPM package from local path (used to build the WebElement Library):"
-    npm install ${WORKSPACE}/build/spotfire-webplayer-0.0.1.tgz
+    npm install ${WORKSPACE}/build/spotfire-wrapper.tgz --no-save
 fi
 
 title "[spotfire-wrapper] Build the WebElement Library:"
@@ -68,7 +68,7 @@ fi
 echo ""
 echo ""
 echo "How to use: "
-echo "  - npm install https://s3-us-west-2.amazonaws.com/cec-library/spotfire-webplayer-0.0.1.tgz"
+echo "  - npm install https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.tgz"
 echo "  - <script src='https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js'></script>"
 echo ""
 echo ""

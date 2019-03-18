@@ -31,7 +31,7 @@ class DataColumn { dataColumnName: string; dataTableName: string; dataType: stri
 class DistinctValues { count: number; values: Array<string>; }
 
 
-class Marking {
+export class Marking {
   constructor(public _marking) { }
   getMarkingNames$ = () => doCall<string[]>(this._marking, 'getMarkingNames')
     .pipe(tap(f => console.log('[SPOTFIRE_WEBPLAYER] Marking.getMarkingNames returns', f)))
