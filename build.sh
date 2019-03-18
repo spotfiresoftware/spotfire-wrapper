@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 which aws 
 aws=$?
@@ -7,11 +7,16 @@ set -e
 
 if [ $aws -eq 1 ]
 then
-    echo "CAUTION: aws is not installed on this machine. Artefacts won't be published at https://s3-us-west-2.amazonaws.com/cec-library/"
+    echo "CAUTION: aws is not installed on this machine."
+    echo "         Artefacts won't be published at https://s3-us-west-2.amazonaws.com/cec-library/"
+    echo "         but in ./build"
     export WORKSPACE=$(PWD)
     mkdir -p ${WORKSPACE}/build
 else
     export AWS_DEFAULT_PROFILE=cec
+    date
+    pwd
+    env | sort
 fi
 
 repl() { printf "$1"'%.s' $(eval "echo {1.."$(($2))"}"); }
@@ -23,9 +28,6 @@ title() {
     repl " -" $((${#title}/2))
     echo ""
 }
-date
-pwd
-env | sort
 
 title "Install dependencies:"
 npm install

@@ -1,5 +1,7 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { FormGroup, Validators, FormControl, FormBuilder } from '@angular/forms';
+import { filter } from 'rxjs/operators';
+
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
 import { Document as SpotDoc } from '../spotfire-webplayer';
 import { LazyLoadingLibraryService } from '../lazy-loading-library.service';
@@ -104,59 +106,60 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
         // get Table info
         //
         const difference = (a, b) => b.filter(i => a.indexOf(i) < 0);
+        doc.ready$.pipe(filter(l => l)).subscribe(__ => {
+            doc.data.getAllTables$().subscribe(tables => {
+                console.log('[SPOTFIRE-EDITOR] getAllTables$ returns', tables, this.filters, this.markingOn);
+                const toList = (g) => g.map(f => `'${f}'`).join(', '),
+                    errTxt1 = '[spotfire-EDITOr] Attribut marking-on contains unknwon',
+                    errTxt2 = '[spotfire-EDITOr] Possible values for',
+                    fil: FormGroup = this.form.get('filters') as FormGroup,
+                    mar: FormGroup = this.form.get('marking') as FormGroup,
+                    tNames = Object.keys(tables),
+                    tdiff = this.markingOn ? difference(Object.keys(this.markingOn), tNames) : [];
+                console.log('Tables : ', tNames, tdiff, fil);
 
-        doc.data.getAllTables$().subscribe(tables => {
-            console.log('[SPOTFIRE-EDITOR] getAllTables$ returns', tables, this.filters, this.markingOn);
-            const toList = (g) => g.map(f => `'${f}'`).join(', '),
-                errTxt1 = '[spotfire-EDITOr] Attribut marking-on contains unknwon',
-                errTxt2 = '[spotfire-EDITOr] Possible values for',
-                fil: FormGroup = this.form.get('filters') as FormGroup,
-                mar: FormGroup = this.form.get('marking') as FormGroup,
-                tNames = Object.keys(tables),
-                tdiff = this.markingOn ? difference(Object.keys(this.markingOn), tNames) : [];
-            console.log('Tables : ', tNames, tdiff, fil);
-
-            if (tdiff.length > 0) {
-                this.errorMessages.push(`${errTxt1} table names: ${toList(tdiff)}`);
-                this.possibleValues = `${errTxt2} table names are: ${toList(tNames)} `;
-                //        return;
-            }
-
-            // Update marking and filters fields
-            //
-            Object.keys(tables).forEach(tname => {
-                const columns = tables[tname];
-                mar.addControl(tname, new FormControl(this.markingOn ? this.markingOn[tname] : null));
-                if (!fil.contains(tname)) {
-                    fil.addControl(tname, new FormGroup({}));
+                if (tdiff.length > 0) {
+                    this.errorMessages.push(`${errTxt1} table names: ${toList(tdiff)}`);
+                    this.possibleValues = `${errTxt2} table names are: ${toList(tNames)} `;
+                    //        return;
                 }
-                const frm: FormGroup = fil.get(tname) as FormGroup;
-                const cNames = Object.keys(columns);
-                /*
-                console.log('Columns : ', cNames, this.markingOn);
-                if (this.markingOn) {
-                  const cdiff = this.markingOn[tname] ? this.difference(this.markingOn[tname], cNames) : [];
-                  console.log('Columns : ', cNames, cdiff);
-                  if (_.size(cdiff) > 0) {
-                    this.errorMessages.push(`${errTxt1} column names: ${toList(cdiff)}`);
-                    this.possibleValues = `${errTxt2} columns of table ${tname} are: ${toList(cNames)} `;
-                    //          return;
-                  }
-                }
-                */
 
-                cNames.forEach(cname => {
-                    let flt2 = null;
-                    (this.filters as SpotfireFilter[] || []).some(element => {
-                        if (element.dataTableName === tname && element.dataColumnName === cname) {
-                            flt2 = element;
-                            return true;
-                        }
+                // Update marking and filters fields
+                //
+                Object.keys(tables).forEach(tname => {
+                    const columns = tables[tname];
+                    mar.addControl(tname, new FormControl(this.markingOn ? this.markingOn[tname] : null));
+                    if (!fil.contains(tname)) {
+                        fil.addControl(tname, new FormGroup({}));
+                    }
+                    const frm: FormGroup = fil.get(tname) as FormGroup;
+                    const cNames = Object.keys(columns);
+                    /*
+                    console.log('Columns : ', cNames, this.markingOn);
+                    if (this.markingOn) {
+                      const cdiff = this.markingOn[tname] ? this.difference(this.markingOn[tname], cNames) : [];
+                      console.log('Columns : ', cNames, cdiff);
+                      if (_.size(cdiff) > 0) {
+                        this.errorMessages.push(`${errTxt1} column names: ${toList(cdiff)}`);
+                        this.possibleValues = `${errTxt2} columns of table ${tname} are: ${toList(cNames)} `;
+                        //          return;
+                      }
+                    }
+                    */
+
+                    cNames.forEach(cname => {
+                        let flt2 = null;
+                        (this.filters as SpotfireFilter[] || []).some(element => {
+                            if (element.dataTableName === tname && element.dataColumnName === cname) {
+                                flt2 = element;
+                                return true;
+                            }
+                        });
+                        frm.addControl(cname, new FormControl(flt2 ? flt2.filterSettings.values : null));
                     });
-                    frm.addControl(cname, new FormControl(flt2 ? flt2.filterSettings.values : null));
                 });
+                this.dataTables = tables;
             });
-            this.dataTables = tables;
         });
     }
 }

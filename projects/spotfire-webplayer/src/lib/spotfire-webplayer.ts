@@ -120,6 +120,8 @@ export class Document {
   marking: Marking;
   filtering: Filtering;
   data: Data;
+  private readySubject = new BehaviorSubject<boolean>(false);
+  public ready$ = this.readySubject.asObservable();
   constructor(app, id, page, custo) {
     this._doc = app.openDocument(id, page, custo);
     app.onOpened$().subscribe(doc => {
@@ -128,6 +130,8 @@ export class Document {
       this.marking = new Marking(this._doc.marking);
       this.filtering = new Filtering(this._doc.filtering);
       this.data = new Data(this._doc.data);
+      this.readySubject.next(true);
+      this.readySubject.complete();
     });
   }
   private do = <T>(m) => doCall<T>(this._doc, m);

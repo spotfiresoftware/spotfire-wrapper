@@ -60,7 +60,7 @@ export class SpotfireViewerComponent implements OnChanges {
 
   doConsole = (...args: any[]) => {
     if (this.debug) {
-      console.log('[SPOTFIRE-VIEWER]', args);
+      console.log('[SPOTFIRE-VIEWER]', ...args);
     }
   }
   constructor(
@@ -213,10 +213,8 @@ export class SpotfireViewerComponent implements OnChanges {
 
 
     if (this.markingOn) {
-      this.app.onOpened$().subscribe((doc: Document) => {
-        this.document.marking = new Marking(doc.marking);
-        this.document.data = new Data(doc.data);
-        this.doConsole(`[SPOTFIRE_VIEWER] Document.onOpened$: page is now opened:`, doc);
+      this.document.ready$.pipe(filter(l => l)).subscribe(z => {
+        this.doConsole(`[SPOTFIRE_VIEWER] Document.onOpened$: page is now opened:`, this.document);
         this.document.data.getAllTables$().subscribe(tables => {
           this.document.marking.getMarkingNames$().subscribe(markingNames => markingNames.forEach(markingName => {
             Object.keys(this.markingOn).forEach(key => {
@@ -240,7 +238,7 @@ export class SpotfireViewerComponent implements OnChanges {
       this.doConsole('isFilteringWiredUp');
       // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
       //
-      this.filter$.pipe(tap(f => this.doConsole('j\'emet filter', f)))
+      this.filter$.pipe(tap(f => this.doConsole('Emit filter', f)))
         .subscribe(f => this.filteringEvent.emit(f));
     }
 
@@ -248,7 +246,7 @@ export class SpotfireViewerComponent implements OnChanges {
       this.doConsole('isMarkingWiredUp');
       // Subscribe to markingEvent and emit the result to the Output
       //
-      this.marker$.pipe(tap(f => this.doConsole('j\'emet marking', f)))
+      this.marker$.pipe(tap(f => this.doConsole('Emit marking', f)))
         .subscribe(f => this.markingEvent.emit(f));
     }
   }
