@@ -8,7 +8,7 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { tap, filter } from 'rxjs/operators';
 import { LazyLoadingLibraryService } from '../lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
-import { DocMetadata, Application, Document, CUSTLABELS, Marking, Data } from '../spotfire-webplayer';
+import { DocMetadata, Application, Document, CUSTLABELS } from '../spotfire-webplayer';
 import { PersistanceService } from '../persitence.service';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
@@ -22,7 +22,7 @@ declare let spotfire: any;
 })
 
 export class SpotfireViewerComponent implements OnChanges {
-  @Input() debug = true;
+  @Input() debug = false;
   @Input() url: string;
   @Input() page: string;
   @Input() sid: string;
@@ -30,8 +30,7 @@ export class SpotfireViewerComponent implements OnChanges {
   @Input() customization: SpotfireCustomization | string;
   @Input() filters: Array<SpotfireFilter> | string;
   private version = '7.14';
-  @Input() config = {};
-  @Input() markingOn: { string: Array<String> } | string;
+  @Input() markingOn: {} | string;
   @Input() maxRows = 10;
   @Input() parameters = '';
   @ViewChild('spot', { read: ElementRef }) spot: ElementRef;
@@ -83,7 +82,7 @@ export class SpotfireViewerComponent implements OnChanges {
       JSON.parse(this.filters).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
       this.filters = allFilters;
     }
-    if (typeof this.markingOn === 'string') {
+    if (typeof this.markingOn === 'string' && this.markingOn !== '*') {
       this.markingOn = JSON.parse(this.markingOn);
     }
 
@@ -196,7 +195,7 @@ export class SpotfireViewerComponent implements OnChanges {
     }
 
     this.doConsole('SpotfireService openDocument',
-      this.spot.nativeElement.id, `cnf=${page}`, this.config, this.app, this.customization);
+      this.spot.nativeElement.id, `cnf=${page}`, this.app, this.customization);
     // this.doc = this.app.openDocument(this.spot.nativeElement.id, page, this.customization);
 
     // Here is the call to 'spotfire.webPlayer.createApplication'
@@ -214,14 +213,15 @@ export class SpotfireViewerComponent implements OnChanges {
 
     if (this.markingOn) {
       this.document.ready$.pipe(filter(l => l)).subscribe(z => {
-        this.doConsole(`[SPOTFIRE_VIEWER] Document.onOpened$: page is now opened:`, this.document);
-        this.document.data.getAllTables$().subscribe(tables => {
+        this.doConsole(`Document.onOpened$: page is now opened:`, this.document);
+        this.document.data.getTables$().subscribe(tables => {
           this.document.marking.getMarkingNames$().subscribe(markingNames => markingNames.forEach(markingName => {
-            Object.keys(this.markingOn).forEach(key => {
-              let xolumns: Array<string> = this.markingOn[key];
+            const markOn = this.markingOn === '*' ? tables : this.markingOn;
+            Object.keys(markOn).forEach(key => {
               const tName = key;
+              let xolumns: Array<string> = this.markingOn === '*' ? tables[key] : markOn[key];
               if (xolumns.length === 1 && xolumns[0] === '*') {
-                xolumns = Object.keys(tables[tName]);
+                xolumns = tables[tName];
               }
               this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(xolumns)}, ${this.maxRows})`);
               this.document.marking.onChanged$(markingName, tName, xolumns, this.maxRows).subscribe(

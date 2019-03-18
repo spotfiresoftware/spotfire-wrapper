@@ -25,6 +25,9 @@ export const CUSTLABELS = {
   showUndoRedo: 'Show the undo/redo menu item'
 };
 
+function doConsole(...args: any[]) {
+  // console.log('[SPOTFIRE_WEBPLAYER]', ...args);
+}
 class PageState { index: number; pageTitle: string; }
 class DataTable { dataTableName: string; }
 class DataColumn { dataColumnName: string; dataTableName: string; dataType: string; values: {}; }
@@ -33,8 +36,7 @@ class DistinctValues { count: number; values: Array<string>; }
 
 export class Marking {
   constructor(public _marking) { }
-  getMarkingNames$ = () => doCall<string[]>(this._marking, 'getMarkingNames')
-    .pipe(tap(f => console.log('[SPOTFIRE_WEBPLAYER] Marking.getMarkingNames returns', f)))
+  getMarkingNames$ = () => doCall<string[]>(this._marking, 'getMarkingNames');
   onChanged$ = (m, t, c, n) => doCall(this._marking, 'onChanged', m, t, c, n);
 }
 
@@ -45,17 +47,27 @@ class Filtering {
 
 export class Data {
   allTables = {};
-  constructor(public _data) { }
+  constructor(private _data) { }
 
+  // A Spotfire analysis contains one or more data tables, retrieved by the getDataTable,
+  // getActiveDataTable and getDataTables methods.
   private getDataTables$ = () => doCall<DataTable[]>(this._data, 'getDataTables');
 
-  private getDataTable$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t).pipe(mergeMap(f => this.getDataColumns$(f)));
+  private getDataTableColNames$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t).pipe(
+    mergeMap(f => this.getDataColumns$(f)))
 
+  private getDataTable$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t).pipe(
+    mergeMap(f => this.getDataColumns$(f)))
+
+  // Each data table contains one or more data columns, retrieved by the getDataColumn,
+  // getDataColumns and searchDataColumns.
   private getDataColumns$ = (t) => doCall<DataColumn[]>(t, 'getDataColumns').pipe(
     mergeMap(columns => {
       const obs = [];
       columns.forEach((col: DataColumn) => {
-        if (col.dataType === 'String') {
+        obs.push(zip(...[observableOf(col), observableOf([])],
+          (a: DataColumn, b) => ({ colName: a.dataColumnName, tabName: a.dataTableName })));
+        if (col.dataType === 'zString') {
           obs.push(zip(...[observableOf(col), this.getDistinctValues$(col)],
             (a: DataColumn, b) => ({ colName: a.dataColumnName, tabName: a.dataTableName, vals: b })));
         }
@@ -63,11 +75,29 @@ export class Data {
       return forkJoin(obs);
     }))
 
-  private getDistinctValues$ = (t: DataColumn, s = 0, n = 20) => doCall<DistinctValues>(t, 'getDistinctValues', s, n).pipe(
-    tap(g => console.log('[SPOTFIRE_WEBPLAYER] Data.DistinctValues$', g, g.count > 0 && g.count < 25)),
+
+  // From the DataColumn class it is possible to retrieve metadata, such as column name and data type.
+  // It is also possible to get a list of the unique values in the data column with the getDistinctValues method.
+  private getDistinctValues$ = (t: DataColumn) => doCall<DistinctValues>(t, 'getDistinctValues', 0, 20).pipe(
+    tap(g => doConsole('Data.DistinctValues$', t, g, g.count > 0 && g.count < 25)),
     // filter(g => g.count > 0 && g.count < 25),
-    //  tap(g => console.log('[OBS]', 'DistinctValues filtres', g)),
+    //  tap(g => doConsole('[OBS]', 'DistinctValues filtres', g)),
     pluck('values'))
+
+  getTables$ = () => this.getDataTables$().pipe(
+    mergeMap(tables => {
+      const obs = [];
+      tables.forEach(table => obs.push(this.getDataTableColNames$(table.dataTableName)));
+      return forkJoin(obs);
+    }), map(tables => {
+      const dataTables = {};
+      tables.forEach(table => table.forEach(column => {
+        const tname = column['tabName'];
+        if (!dataTables[tname]) { dataTables[tname] = []; }
+        dataTables[tname].push(column['colName']);
+      }));
+      return dataTables;
+    }))
 
   getAllTables$ = () => this.getDataTables$().pipe(
     mergeMap(tables => {
@@ -75,7 +105,6 @@ export class Data {
       tables.forEach(table => obs.push(this.getDataTable$(table.dataTableName)));
       return forkJoin(obs);
     }), map(tables => {
-      console.log('[SPOTFIRE_WEBPLAYER] Data.getAllTables RAW:', tables[0]);
       const dataTables = {};
       tables[0].forEach(columns => {
         const tname = columns['tabName'];
@@ -125,7 +154,7 @@ export class Document {
   constructor(app, id, page, custo) {
     this._doc = app.openDocument(id, page, custo);
     app.onOpened$().subscribe(doc => {
-      console.log(`[SPOTFIRE_WEBPLAYER] Document.onOpened$: page is now opened:`, doc);
+      doConsole(`Document.onOpened$: page is now opened:`, doc);
       this._doc = doc;
       this.marking = new Marking(this._doc.marking);
       this.filtering = new Filtering(this._doc.filtering);
@@ -152,15 +181,22 @@ export class Document {
 
 function doCall<T>(obj, m: string, ...a): Observable<T> {
   return Observable.create(observer => {
-    // console.log('[OBS]', 'doCall obj=', obj, ', m=', m, ', arg=', args, typeof obj);
+    // doConsole('[OBS]', 'doCall obj=', obj, ', m=', m, ', arg=', args, typeof obj);
     if (typeof obj[m] !== 'function' || !obj) {
       console.error('[OBS]', `function '${m}' does not exist on `, obj);
       observer.error(`function '${m}' does not exist on objet ${JSON.stringify(obj)}`);
     }
     try {
-      // console.log('[OBS]', `Call ${m}(${args.join(',')})`, args.length);
-      const p = (g: T) => { observer.next(g); observer.complete(); };
-      const q = (g: T) => observer.next(g);
+      const t = setTimeout(function () {
+        console.warn('[OBS]', `The call ${m}(${a.join(',')}) does not answer after 30sec on ${JSON.stringify(obj)}`);
+        observer.complete();
+        //        observer.error(`Call ${m}(${a.join(',')}) does not answer after 30sec`);
+      }, 30000);
+
+      // doConsole('[OBS]', `Call ${m}(${a.join(',')})`, a.length);
+      const c = () => t && clearTimeout(t);
+      const q = (g: T) => { c(); observer.next(g); };
+      const p = (g: T) => { q(g); observer.complete(); };
       const s = m.startsWith('on');
       switch (a.length) {
         case 0: return s ? obj[m](q) : obj[m](p);
@@ -196,7 +232,7 @@ export class Application {
   }
 
   private onReadyCallback = (response, newApp) => {
-    console.log('[SPOTFIRE-WEBPLAYER] Application.onReadyCallback', response, newApp);
+    doConsole('[SPOTFIRE-WEBPLAYER] Application.onReadyCallback', response, newApp);
     this._app = newApp;
     if (response.status === 'OK') {
       // The application is ready, meaning that the api is loaded and that the analysis path
