@@ -8,7 +8,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 @Component({
   selector: 'my-spotfire',
   template: `Override spotfire-wrapper template :
-  <button *ngFor="let p of ['Sales performance', 'Territory analysis', 'Effect of promotions']" (click)="showPage(p)">{{p}}</button>
+  <button *ngFor="let p of ['Sales performance', 'Territory analysis', 'Effect of promotions']" (click)="openPage(p)">{{p}}</button>
   <div class="mys" #spot></div>`,
   styles: [`
   div.mys { width:100%; height:600px; background:#ebebeb; border-radius: 20px}
@@ -29,11 +29,6 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
     this.markingEvent.subscribe(e => console.log('[MySpotfireWrapperComponent] MARKING MySpot returns', e));
 
     // show default page:
-    this.showPage();
-  }
-  showPage(page = '') {
-    this.page = page;
-    console.log('Show', this.url, this.path, this.page);
     this.display();
   }
 }
@@ -46,13 +41,12 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
   <my-spotfire  style='width:50%'
       [url]="url" [customization]="cust"
       (markingEvent)="onMarking($event)"
-      [debug]="false">
+      [debug]="true">
   </my-spotfire>
   <pre style='font-size:8px'>{{markedData|json}}</pre>
 </div>
 `})
 class AppComponent {
-
   url = 'https://spotfire-next.cloud.tibco.com';
   cust = { showAuthor: true, showFilterPanel: true, showToolBar: true };
 

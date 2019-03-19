@@ -185,7 +185,7 @@ export class SpotfireViewerComponent implements OnChanges {
    *
    * @param page the document page that will be displayed
    */
-  protected openPage(page: string) {
+  public openPage(page: string) {
     this.doConsole(`SpotfireViewerComponent openPage(${page})`);
     this.page = page;
     // Ask Spotfire library to display this path/page (with optional customization)
