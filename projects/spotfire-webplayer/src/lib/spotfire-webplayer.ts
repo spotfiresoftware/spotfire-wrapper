@@ -1,8 +1,8 @@
 
 // Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
-import { Observable, forkJoin, of as observableOf, zip, BehaviorSubject } from 'rxjs';
+import { Observable, forkJoin, of as observableOf, zip, BehaviorSubject, of, throwError, TimeoutError } from 'rxjs';
 import { SpotfireCustomization } from './spotfire-customization';
-import { mergeMap, tap, pluck, map } from 'rxjs/operators';
+import { mergeMap, tap, pluck, map, filter, timeout, catchError } from 'rxjs/operators';
 
 declare let spotfire: any;
 
@@ -146,24 +146,23 @@ export class DocMetadata {
 
 export class Document {
   private _doc;
-  marking: Marking;
-  filtering: Filtering;
-  data: Data;
-  private readySubject = new BehaviorSubject<boolean>(false);
-  public ready$ = this.readySubject.asObservable();
+  private marking: Marking;
+  private filtering: Filtering;
+  private data: Data;
   constructor(app, id, page, custo) {
     this._doc = app.openDocument(id, page, custo);
     app.onOpened$().subscribe(doc => {
       doConsole(`Document.onOpened$: page is now opened:`, doc);
       this._doc = doc;
+      // Register event handler for page change events.
+      this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
       this.marking = new Marking(this._doc.marking);
       this.filtering = new Filtering(this._doc.filtering);
       this.data = new Data(this._doc.data);
-      this.readySubject.next(true);
-      this.readySubject.complete();
     });
   }
-  private do = <T>(m) => doCall<T>(this._doc, m);
+  private onActivePageChangedCallback = (pageState) => console.log('onActivePageChangedCallback', pageState);
+  private do = <T>(m: string) => doCall<T>(this._doc, m);
   getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(
     map(g => new DocMetadata(g)))
   getPages$ = () => this.do('getPages').pipe(map(m => Object.keys(m).map(f => m[f].pageTitle)));
@@ -173,54 +172,51 @@ export class Document {
   // getReports$ = () => this.do('getReports');
   getActivePage$ = () => this.do<PageState>('getActivePage');
 
-  // getMarking = () => this.marking._marking;
-  getFiltering = () => this.filtering._filtering;
-  // getData = () => this.data._data;
+  getData = () => this.data;
+  getMarking = () => this.marking;
+  getFiltering = () => this.filtering;
+  public onDocumentReady$ = () => doCall(this._doc, 'onDocumentReady');
+  private onActivePageChanged$ = () => doCall(this._doc, 'onActivePageChanged');
 }
 
 
 function doCall<T>(obj, m: string, ...a): Observable<T> {
   return Observable.create(observer => {
+    const oneShot = ['onDocumentReady'];
     // doConsole('[OBS]', 'doCall obj=', obj, ', m=', m, ', arg=', args, typeof obj);
     if (typeof obj[m] !== 'function' || !obj) {
       console.error('[OBS]', `function '${m}' does not exist on `, obj);
       observer.error(`function '${m}' does not exist on objet ${JSON.stringify(obj)}`);
     }
     try {
-      const t = setTimeout(function () {
-        console.warn('[OBS]', `The call ${m}(${a.join(',')}) does not answer after 30sec on ${JSON.stringify(obj)}`);
-        observer.complete();
-        //        observer.error(`Call ${m}(${a.join(',')}) does not answer after 30sec`);
-      }, 30000);
-
       // doConsole('[OBS]', `Call ${m}(${a.join(',')})`, a.length);
-      const c = () => t && clearTimeout(t);
-      const q = (g: T) => { c(); observer.next(g); };
-      const p = (g: T) => { q(g); observer.complete(); };
-      const s = m.startsWith('on');
-      switch (a.length) {
-        case 0: return s ? obj[m](q) : obj[m](p);
-        case 1: return s ? obj[m](a[0], q) : obj[m](a[0], p);
-        case 2: return s ? obj[m](a[0], a[1], q) : obj[m](a[0], a[1], p);
-        case 3: return s ? obj[m](a[0], a[1], a[2], q) : obj[m](a[0], a[1], a[2], p);
-        case 4: return s ? obj[m](a[0], a[1], a[2], a[3], q) : obj[m](a[0], a[1], a[2], a[3], p);
-        default: observer.error(`Call ${m}(${a.join(',')}) pb arguments`);
-      }
+      const q = (g: T) => observer.next(g);
+      const p = (g: T) => { observer.next(g); observer.complete(); };
+      return m.startsWith('on') && oneShot.indexOf(m) === -1 ? obj[m](...a, q) : obj[m](...a, p);
     } catch (err) {
       console.warn('[OBS]', 'doCall erreur: ', err);
       observer.error(err);
     }
-  });
+  }).pipe(
+    timeout(30000),
+    catchError(e => {
+      if (e instanceof TimeoutError) {
+        console.error(`[SPOTFIRE-WEBPLAYER] The call ${m}(${a.join(',')}) does not answer after 30sec on ${JSON.stringify(obj)}`);
+      } else {
+        console.error('[SPOTFIRE-WEBPLAYER] ERROR on doCall', e);
+      }
+      return throwError(e);
+    }));
 }
 
 export class Application {
   private _app: any;
   private readySubject = new BehaviorSubject<boolean>(false);
-  public ready$ = this.readySubject.asObservable();
+  public onApplicationReady$ = this.readySubject.asObservable().pipe(filter(d => d));
 
   constructor(
     public url: string,
-    public customization: SpotfireCustomization | string,
+    public customization: SpotfireCustomization,
     public path: string,
     public parameters: string,
     public reloadAnalysisInstance: boolean,
@@ -234,6 +230,8 @@ export class Application {
   private onReadyCallback = (response, newApp) => {
     doConsole('[SPOTFIRE-WEBPLAYER] Application.onReadyCallback', response, newApp);
     this._app = newApp;
+    // Register an error handler to catch errors.
+    this._app.onError(this.onErrorCallback);
     if (response.status === 'OK') {
       // The application is ready, meaning that the api is loaded and that the analysis path
       // is validated for the current session(anonymous or logg ed in user)
@@ -242,10 +240,15 @@ export class Application {
     } else {
       const errMsg = `Status not OK. ${response.status}: ${response.message}`;
       console.error('[SPOTFIRE-WEBPLAYER] Application.onReadyCallback', errMsg, response);
-      this.readySubject.next(false);
+      this.readySubject.error(errMsg);
     }
   }
+  // Displays an error message if something goes wrong in the Web Player.
+  private onErrorCallback = (errorCode: string, description: string) => console.error(`[Spotfire WebPlayer] ${errorCode}: ${description}`);
+
+  onError$ = () => doCall(this._app, 'onError');
   onOpened$ = () => doCall(this._app, 'onOpened');
-  getDocument = (id, p, c?): Document => new Document(this, id, p, c ? c : this.customization);
-  openDocument = (id, page, custo) => this._app.openDocument(id, page, custo);
+  getDocument = (id: string, page: string, custo?: SpotfireCustomization): Document =>
+    new Document(this, id, page, custo ? custo : this.customization)
+  openDocument = (id: string, page: string, custo: SpotfireCustomization) => this._app.openDocument(id, page, custo);
 }

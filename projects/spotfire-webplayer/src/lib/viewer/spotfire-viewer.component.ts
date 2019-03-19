@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 
 import { Observable, BehaviorSubject } from 'rxjs';
-import { tap, filter } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import { LazyLoadingLibraryService } from '../lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
 import { DocMetadata, Application, Document, CUSTLABELS } from '../spotfire-webplayer';
@@ -109,6 +109,21 @@ export class SpotfireViewerComponent implements OnChanges {
   private displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
     this.errorMessages.push(message);
+    this.spot.nativeElement.style.fontFamily = 'monospace';
+    this.spot.nativeElement.style.color = '#e82127';
+    this.spot.nativeElement.style.textAlign = 'center';
+    this.spot.nativeElement.style.padding = '30px';
+    this.spot.nativeElement.textContent = this.errorMessages.join('<br>');
+  }
+
+  private displayInfoMessage = (message: string) => {
+    console.log(message);
+    if (this.debug) {
+      this.spot.nativeElement.style.fontFamily = 'monospace';
+      this.spot.nativeElement.style.color = 'black';
+      this.spot.nativeElement.style.textAlign = 'center';
+      this.spot.nativeElement.textContent = message;
+    }
   }
 
   /**
@@ -128,18 +143,21 @@ export class SpotfireViewerComponent implements OnChanges {
     this.customization = custo;
     this.doConsole(`SpotfireViewerComponent openWebPlayer(${url})`);
 
+    this.displayInfoMessage(`${this.url}...`);
+
     // lazy load the spotfire js API
     //
     setTimeout(() => {
       const sfLoaderUrl = `${this.url}/spotfire/js-api/loader.js`;
       this.lazySvc.loadJs(sfLoaderUrl).subscribe(() => {
-        this.doConsole(`Spotfire ${sfLoaderUrl} is LOADED !!!`,
-          spotfire, this.page, this.spot.nativeElement, this.customization);
-        if (spotfire) {
-          this.openPath(this.path);
-        } else {
+        try {
+          this.doConsole(`Spotfire ${sfLoaderUrl} is LOADED !!!`,
+            spotfire, this.page, this.spot.nativeElement, this.customization);
+        } catch (e) {
           this.displayErrorMessage('Spotfire is not loaded');
+          throw new Error('Spotfire is not loaded');
         }
+        this.openPath(this.path);
       }, err => this.displayErrorMessage(err));
     }, 1000);
   }
@@ -151,22 +169,25 @@ export class SpotfireViewerComponent implements OnChanges {
    */
   protected openPath(path: string) {
     this.path = path;
+    this.displayInfoMessage(`${this.url}/${path}...`);
     this.doConsole(`SpotfireViewerComponent openPath(${path})`, this.sid);
     // Create a Unique ID for this Spotfire dashboard
     //
     this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
     // Prepare Spotfire app with path/page/customization
     //
-    this.app = new Application(this.url, this.customization, this.path,
+    this.app = new Application(this.url, this.customization as SpotfireCustomization, this.path,
       this.parameters, this.reloadAnalysisInstance, this.version, this.onCreateLoginElement);
-
 
     /**
      * Callback played once Spotfire API responds to Application creation
      *
      * Will open the target page
      */
-    this.app.ready$.pipe(filter(d => d)).subscribe(_ => this.openPage(this.page));
+    this.app.onApplicationReady$.subscribe(_ => {
+      this.app.onError$().subscribe(e => console.error('[SPOTFIRE-VIEWER]', e));
+      this.openPage(this.page);
+    }, e => console.error(e));
   }
 
   /**
@@ -186,6 +207,7 @@ export class SpotfireViewerComponent implements OnChanges {
    * @param page the document page that will be displayed
    */
   public openPage(page: string) {
+    this.displayInfoMessage(`${this.url}/${this.path}/${page ? page : ''}...`);
     this.doConsole(`SpotfireViewerComponent openPage(${page})`);
     this.page = page;
     // Ask Spotfire library to display this path/page (with optional customization)
@@ -194,61 +216,56 @@ export class SpotfireViewerComponent implements OnChanges {
       throw new Error('Spotfire webapp is not created yet');
     }
 
-    this.doConsole('SpotfireService openDocument',
-      this.spot.nativeElement.id, `cnf=${page}`, this.app, this.customization);
-    // this.doc = this.app.openDocument(this.spot.nativeElement.id, page, this.customization);
+    this.doConsole('SpotfireService openDocument', this.spot.nativeElement.id, `cnf=${page}`, this.app, this.customization);
 
     // Here is the call to 'spotfire.webPlayer.createApplication'
     //
-    this.document = this.app.getDocument(this.spot.nativeElement.id, page, this.customization);
+    this.document = this.app.getDocument(this.spot.nativeElement.id, this.page, this.customization as SpotfireCustomization);
+    this.document.onDocumentReady$().subscribe(z => {
+      this.doConsole(`Document.onOpened$: page is now opened:`, this.document);
+      if (this.filters && this.document.getFiltering()) {
+        this.document.getFiltering().set(this.filters);
+        this.loadFilters();
+        this.doConsole('FILTER', this.filters);
+      }
 
-    if (this.filters && this.document.filtering) {
-      this.document.filtering.set(this.filters);
-      this.loadFilters();
-      this.doConsole('FILTER', this.filters);
-    }
+      this.doForm(this.document);
+      if (this.markingOn) {
+        // Clear marking
+        this.markerSubject.next({});
+        this.document.getData().getTables$()
+          .pipe(tap(allTableNames => this.doConsole(`All tables and column names:`, allTableNames)))
+          .subscribe(allTableNames => this.document.getMarking().getMarkingNames$()
+            .pipe(tap(markingNames => this.doConsole(`All marking names:`, markingNames)))
+            .subscribe(markingNames => markingNames.forEach(markingName => {
+              const tableNames = this.markingOn === '*' ? allTableNames : this.markingOn;
+              Object.keys(tableNames).forEach(tName => {
+                let columnNames: Array<string> = this.markingOn === '*' ? allTableNames[tName] : tableNames[tName];
+                if (columnNames.length === 1 && columnNames[0] === '*') {
+                  columnNames = allTableNames[tName];
+                }
+                // this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(columnNames)}, ${this.maxRows})`);
+                this.document.getMarking().onChanged$(markingName, tName, columnNames, this.maxRows)
+                  .subscribe(f => this.updateMarking(tName, markingName, f));
+              });
+            })));
+      }
+      if (this.isFilteringWiredUp) {
+        this.doConsole('isFilteringWiredUp');
+        // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
+        //
+        this.filter$.pipe(tap(f => this.doConsole('Emit filter', f)))
+          .subscribe(f => this.filteringEvent.emit(f));
+      }
 
-    this.doForm(this.document);
-
-
-    if (this.markingOn) {
-      this.document.ready$.pipe(filter(l => l)).subscribe(z => {
-        this.doConsole(`Document.onOpened$: page is now opened:`, this.document);
-        this.document.data.getTables$().subscribe(tables => {
-          this.document.marking.getMarkingNames$().subscribe(markingNames => markingNames.forEach(markingName => {
-            const markOn = this.markingOn === '*' ? tables : this.markingOn;
-            Object.keys(markOn).forEach(key => {
-              const tName = key;
-              let xolumns: Array<string> = this.markingOn === '*' ? tables[key] : markOn[key];
-              if (xolumns.length === 1 && xolumns[0] === '*') {
-                xolumns = tables[tName];
-              }
-              this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(xolumns)}, ${this.maxRows})`);
-              this.document.marking.onChanged$(markingName, tName, xolumns, this.maxRows).subscribe(
-                f => {
-                  this.doConsole('----> updateMarking$', f);
-                  this.updateMarking(tName, markingName, f);
-                });
-            });
-          }));
-        });
-      });
-    }
-    if (this.isFilteringWiredUp) {
-      this.doConsole('isFilteringWiredUp');
-      // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
-      //
-      this.filter$.pipe(tap(f => this.doConsole('Emit filter', f)))
-        .subscribe(f => this.filteringEvent.emit(f));
-    }
-
-    if (this.isMarkingWiredUp) {
-      this.doConsole('isMarkingWiredUp');
-      // Subscribe to markingEvent and emit the result to the Output
-      //
-      this.marker$.pipe(tap(f => this.doConsole('Emit marking', f)))
-        .subscribe(f => this.markingEvent.emit(f));
-    }
+      if (this.isMarkingWiredUp) {
+        this.doConsole('isMarkingWiredUp');
+        // Subscribe to markingEvent and emit the result to the Output
+        //
+        this.marker$.pipe(tap(f => this.doConsole('Emit marking', f)))
+          .subscribe(f => this.markingEvent.emit(f));
+      }
+    });
   }
 
   /**
@@ -257,9 +274,9 @@ export class SpotfireViewerComponent implements OnChanges {
    * Will gather all marking and emit an event back to caller.
    *
    */
-  private updateMarking = (tName, mName, res) => {
+  private updateMarking = (tName: string, mName: string, res: {}) => {
     if (Object.keys(res).length > 0) {
-      this.doConsole('Marking changes', tName, mName, res);
+      this.doConsole(`We have marked rows on marking '${mName}' for table '${tName}':`, res);
       // update the marked row if partial selection
       //
       if (!this.markedRows[mName]) {
@@ -275,14 +292,13 @@ export class SpotfireViewerComponent implements OnChanges {
     } else if (this.markedRows[mName] && this.markedRows[mName][tName]) {
       // remove the marked row if no marking
       //
-      //      this.doConsole('[MARKING] remove marking change', this.markedRows[mName][tName]);
       delete this.markedRows[mName][tName];
       if (Object.keys(this.markedRows[mName]).length === 0) {
         delete this.markedRows[mName];
       }
       this.markerSubject.next(this.markedRows);
     } else {
-      this.doConsole('No marking', tName, mName, res);
+      //  this.doConsole(`No rows are marked on marking '${mName}' for table '${tName}'`);
     }
   }
 
@@ -293,7 +309,7 @@ export class SpotfireViewerComponent implements OnChanges {
     if (this.isFilteringWiredUp) {
       const ALL = spotfire.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES;
       this.doConsole('SpotfireComponent loadFilters', this.filterSubject);
-      this.document.getFiltering().getAllModifiedFilterColumns(ALL, fs => this.filterSubject.next(fs));
+      this.document.getFiltering()._filtering.getAllModifiedFilterColumns(ALL, fs => this.filterSubject.next(fs));
     }
   }
 }

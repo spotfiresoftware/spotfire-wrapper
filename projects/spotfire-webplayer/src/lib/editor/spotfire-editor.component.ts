@@ -106,8 +106,8 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
         // get Table info
         //
         const difference = (a, b) => b.filter(i => a.indexOf(i) < 0);
-        doc.ready$.pipe(filter(l => l)).subscribe(__ => {
-            doc.data.getAllTables$().subscribe(tables => {
+        doc.onDocumentReady$().subscribe(__ => {
+            doc.getData().getAllTables$().subscribe(tables => {
                 console.log('[SPOTFIRE-EDITOR] getAllTables$ returns', tables, this.filters, this.markingOn);
                 const toList = (g) => g.map(f => `'${f}'`).join(', '),
                     errTxt1 = '[spotfire-EDITOr] Attribut marking-on contains unknwon',
