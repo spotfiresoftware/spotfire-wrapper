@@ -21,7 +21,13 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
     // Url and customization have been initialized when using <my-spotfire> but may be set here,
     // just like path, markingOn, ... are:
     this.path = 'Samples/Sales and Marketing';
-    this.markingOn = { SalesAndMarketing: ['*'] };
+
+    //this.path = '/TIBCO Labs/ProcessMining_custom_queries_final';
+
+    // Marking can detail list of tables and their columns or '*' for all tables.
+    // When tables names are specified, user can detail list of columns to retrieve or all with '*'
+    this.markingOn = '*'; // { events: ['*'] }; // { SalesAndMarketing: ['*'] };
+    //  this.markingOn = { cases: ['*'] };
     this.maxRows = 4;
 
     // Marking is subscribed twice. Here and in AppComponent thru (markingEvent) on <my-spotfire> call
@@ -31,6 +37,11 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
     // show default page:
     this.display();
   }
+  /*  showPage(page = '') {
+      this.page = page;
+      console.log('Show', this.url, this.path, this.page);
+      this.openPage(page);
+    }*/
 }
 
 @Component({
@@ -47,7 +58,11 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
 </div>
 `})
 class AppComponent {
+
+  // url = 'https://23.22.187.212/';
   url = 'https://spotfire-next.cloud.tibco.com';
+  // url = 'https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper';
+   // url = 'https://github.com/ember-cli/';
   cust = { showAuthor: true, showFilterPanel: true, showToolBar: true };
 
   title = 'container';
