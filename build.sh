@@ -19,7 +19,7 @@ else
     env | sort
 fi
 
-repl() { printf "$1"'%.s' $(eval "echo {1.."$(($2))"}"); }
+repl() { echo -n "-" ; printf "$1"'%.s' $(eval "echo {1.."$(($2))"}"); }
 title() {
     title=$1
     echo ""
@@ -34,7 +34,7 @@ npm install
 
 
 title "[spotfire-webplayer] Build the NPM package:"
-(cd projects/spotfire-webplayer ; npm version patch)
+(cd dist/spotfire-webplayer ; npm version patch)
 ./node_modules/.bin/ng build spotfire-webplayer
 
 title "[spotfire-webplayer] Create the NPM package:"
