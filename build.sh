@@ -37,11 +37,11 @@ title "[spotfire-webplayer] Build the NPM package:"
 (cd projects/spotfire-webplayer ; npm version patch)
 ./node_modules/.bin/ng build spotfire-webplayer
 
-title "[spotfire-webplayer] Create the NPM package:"
-(cd dist/spotfire-webplayer/ ; npm pack)
-
 title "[spotfire-webplayer] Publish the NPM package to verdaccio:"
 (cd dist/spotfire-webplayer ; npm publish --registry http://rcxxxxbld12.na.tibco.com:4873 --access public)
+
+title "[spotfire-webplayer] Create the NPM package:"
+(cd dist/spotfire-webplayer/ ; npm pack)
 
 if [ $aws -eq 0 ]
 then
@@ -58,8 +58,7 @@ then
     
 else
     title "[spotfire-wrapper] Install the NPM package from local path (used to build the WebElement Library):"
-    npm install @tibco/spotfire-wrapper --registry http://rcxxxxbld12.na.tibco.com:4873
-   # npm install ${WORKSPACE}/build/spotfire-wrapper.tgz --no-save
+    npm install @tibco/spotfire-wrapper --registry http://rcxxxxbld12.na.tibco.com:4873 --no-save
 fi
 
 title "[spotfire-wrapper] Build the WebElement Library:"
@@ -76,7 +75,7 @@ fi
 echo ""
 echo ""
 echo "How to use: "
-echo "  - npm install https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.tgz"
+echo "  - npm install @tibco/spotfire-wrapper --registry http://rcxxxxbld12.na.tibco.com:4873"
 echo "  - <script src='https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js'></script>"
 echo ""
 echo ""

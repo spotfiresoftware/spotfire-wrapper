@@ -3,7 +3,7 @@
 This is the home for the __Spotfire Wrapper Library__ and the __Spotfire Wrapper Package__.
 
 > ### Note:
-> Artefacts are published to a S3 AWS server.
+> Library is published to a S3 AWS server, NPM package to a tibco private NPM repository (http://rcxxxxbld12.na.tibco.com:4873)
 
 
 ## Spotfire Wrapper Library
@@ -49,7 +49,7 @@ Spotfire Webplayer is an Angular Component built for and with Angular.
 
 ### Installation:
 ```
-$ npm install https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.tgz
+$ npm install @tibco/spotfire-wrapper --registry http://rcxxxxbld12.na.tibco.com:4873
 $ npm install @angular/cdk @angular/material @angular/flex-layout
 ```
 
@@ -61,6 +61,8 @@ The package provides two modules with a component each :
 For exemple, user can extend `SpotfireViewerComponent` like this : 
 
 ```typescript
+import { SpotfireModuleComponent, SpotfireViewerComponent} from '@tibco/spotfire-wrapper`;
+
 @Component({
   selector: 'my-spotfire',
   template: `Override spotfire-viewer template:
