@@ -7,7 +7,7 @@ import {
   SpotfireEditorModule,
   SpotfireEditorComponent,
   SpotfireViewerComponent
-} from 'spotfire-webplayer';
+} from '@tibco/spotfire-wrapper';
 
 @NgModule({
   imports: [BrowserModule, NoopAnimationsModule, SpotfireEditorModule]
