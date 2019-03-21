@@ -34,13 +34,14 @@ npm install
 
 
 title "[spotfire-webplayer] Build the NPM package:"
+(cd projects/spotfire-webplayer ; npm version patch)
 ./node_modules/.bin/ng build spotfire-webplayer
 
 title "[spotfire-webplayer] Create the NPM package:"
 (cd dist/spotfire-webplayer/ ; npm pack)
 
 title "[spotfire-webplayer] Publish the NPM package to verdaccio:"
-(cd dist/spotfire-webplayer ; npm publish --registry http://rcxxxxbld12.na.tibco.com:4873 )
+(cd dist/spotfire-webplayer ; npm publish spotfire-webplayer --registry http://rcxxxxbld12.na.tibco.com:4873 --access public)
 
 if [ $aws -eq 0 ]
 then
