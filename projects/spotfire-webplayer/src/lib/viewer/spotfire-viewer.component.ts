@@ -244,7 +244,7 @@ export class SpotfireViewerComponent implements OnChanges {
                 if (columnNames.length === 1 && columnNames[0] === '*') {
                   columnNames = allTableNames[tName];
                 }
-                // this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(columnNames)}, ${this.maxRows})`);
+                this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(columnNames)}, ${this.maxRows})`);
                 this.document.getMarking().onChanged$(markingName, tName, columnNames, this.maxRows)
                   .subscribe(f => this.updateMarking(tName, markingName, f));
               });

@@ -198,10 +198,10 @@ function doCall<T>(obj, m: string, ...a): Observable<T> {
       observer.error(err);
     }
   }).pipe(
-    timeout(30000),
+    timeout(3000000),
     catchError(e => {
       if (e instanceof TimeoutError) {
-        console.error(`[SPOTFIRE-WEBPLAYER] The call ${m}(${a.join(',')}) does not answer after 30sec on ${JSON.stringify(obj)}`);
+        console.error(`[SPOTFIRE-WEBPLAYER] The call ${m}(${a.join(',')}) does not answer after 3000sec on ${JSON.stringify(obj)}`);
       } else {
         console.error('[SPOTFIRE-WEBPLAYER] ERROR on doCall', e);
       }
