@@ -63,8 +63,8 @@ For exemple, user can extend `SpotfireViewerComponent` like this :
 ```typescript
 @Component({
   selector: 'my-spotfire',
-  template: `Override spotfire-viewer template :
-  <button *ngFor="let p of ['Sales performance', 'Territory analysis', 'Effect of promotions']" (click)="showPage(p)">{{p}}</button>
+  template: `Override spotfire-viewer template:
+  <button *ngFor="let p of ['Sales performance', 'Territory analysis', 'Effect of promotions']" (click)="openPage(p)">{{p}}</button>
   <div class="mys" #spot></div>`,
   styles: [`
   div.mys { width:600px; height:400px; background:#ebebeb; border-radius: 20px}
@@ -74,19 +74,18 @@ For exemple, user can extend `SpotfireViewerComponent` like this :
 class MySpotfireViewerComponent extends SpotfireViewerComponent implements OnInit {
   // No var please (or set a contructor)
   ngOnInit(): void {
-    //    pages = ['Sales performance', 'Territory analysis', 'Effect of promotions'];
     this.url = 'https://spotfire-next.cloud.tibco.com';
     this.path = 'Samples/Sales and Marketing';
     this.customization = { showAuthor: true, showFilterPanel: true, showToolBar: true } as SpotfireCustomization;
     this.markingOn = '{"SalesAndMarketing": ["*"]}';
-    this.showPage('');
+
+    // Show default page:
+    this.display();
+
+    // Subscribe to markingEvent
+    //
     this.markingEvent.subscribe(e => console.log('MARKING MySpot', e));
   }
-  showPage(page: string) {
-        this.page = page;
-        console.log('Show', this.url, this.path, this.page);
-        this.display();
-      }
 }
 ```
 

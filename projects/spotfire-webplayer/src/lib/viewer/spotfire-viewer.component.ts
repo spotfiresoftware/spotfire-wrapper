@@ -154,7 +154,7 @@ export class SpotfireViewerComponent implements OnChanges {
           this.doConsole(`Spotfire ${sfLoaderUrl} is LOADED !!!`,
             spotfire, this.page, this.spot.nativeElement, this.customization);
         } catch (e) {
-          this.displayErrorMessage('Spotfire is not loaded');
+          this.displayErrorMessage(`Spotfire is not loaded from ${this.url}`);
           throw new Error('Spotfire is not loaded');
         }
         this.openPath(this.path);
@@ -197,7 +197,7 @@ export class SpotfireViewerComponent implements OnChanges {
   onCreateLoginElement = () => {
     this.doConsole('Creating the login element');
     // Optionally create and return a div to host the login button
-    this.displayErrorMessage('Cannot login');
+    this.displayErrorMessage(`Cannot login to ${this.url}/${this.path}`);
     return null;
   }
   protected doForm(doc: Document) { }
