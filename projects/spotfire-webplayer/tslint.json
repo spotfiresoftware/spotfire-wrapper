@@ -10,6 +10,7 @@
     "component-selector": [
       true,
       "element",
+      "spotfire",
       "lib",
       "kebab-case"
     ]

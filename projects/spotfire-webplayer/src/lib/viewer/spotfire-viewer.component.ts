@@ -1,14 +1,14 @@
 // Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
 import {
   Component, Input, EventEmitter, ViewChild,
-  ElementRef, Output, OnChanges, SimpleChanges, ViewEncapsulation
+  ElementRef, Output, OnChanges, SimpleChanges, ViewEncapsulation, OnInit
 } from '@angular/core';
 
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { LazyLoadingLibraryService } from '../lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
-import { DocMetadata, Application, Document, CUSTLABELS } from '../spotfire-webplayer';
+import { DocMetadata, Application, Document } from '../spotfire-webplayer';
 import { PersistanceService } from '../persitence.service';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
@@ -17,11 +17,13 @@ import { PersistanceService } from '../persitence.service';
 declare let spotfire: any;
 
 @Component({
+  selector: 'spotfire-viewer',
+  exportAs: 'spotfireViewer',
   templateUrl: 'spotfire-viewer.component.html',
   encapsulation: ViewEncapsulation.None
 })
 
-export class SpotfireViewerComponent implements OnChanges {
+export class SpotfireViewerComponent implements OnChanges, OnInit {
   @Input() debug = false;
   @Input() url: string;
   @Input() page: string;
@@ -55,7 +57,6 @@ export class SpotfireViewerComponent implements OnChanges {
 
   view: any;
   longTime = false;
-  custLabels = CUSTLABELS;
 
   doConsole = (...args: any[]) => {
     if (this.debug) {
@@ -66,9 +67,13 @@ export class SpotfireViewerComponent implements OnChanges {
     public lazySvc: LazyLoadingLibraryService,
     public storSvc: PersistanceService) {
     this.doConsole('Welcome !');
-
     setTimeout(() => this.longTime = true, 6000);
   }
+  ngOnInit(): void {
+    this.doConsole('OnInit', this.url, this.path);
+    this.display();
+  }
+
   display(changes?: SimpleChanges) {
     this.doConsole('Display', changes);
     if (typeof this.customization === 'string') {

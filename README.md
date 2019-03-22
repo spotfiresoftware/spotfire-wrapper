@@ -94,9 +94,12 @@ class MySpotfireViewerComponent extends SpotfireViewerComponent implements OnIni
 
 Run `ng serve --port=4204` for a dev server. Navigate to `http://localhost:4204/`. The app will automatically reload if you change any of the source files.
 
-## Build: Step #1 the NPM package 
+---
 
-```sh
+## Builds
+### Build: Step #1 the NPM package:
+
+```bash
 $ npm install
 $ ng build spotfire-webplayer
 $ (cd dist/spotfire-webplayer/ ; npm pack)
@@ -104,36 +107,55 @@ $ mkdir build
 $ cp -f dist/spotfire-webplayer/spotfire-webplayer-0.0.1.tgz build/spotfire-wrapper.tgz
 ```
 
-## Build: Step #2 the library
-```sh
+### Build: Step #2 the library:
+```bash
 $ npm install build//spotfire-wrapper.tgz
 $ npm run build:elements
 $ cp -f elements/spotfire-wrapper.js ./build
 ```
 
 
-The script `build.sh` does all the steps above and publish the artefacts to S3 bucket https://s3-us-west-2.amazonaws.com/cec-library/
+The script `build.sh` does all the steps above and publishes the artefacts to S3 bucket https://s3-us-west-2.amazonaws.com/cec-library/ and to NPM private repository.
 
-## Demo #1: Use spotfire-wrapper library in a raw HTML code
+---
+## Demos
+### Demo #1: Use &lt;spotfire-viewer> in a raw HTML code
 
 After building the JS library (step above), run `cd demo` and `cp ../build/spotfire-wrapper.js .`
 
 Start a HTTP server : 
-> `python -m SimpleHTTPServer 4404` 
+```bash
+python -m SimpleHTTPServer 4404
+``` 
 
 and navigale to `http://localhost:4404`, to see how to easily display a Spotfire dashboard in raw html pages.
 
-## Demo #2: Use spotfire-wrapper package inside an Angular application
+### Demo #2: Use &lt;spotfire-viewer> tag inside an Angular application
 
-To see how to include the AngularElement <spotfire-wrapper> inside another Angluar application (called here `container`):
+```bash
+ng serve demo1 --port=4205 --open
+```
+
+It will open a browser `http://localhost:4205`.
+
+Sources are available in `demo1` directory.
+
+### Demo #3: Extend SpotfireViexerComponent inside an Angular application
+
 Run:
-> `ng serve container --port=4205 --open`
+```bash
+ng serve demo2 --port=4206 --open
+```
 
-It will open a browser to the container app (`http://localhost:4205/`).
+It will open a browser `http://localhost:4206`.
+
+Sources are available in `demo1` directory.
 
 > Note: 
 > 
-> The container code has been extremely simplified. Check the src_container/main.ts file
+> The code of demo1 and demo2 has been extremely simplified. Check the `demo1/main.ts` and `demo2/main.ts` files.
+
+---
 
 ## Running unit tests
 

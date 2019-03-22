@@ -3,13 +3,15 @@ import { FormGroup, Validators, FormControl, FormBuilder } from '@angular/forms'
 import { filter } from 'rxjs/operators';
 
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
-import { Document as SpotDoc } from '../spotfire-webplayer';
+import { Document as SpotDoc, CUSTLABELS } from '../spotfire-webplayer';
 import { LazyLoadingLibraryService } from '../lazy-loading-library.service';
 import { PersistanceService } from '../persitence.service';
 import { SpotfireViewerComponent } from '../viewer/spotfire-viewer.component';
 
 @Component({
+    selector: 'spotfire-editor',
     templateUrl: 'spotfire-editor.component.html',
+    exportAs: 'spotfireEditor',
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./my-theme.scss', './spotfire-editor.component.scss']
 })
@@ -22,6 +24,8 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
     dataTables = {};
     pages = [];
     possibleValues = '';
+    custLabels = CUSTLABELS;
+
     constructor(public fb: FormBuilder, l: LazyLoadingLibraryService, s: PersistanceService) {
         super(l, s);
     }

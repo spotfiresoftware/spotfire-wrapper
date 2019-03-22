@@ -1,9 +1,9 @@
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { SpotfireViewerComponent } from '@tibco/spotfire-wrapper';
-import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'my-spotfire',
@@ -53,7 +53,7 @@ class AppComponent {
   url = 'https://spotfire-next.cloud.tibco.com';
   cust = { showAuthor: true, showFilterPanel: true, showToolBar: true };
 
-  title = 'container';
+  title = 'demo1';
   markedData = {};
 
   // Marking can be subscribed outside component

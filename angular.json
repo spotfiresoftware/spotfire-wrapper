@@ -110,9 +110,9 @@
         }
       }
     },
-    "container": {
+    "demo1": {
       "root": "",
-      "sourceRoot": "src_container",
+      "sourceRoot": "demo1",
       "projectType": "application",
       "prefix": "app",
       "schematics": {
@@ -125,10 +125,10 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist/container_app",
-            "index": "src_container/index.html",
-            "main": "src_container/main.ts",
-            "polyfills": "src_container/polyfills.ts",
-            "tsConfig": "src_container/tsconfig.app.json",
+            "index": "demo1/index.html",
+            "main": "demo1/main.ts",
+            "polyfills": "demo1/polyfills.ts",
+            "tsConfig": "demo1/tsconfig.app.json",
             "assets": [],
             "styles": [],
             "scripts": []
@@ -138,7 +138,40 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "container:build"
+            "browserTarget": "demo1:build"
+          }
+        }
+      }
+    },
+    "demo2": {
+      "root": "",
+      "sourceRoot": "demo2",
+      "projectType": "application",
+      "prefix": "app",
+      "schematics": {
+        "@schematics/angular:component": {
+          "styleext": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/container_app",
+            "index": "demo2/index.html",
+            "main": "demo2/main.ts",
+            "polyfills": "demo2/polyfills.ts",
+            "tsConfig": "demo2/tsconfig.app.json",
+            "assets": [],
+            "styles": [],
+            "scripts": []
+          },
+          "configurations": {}
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "demo2:build"
           }
         }
       }

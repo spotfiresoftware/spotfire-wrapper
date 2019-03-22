@@ -47,17 +47,17 @@ class MySpotfireViewerComponent extends SpotfireViewerComponent implements OnIni
 
 ## Demo: Use spotfire-wrapper package inside an Angular application
 
-To see how to user the Spotfire Component inside another Angluar application (called here `container`):
+To see how to user the Spotfire Component inside another Angluar application (called here `demo1`):
 Run:
 ```bash
-ng serve container --port=4205 --open
+ng serve demo1 --port=4205 --open
 ```
 
-It will open a browser to the container app (`http://localhost:4205/`).
+It will open a browser to the demo1 app (`http://localhost:4205/`).
 
 > Note: 
 > 
-> The container code has been extremely simplified. Check the src_container/main.ts file
+> The demo1 code has been extremely simplified. Check the demo1/main.ts file
 
 ## Running unit tests
 
