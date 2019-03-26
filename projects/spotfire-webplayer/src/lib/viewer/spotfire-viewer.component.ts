@@ -114,16 +114,20 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   private displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
     this.errorMessages.push(message);
-    this.spot.nativeElement.style.fontFamily = 'monospace';
-    this.spot.nativeElement.style.color = '#e82127';
-    this.spot.nativeElement.style.textAlign = 'center';
-    this.spot.nativeElement.style.padding = '30px';
-    this.spot.nativeElement.textContent = this.errorMessages.join('<br>');
+    if (!this.document) {
+      // Do not display the info Message when document is running
+      this.spot.nativeElement.style.fontFamily = 'monospace';
+      this.spot.nativeElement.style.color = '#e82127';
+      this.spot.nativeElement.style.textAlign = 'center';
+      this.spot.nativeElement.style.padding = '30px';
+      this.spot.nativeElement.textContent = this.errorMessages.join('<br>');
+    }
   }
 
   private displayInfoMessage = (message: string) => {
     console.log(message);
-    if (this.debug) {
+    if (!this.document && this.debug) {
+      // Do not display the info Message when document is running
       this.spot.nativeElement.style.fontFamily = 'monospace';
       this.spot.nativeElement.style.color = 'black';
       this.spot.nativeElement.style.textAlign = 'center';
@@ -225,52 +229,57 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
 
     // Here is the call to 'spotfire.webPlayer.createApplication'
     //
-    this.document = this.app.getDocument(this.spot.nativeElement.id, this.page, this.customization as SpotfireCustomization);
-    this.document.onDocumentReady$().subscribe(z => {
-      this.doConsole(`Document.onOpened$: page is now opened:`, this.document);
-      if (this.filters && this.document.getFiltering()) {
-        this.document.getFiltering().set(this.filters);
-        this.loadFilters();
-        this.doConsole('FILTER', this.filters);
-      }
+    if (this.document) {
+      this.doConsole(`SpotfireViewerComponent setActivePage(${page})`);
+      this.document.setActivePage(page);
+    } else {
+      this.document = this.app.getDocument(this.spot.nativeElement.id, this.page, this.customization as SpotfireCustomization);
+      this.document.onDocumentReady$().subscribe(z => {
+        this.doConsole(`Document.onOpened$: page is now opened:`, this.document);
+        if (this.filters && this.document.getFiltering()) {
+          this.document.getFiltering().set(this.filters);
+          this.loadFilters();
+          this.doConsole('FILTER', this.filters);
+        }
 
-      this.doForm(this.document);
-      if (this.markingOn) {
-        // Clear marking
-        this.markerSubject.next({});
-        this.document.getData().getTables$()
-          .pipe(tap(allTableNames => this.doConsole(`All tables and column names:`, allTableNames)))
-          .subscribe(allTableNames => this.document.getMarking().getMarkingNames$()
-            .pipe(tap(markingNames => this.doConsole(`All marking names:`, markingNames)))
-            .subscribe(markingNames => markingNames.forEach(markingName => {
-              const tableNames = this.markingOn === '*' ? allTableNames : this.markingOn;
-              Object.keys(tableNames).forEach(tName => {
-                let columnNames: Array<string> = this.markingOn === '*' ? allTableNames[tName] : tableNames[tName];
-                if (columnNames.length === 1 && columnNames[0] === '*') {
-                  columnNames = allTableNames[tName];
-                }
-                this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(columnNames)}, ${this.maxRows})`);
-                this.document.getMarking().onChanged$(markingName, tName, columnNames, this.maxRows)
-                  .subscribe(f => this.updateMarking(tName, markingName, f));
-              });
-            })));
-      }
-      if (this.isFilteringWiredUp) {
-        this.doConsole('isFilteringWiredUp');
-        // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
-        //
-        this.filter$.pipe(tap(f => this.doConsole('Emit filter', f)))
-          .subscribe(f => this.filteringEvent.emit(f));
-      }
+        this.doForm(this.document);
+        if (this.markingOn) {
+          // Clear marking
+          this.markerSubject.next({});
+          this.document.getData().getTables$()
+            .pipe(tap(allTableNames => this.doConsole(`All tables and column names:`, allTableNames)))
+            .subscribe(allTableNames => this.document.getMarking().getMarkingNames$()
+              .pipe(tap(markingNames => this.doConsole(`All marking names:`, markingNames)))
+              .subscribe(markingNames => markingNames.forEach(markingName => {
+                const tableNames = this.markingOn === '*' ? allTableNames : this.markingOn;
+                Object.keys(tableNames).forEach(tName => {
+                  let columnNames: Array<string> = this.markingOn === '*' ? allTableNames[tName] : tableNames[tName];
+                  if (columnNames.length === 1 && columnNames[0] === '*') {
+                    columnNames = allTableNames[tName];
+                  }
+                  this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(columnNames)}, ${this.maxRows})`);
+                  this.document.getMarking().onChanged$(markingName, tName, columnNames, this.maxRows)
+                    .subscribe(f => this.updateMarking(tName, markingName, f));
+                });
+              })));
+        }
+        if (this.isFilteringWiredUp) {
+          this.doConsole('isFilteringWiredUp');
+          // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
+          //
+          this.filter$.pipe(tap(f => this.doConsole('Emit filter', f)))
+            .subscribe(f => this.filteringEvent.emit(f));
+        }
 
-      if (this.isMarkingWiredUp) {
-        this.doConsole('isMarkingWiredUp');
-        // Subscribe to markingEvent and emit the result to the Output
-        //
-        this.marker$.pipe(tap(f => this.doConsole('Emit marking', f)))
-          .subscribe(f => this.markingEvent.emit(f));
-      }
-    });
+        if (this.isMarkingWiredUp) {
+          this.doConsole('isMarkingWiredUp');
+          // Subscribe to markingEvent and emit the result to the Output
+          //
+          this.marker$.pipe(tap(f => this.doConsole('Emit marking', f)))
+            .subscribe(f => this.markingEvent.emit(f));
+        }
+      });
+    }
   }
 
   /**

@@ -53,7 +53,7 @@ class AppComponent {
   url = 'https://spotfire-next.cloud.tibco.com';
   cust = { showAuthor: true, showFilterPanel: true, showToolBar: true };
 
-  title = 'demo1';
+  title = 'demo2';
   markedData = {};
 
   // Marking can be subscribed outside component

@@ -171,7 +171,7 @@ export class Document {
   // getBookmarkNames$ = () => this.do('getBookmarkNames');
   // getReports$ = () => this.do('getReports');
   getActivePage$ = () => this.do<PageState>('getActivePage');
-
+  setActivePage = (p: string | number) => this._doc.setActivePage(p);
   getData = () => this.data;
   getMarking = () => this.marking;
   getFiltering = () => this.filtering;
