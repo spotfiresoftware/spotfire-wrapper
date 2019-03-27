@@ -35,7 +35,6 @@ npm install
 
 
 title "[spotfire-webplayer] Build the NPM package:"
-(cd projects/spotfire-webplayer ; npm version patch)
 ./node_modules/.bin/ng build spotfire-webplayer
 
 title "[spotfire-webplayer] Publish the NPM package to verdaccio:"
