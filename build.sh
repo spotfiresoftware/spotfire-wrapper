@@ -38,8 +38,8 @@ title "[spotfire-webplayer] Build the NPM package:"
 ./node_modules/.bin/ng build spotfire-webplayer
 
 title "[spotfire-webplayer] Publish the NPM package to verdaccio:"
-(cd dist/spotfire-webplayer ; npm publish --registry http://rcxxxxbld12.na.tibco.com:4873 --access public || {
-    echo "WARNING: no access to NPM registry - no publishing"
+(cd dist/spotfire-webplayer ; npm publish --registry http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general --access public || {
+    echo "WARNING: no access to NPM registry - no publishing to artifacts.tibco.com"
 })
 title "[spotfire-webplayer] Create the NPM package:"
 (cd dist/spotfire-webplayer/ ; npm pack)
@@ -61,7 +61,7 @@ then
 else
     title "[spotfire-wrapper] Install the NPM package from NPM registry (or local path if not reachable)."
     echo "The NPM package is used to build the WebElement Library"
-    npm install @tibco/spotfire-wrapper --registry http://rcxxxxbld12.na.tibco.com:4873 --no-save || {
+    npm install @tibco/spotfire-wrapper --registry http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general --no-save || {
         echo "WARNING: no access to NPM registry - installing from ${WORKSPACE}/build/spotfire-wrapper.tgz"
         npm install ${WORKSPACE}/build/spotfire-wrapper.tgz --no-save
     }

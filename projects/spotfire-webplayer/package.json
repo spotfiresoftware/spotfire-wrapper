@@ -1,12 +1,16 @@
 {
   "name": "@tibco/spotfire-wrapper",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "private": false,
   "peerDependencies": {
     "@angular/common": "^7.2.0",
     "@angular/core": "^7.2.0"
   },
   "author": {
     "name": "Nicolas Deroche"
+  },
+  "publishConfig": {
+    "registry": "http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general"
   },
   "repository": {
     "type": "git",
