@@ -5,8 +5,19 @@ Spotfire Webplayer is an Angular Component built for and with Angular.
 
 ### Installation:
 ```bash
-$ npm install @tibco/spotfire-wrapper --registry http://rcxxxxbld12.na.tibco.com:4873
+$ npm install @tibco/spotfire-wrapper --registry http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general
 ```
+
+To let know `npm` tool that packages with `@tibco` scope need to be retrieved from artifactory, you may type this command once (it will update your `~/.npmrc` file): 
+```bash
+npm config set @tibco:registry http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general"
+```
+Next you can type any of these commands, and `npm` will look into the right repository:
+```bash
+npm install @tibco/spotfire-wrapper@latest --save
+npm outdated -l
+npm update
+````
 
 __Really easy to get started !__
 
@@ -85,6 +96,6 @@ class MySpotfireViewerComponent extends SpotfireViewerComponent implements OnIni
 ---
 ## Further help
 
-Use Slack or email to send me any question or concern you have 
+Use Slack or email to send me any question, suggestion or concern you have 
 
 Nicolas Deroche - part of **The Tibco Company**

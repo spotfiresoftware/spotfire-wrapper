@@ -2,13 +2,14 @@
 
 This is the home for the __Spotfire Wrapper Library__ and the __Spotfire Wrapper Package__.
 
-> ### Note:
-> Library is published to a S3 AWS server, NPM package to a tibco private NPM repository (http://rcxxxxbld12.na.tibco.com:4873)
+> ### Notes:
+> * Library can be found here: https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js
+> * NPM package can be found here: http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general
 
 
 ## Spotfire Wrapper Library
 
-Spotfire Wrapper is a Javascript library that defines two new HTML elements to easily display a Spotfire dashboard in a standard HTML page:
+Spotfire Wrapper is a Javascript library that defines 2 new HTML elements to easily display a Spotfire dashboard in a standard HTML page:
 
  * `<spotfire-viewer>` to only display a Spotfire dashboard:
 ```html
@@ -49,7 +50,7 @@ Spotfire Webplayer is an Angular Component built for and with Angular.
 
 ### Installation:
 ```
-$ npm install @tibco/spotfire-wrapper --registry http://rcxxxxbld12.na.tibco.com:4873
+$ npm install @tibco/spotfire-wrapper --registry http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general
 $ npm install @angular/cdk @angular/material @angular/flex-layout
 ```
 
@@ -96,6 +97,44 @@ Run `ng serve --port=4204` for a dev server. Navigate to `http://localhost:4204/
 
 ---
 
+## Demos
+### Demo #1: Use &lt;spotfire-viewer> in a raw HTML code:
+
+After building the JS library (step above), run `cd demo` and `cp ../build/spotfire-wrapper.js .`
+
+Start a HTTP server : 
+```bash
+python -m SimpleHTTPServer 4404
+``` 
+
+and navigale to `http://localhost:4404`, to see how to easily display a Spotfire dashboard in raw html pages.
+
+### Demo #2: Use &lt;spotfire-viewer> tag inside an Angular application:
+
+```bash
+ng serve demo1 --port=4205 --open
+```
+
+It will open a browser `http://localhost:4205`.
+
+Sources are available in `demo1` directory.
+
+### Demo #3: Extend SpotfireViexerComponent inside an Angular application:
+
+```bash
+ng serve demo2 --port=4206 --open
+```
+
+It will open a browser `http://localhost:4206`.
+
+Sources are available in `demo2` directory.
+
+> Note: 
+> 
+> The code of demo1 and demo2 has been extremely simplified. Check the `demo1/main.ts` and `demo2/main.ts` files.
+
+---
+
 ## Builds
 ### Build: Step #1 the NPM package:
 
@@ -116,44 +155,6 @@ $ cp -f elements/spotfire-wrapper.js ./build
 
 
 The script `build.sh` does all the steps above and publishes the artefacts to S3 bucket https://s3-us-west-2.amazonaws.com/cec-library/ and to NPM private repository.
-
----
-## Demos
-### Demo #1: Use &lt;spotfire-viewer> in a raw HTML code
-
-After building the JS library (step above), run `cd demo` and `cp ../build/spotfire-wrapper.js .`
-
-Start a HTTP server : 
-```bash
-python -m SimpleHTTPServer 4404
-``` 
-
-and navigale to `http://localhost:4404`, to see how to easily display a Spotfire dashboard in raw html pages.
-
-### Demo #2: Use &lt;spotfire-viewer> tag inside an Angular application
-
-```bash
-ng serve demo1 --port=4205 --open
-```
-
-It will open a browser `http://localhost:4205`.
-
-Sources are available in `demo1` directory.
-
-### Demo #3: Extend SpotfireViexerComponent inside an Angular application
-
-Run:
-```bash
-ng serve demo2 --port=4206 --open
-```
-
-It will open a browser `http://localhost:4206`.
-
-Sources are available in `demo1` directory.
-
-> Note: 
-> 
-> The code of demo1 and demo2 has been extremely simplified. Check the `demo1/main.ts` and `demo2/main.ts` files.
 
 ---
 
