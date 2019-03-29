@@ -34,10 +34,16 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   private version = '7.14';
   @Input() markingOn: {} | string;
   @Input() maxRows = 10;
-  @Input() parameters = '';
+  @Input() set parameters(value: string) {
+    this._parameters = value;
+    if (this.app) {
+      this.openPath(this.path);
+    }
+  }
   @ViewChild('spot', { read: ElementRef }) spot: ElementRef;
   errorMessages = [];
 
+  private _parameters: string;
   metadata: DocMetadata;
   edit = false;
 
@@ -178,6 +184,11 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    */
   protected openPath(path: string) {
     this.path = path;
+    if (this.document) {
+      this.document.close();
+    }
+    // FIXTHIS, we might need to wait for onClosed callback
+    this.document = null;
     this.displayInfoMessage(`${this.url}/${path}...`);
     this.doConsole(`SpotfireViewerComponent openPath(${path})`, this.sid);
     // Create a Unique ID for this Spotfire dashboard
@@ -186,7 +197,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     // Prepare Spotfire app with path/page/customization
     //
     this.app = new Application(this.url, this.customization as SpotfireCustomization, this.path,
-      this.parameters, this.reloadAnalysisInstance, this.version, this.onCreateLoginElement);
+      this._parameters, this.reloadAnalysisInstance, this.version, this.onCreateLoginElement);
 
     /**
      * Callback played once Spotfire API responds to Application creation

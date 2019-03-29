@@ -14,8 +14,8 @@
   },
   "author": {
     "name": "Nicolas Deroche",
-    "email" : "nderoche@tibco.com",
-    "url" : "http://www.tibco.com"
+    "email": "nderoche@tibco.com",
+    "url": "http://www.tibco.com"
   },
   "private": false,
   "dependencies": {

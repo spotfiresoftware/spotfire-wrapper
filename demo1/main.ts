@@ -8,6 +8,8 @@ import { SpotfireViewerModule } from '@tibco/spotfire-wrapper';
   selector: 'app-root',
   template: `
 <h2>Angular app "{{title|uppercase}}"</h2>
+<button (click)="doIt()">DOIT</button>
+PARAM = {{param}}
 <div style='display:flex'>
   <spotfire-viewer style='width:50%; height:600px'
       [url]="url"
@@ -16,6 +18,7 @@ import { SpotfireViewerModule } from '@tibco/spotfire-wrapper';
       [markingOn]="{ SalesAndMarketing: ['*'] }"
       [maxRows]="10"
       (markingEvent)="onMarking($event)"
+      [parameters]="param"
       [debug]="true">
   </spotfire-viewer>
   <pre style='font-size:8px'>{{markedData|json}}</pre>
@@ -27,11 +30,18 @@ class AppComponent {
   path = 'Samples/Sales and Marketing';
   cust = { showAuthor: true, showFilterPanel: true, showToolBar: true };
   markedData = {};
+  param = 'ApplyBookmark(bookmarkName="Book2");';
 
   // Marking can be subscribed outside component
   onMarking = (e: Event) => {
     console.log('[AppComponent] MARKING MySpot returns', e);
     this.markedData = e;
+  }
+  doIt = (t) => {
+    console.log('Change param');
+    this.param = this.param === 'ApplyBookmark(bookmarkName="Book1");' ?
+      'ApplyBookmark(bookmarkName="Book2");' :
+      'ApplyBookmark(bookmarkName="Book1");';
   }
 }
 

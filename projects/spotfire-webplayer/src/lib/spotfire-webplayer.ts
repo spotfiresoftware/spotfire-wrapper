@@ -176,12 +176,13 @@ export class Document {
   getMarking = () => this.marking;
   getFiltering = () => this.filtering;
   public onDocumentReady$ = () => doCall(this._doc, 'onDocumentReady');
+  public close = () => this._doc ? this._doc.close() : null;
   private onActivePageChanged$ = () => doCall(this._doc, 'onActivePageChanged');
 }
 
 
 function doCall<T>(obj, m: string, ...a): Observable<T> {
-  return Observable.create(observer => {
+  return new Observable<T>(observer => {
     const oneShot = ['onDocumentReady'];
     // doConsole('[OBS]', 'doCall obj=', obj, ', m=', m, ', arg=', args, typeof obj);
     if (typeof obj[m] !== 'function' || !obj) {
