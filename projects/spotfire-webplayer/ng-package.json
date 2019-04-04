@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../../dist/spotfire-webplayer",
+  "dest": "../../dist/spotfire-wrapper",
   "lib": {
     "entryFile": "src/public_api.ts"
   }

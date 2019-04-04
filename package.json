@@ -10,7 +10,14 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "builddev:elements": "ng build  && node build-script.js && wc elements/spotfire-wrapper.js",
-    "build:elements": "ng build --prod && node build-script.js && wc elements/spotfire-wrapper.js"
+    "build:elements": "ng build --prod && node build-script.js && wc elements/spotfire-wrapper.js",
+    "lib:build": "ng run zspotfire-webplayer:build",
+    "lib:build:prod": "ng run zspotfire-webplayer:build:production",
+    "lib:test": "ng run zspotfire-webplayer:test",
+    "lib:lint": "ng run zspotfire-webplayer:lint",
+    "schematics:build": "tsc -p projects/schematics/tsconfig.json",
+    "schematics:copy": "npm run schematics:build && webpack",
+    "build-package": "npm run lib:build && npm run schematics:copy"
   },
   "author": {
     "name": "Nicolas Deroche",
@@ -36,16 +43,19 @@
     "zone.js": "^0.8.29"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^0.12.4",
+    "@angular-devkit/build-angular": "^0.13.8",
     "@angular-devkit/build-ng-packagr": "~0.12.0",
-    "@angular/cli": "^7.3.5",
-    "@angular/compiler-cli": "^7.2.8",
-    "@angular/language-service": "^7.2.8",
-    "@types/jasmine": "^3.3.9",
+    "@angular-devkit/core": "^7.3.8",
+    "@angular-devkit/schematics": "^7.3.8",
+    "@angular/cli": "^7.3.8",
+    "@angular/compiler-cli": "^7.2.12",
+    "@angular/language-service": "^7.2.12",
+    "@types/jasmine": "^3.3.12",
     "@types/jasminewd2": "^2.0.6",
-    "@types/node": "^10.12.30",
+    "@types/node": "^10.14.4",
     "codelyzer": "~4.5.0",
     "concat": "^1.0.3",
+    "copy-webpack-plugin": "^5.0.2",
     "fs-extra": "^7.0.1",
     "jasmine-core": "~3.3.0",
     "jasmine-spec-reporter": "~4.2.1",
@@ -55,11 +65,15 @@
     "karma-jasmine": "~2.0.1",
     "karma-jasmine-html-reporter": "^1.4.0",
     "ng-packagr": "^4.2.0",
+    "schematics-utilities": "^1.1.2",
     "ts-node": "^8.0.3",
     "tsickle": ">=0.34.0",
     "tslib": "^1.9.0",
     "tslint": "~5.12.1",
-    "typescript": "~3.2.4"
+    "typescript": "~3.2.4",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-node-externals": "^1.7.2"
   },
   "repository": {
     "type": "git",

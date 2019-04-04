@@ -176,7 +176,7 @@
         }
       }
     },
-    "spotfire-webplayer": {
+    "zspotfire-webplayer": {
       "root": "projects/spotfire-webplayer",
       "sourceRoot": "projects/spotfire-webplayer/src",
       "projectType": "library",
