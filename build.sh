@@ -4,13 +4,13 @@ which aws
 aws=$?
 
 set -e
-
+host=$(hostname)
 if [ $aws -eq 1 ]
 then
-    echo "CAUTION: aws is not installed on this machine."
+    echo "CAUTION: aws is not installed on $host."
     echo "         SpotfireWrapper JS library won't be published at https://s3-us-west-2.amazonaws.com/cec-library/"
     echo "         but in ./build"
-    export WORKSPACE=$(PWD)
+    export WORKSPACE=$(pwd)
     mkdir -p ${WORKSPACE}/build
 else
     export AWS_DEFAULT_PROFILE=cec
