@@ -1,7 +1,7 @@
 
 // Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
 import { Observable, forkJoin, of as observableOf, zip, BehaviorSubject, of, throwError, TimeoutError } from 'rxjs';
-import { SpotfireCustomization } from './spotfire-customization';
+import { SpotfireCustomization, SpotfireFilter } from './spotfire-customization';
 import { mergeMap, tap, pluck, map, filter, timeout, catchError } from 'rxjs/operators';
 
 declare let spotfire: any;
@@ -43,6 +43,11 @@ export class Marking {
 class Filtering {
   constructor(public _filtering) { }
   set = (flts) => this._filtering.setFilters(flts, spotfire.webPlayer.filteringOperation.REPLACE);
+
+  getAllModifiedFilterColumns = () => doCall<SpotfireFilter[]>(
+    this._filtering, 'getAllModifiedFilterColumns',
+    spotfire.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES
+  )
 }
 
 export class Data {
@@ -90,8 +95,8 @@ export class Data {
       tables.forEach(table => obs.push(this.getDataTableColNames$(table.dataTableName)));
       return forkJoin(obs);
     }), map(tables => {
-      const dataTables = {};
-      tables.forEach(table => table.forEach(column => {
+      const dataTables: [][] = [];
+      tables.forEach((table: []) => table.forEach(column => {
         const tname = column['tabName'];
         if (!dataTables[tname]) { dataTables[tname] = []; }
         dataTables[tname].push(column['colName']);
@@ -105,6 +110,7 @@ export class Data {
       tables.forEach(table => obs.push(this.getDataTable$(table.dataTableName)));
       return forkJoin(obs);
     }), map(tables => {
+
       const dataTables = {};
       tables[0].forEach(columns => {
         const tname = columns['tabName'];
@@ -245,9 +251,8 @@ export class Application {
     }
   }
   // Displays an error message if something goes wrong in the Web Player.
-  private onErrorCallback = (errorCode: string, description: string) => console.error(`[Spotfire WebPlayer] ${errorCode}: ${description}`);
-
-  onError$ = () => doCall(this._app, 'onError');
+  private onErrorCallback = (errCode: string, desc: string) =>
+    console.error(`[SPOTFIRE-WEBPLAYER] ${errCode}: ${desc}`);
   onOpened$ = () => doCall(this._app, 'onOpened');
   getDocument = (id: string, page: string, custo?: SpotfireCustomization): Document =>
     new Document(this, id, page, custo ? custo : this.customization)

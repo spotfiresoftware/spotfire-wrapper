@@ -40,7 +40,7 @@ class SpotfireFilterSetting {
 }
 
 export class SpotfireFilter {
-  filteringSchemeName = 'Filtering scheme';
+  filteringSchemeName: string;
   dataTableName: string;
   dataColumnName: string;
   filterType: string;
