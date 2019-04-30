@@ -3,7 +3,7 @@
 This is the home for the __Spotfire Wrapper Library__ and the __Spotfire Wrapper Package__.
 
 > ### Notes:
-> * Library can be found here: https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js
+> * Library can be found here: https://s3-us-west-2.amazonaws.com/sf-library/spotfire-wrapper.js
 > * NPM package can be found here: http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general
 
 
@@ -15,7 +15,7 @@ Spotfire Wrapper is a Javascript library that defines 2 new HTML elements to eas
 ```html
 <html>
     <head>
-        <script src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js"></script>
+        <script src="https://s3-us-west-2.amazonaws.com/sf-library/spotfire-wrapper.js"></script>
     </head>
     <body>
         <spotfire-viewer 
@@ -31,7 +31,7 @@ Spotfire Wrapper is a Javascript library that defines 2 new HTML elements to eas
 ```html
 <html>
     <head>
-        <script src="https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js"></script>
+        <script src="https://s3-us-west-2.amazonaws.com/sf-library/spotfire-wrapper.js"></script>
     </head>
     <body>
         <spotfire-editor 
@@ -154,7 +154,7 @@ $ cp -f elements/spotfire-wrapper.js ./build
 ```
 
 
-The script `build.sh` does all the steps above and publishes the artefacts to S3 bucket https://s3-us-west-2.amazonaws.com/cec-library/ and to NPM private repository.
+The script `build.sh` does all the steps above and publishes the artefacts to S3 bucket https://s3-us-west-2.amazonaws.com/sf-library/ and to NPM private repository.
 
 ---
 

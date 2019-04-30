@@ -8,7 +8,7 @@ host=$(hostname)
 if [ $aws -eq 1 ]
 then
     echo "CAUTION: aws is not installed on $host."
-    echo "         SpotfireWrapper JS library won't be published at https://s3-us-west-2.amazonaws.com/cec-library/"
+    echo "         SpotfireWrapper JS library won't be published at https://s3-us-west-2.amazonaws.com/sf-library/"
     echo "         but in ./build"
     export WORKSPACE=$(pwd)
     mkdir -p ${WORKSPACE}/build
