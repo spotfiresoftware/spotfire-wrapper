@@ -26,7 +26,7 @@ export const CUSTLABELS = {
 };
 
 function doConsole(...args: any[]) {
-  // console.log('[SPOTFIRE_WEBPLAYER]', ...args);
+  // console.log('[SPOTFIRE-WEBPLAYER]', ...args);
 }
 class PageState { index: number; pageTitle: string; }
 class DataTable { dataTableName: string; }
@@ -43,7 +43,7 @@ export class Marking {
 class Filtering {
   constructor(public _filtering) { }
   set = (flts) => this._filtering.setFilters(flts, spotfire.webPlayer.filteringOperation.REPLACE);
-
+  resetAllFilters = () => this._filtering.resetAllFilters();
   getAllModifiedFilterColumns = () => doCall<SpotfireFilter[]>(
     this._filtering, 'getAllModifiedFilterColumns',
     spotfire.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES
@@ -111,11 +111,11 @@ export class Data {
       return forkJoin(obs);
     }), map(tables => {
 
-      const dataTables = {};
-      tables[0].forEach(columns => {
+      const dataTables = [];
+      (tables[0] as []).forEach(columns => {
         const tname = columns['tabName'];
         if (!dataTables[tname]) { dataTables[tname] = {}; }
-        dataTables[tname][columns['colName']] = columns.vals;
+        dataTables[tname][columns['colName']] = columns['vals'];
       });
       return dataTables;
     }))
@@ -235,7 +235,7 @@ export class Application {
   }
 
   private onReadyCallback = (response, newApp) => {
-    doConsole('[SPOTFIRE-WEBPLAYER] Application.onReadyCallback', response, newApp);
+    doConsole('Application.onReadyCallback', response, newApp);
     this._app = newApp;
     // Register an error handler to catch errors.
     this._app.onError(this.onErrorCallback);

@@ -37,6 +37,7 @@ npm install
 title "[spotfire-webplayer] Build the NPM package:"
 ./node_modules/.bin/ng build spotfire-webplayer
 
+# if [ "$HOSTNAME" = "vmkabirabld1.tibco.com" ]
 if [ "$HOSTNAME" = "rcxxxxbld12" ]
 then
     title "[spotfire-webplayer] Publish the NPM package to artifacts.tibco.com:"

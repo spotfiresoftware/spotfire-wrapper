@@ -115,8 +115,8 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   stopPropagation = (e) => e.stopPropagation();
-  private get isMarkingWiredUp() { return this.markingEvent.observers.length > 0; }
-  private get isFilteringWiredUp() { return this.filteringEvent.observers.length > 0; }
+  private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
+  private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
   private displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
     this.errorMessages.push(message);
@@ -204,10 +204,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
      *
      * Will open the target page
      */
-    this.app.onApplicationReady$.subscribe(_ => {
-      this.app.onError$().subscribe(e => console.error('[SPOTFIRE-VIEWER]', e));
-      this.openPage(this.page);
-    }, e => console.error(e));
+    this.app.onApplicationReady$.subscribe(_ => this.openPage(this.page), e => console.error('[SPOTFIRE-VIEWER]', e));
   }
 
   /**
@@ -246,9 +243,11 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     } else {
       this.document = this.app.getDocument(this.spot.nativeElement.id, this.page, this.customization as SpotfireCustomization);
       this.document.onDocumentReady$().subscribe(z => {
-        this.doConsole(`Document.onOpened$: page is now opened:`, this.document);
+        this.doConsole(`Document.onDocumentReady$: document is now ready:`, this.document);
         if (this.filters && this.document.getFiltering()) {
-          this.document.getFiltering().set(this.filters);
+          const flt = this.document.getFiltering();
+          flt.resetAllFilters();
+          flt.set(this.filters);
           this.loadFilters();
           this.doConsole('FILTER', this.filters);
         }
@@ -274,16 +273,16 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
                 });
               })));
         }
-        if (this.isFilteringWiredUp) {
-          this.doConsole('isFilteringWiredUp');
+        if (this.isFiltingWiredUp()) {
+          this.doConsole('we have observers for filtering');
           // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
           //
           this.filter$.pipe(tap(f => this.doConsole('Emit filter', f)))
             .subscribe(f => this.filteringEvent.emit(f));
         }
 
-        if (this.isMarkingWiredUp) {
-          this.doConsole('isMarkingWiredUp');
+        if (this.isMarkingWiredUp()) {
+          this.doConsole('we have observers for marking');
           // Subscribe to markingEvent and emit the result to the Output
           //
           this.marker$.pipe(tap(f => this.doConsole('Emit marking', f)))
@@ -325,16 +324,16 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     } else {
       //  this.doConsole(`No rows are marked on marking '${mName}' for table '${tName}'`);
     }
+    this.loadFilters();
   }
 
   /**
    * Emit to caller the filters
    */
   private loadFilters() {
-    if (this.isFilteringWiredUp) {
-      const ALL = spotfire.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES;
-      this.doConsole('SpotfireComponent loadFilters', this.filterSubject);
-      this.document.getFiltering()._filtering.getAllModifiedFilterColumns(ALL, fs => this.filterSubject.next(fs));
+    if (this.isFiltingWiredUp()) {
+      this.document.getFiltering().getAllModifiedFilterColumns()
+        .subscribe(fs => this.filterSubject.next(fs));
     }
   }
 }
