@@ -13,7 +13,7 @@ then
     export WORKSPACE=$(pwd)
     mkdir -p ${WORKSPACE}/build
 else
-    export AWS_DEFAULT_PROFILE=cec
+    export AWS_DEFAULT_PROFILE=sb
     date
     pwd
     env | sort
@@ -67,7 +67,7 @@ npm run build:elements
 if [ $aws -eq 0 ]
 then
     title "[spotfire-wrapper] Copy the WebElement Library to S3:"
-    aws s3 cp elements/spotfire-wrapper.js s3://cec-library/
+    aws s3 cp elements/spotfire-wrapper.js s3://sf-library/
 else
     cp -f elements/spotfire-wrapper.js ${WORKSPACE}/build/
 fi
@@ -80,7 +80,7 @@ echo "    npm install @tibco/spotfire-wrapper@latest --save"
 echo "  OR"
 echo "  - npm install @tibco/spotfire-wrapper@latest --save @tibco:registry --registry http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general"
 echo ""
-echo "  - <script src='https://s3-us-west-2.amazonaws.com/cec-library/spotfire-wrapper.js'></script>"
+echo "  - <script src='https://s3-us-west-2.amazonaws.com/sf-library/spotfire-wrapper.js'></script>"
 echo ""
 echo ""
 [ $aws -eq 1 ] && ls -lrt ${WORKSPACE}/build/
