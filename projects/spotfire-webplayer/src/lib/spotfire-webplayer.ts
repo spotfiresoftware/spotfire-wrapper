@@ -186,8 +186,23 @@ export class Document {
   private onActivePageChanged$ = () => doCall(this._doc, 'onActivePageChanged');
 }
 
-
-function doCall<T>(obj, m: string, ...a): Observable<T> {
+/**
+ * @description
+ * Turn async calls into Observables.
+ * 
+ * For methods which name starts with 'on', the observable continues providing data it's received.
+ * Otherwise the observable stops sending data at first buffer received.
+ * An error is raised when the 50min timeout expires.
+ *
+ * @param obj the object against we call method
+ * @param m the name of method
+ * @param ...a list of arguments to be sent along with the method
+ *
+ * @return Observable<T> an observable that corresponds to the original callback
+ * 
+ * 
+ */
+function doCall<T>(obj, m: string, ...a: any[]): Observable<T> {
   return new Observable<T>(observer => {
     const oneShot = ['onDocumentReady'];
     // doConsole('[OBS]', 'doCall obj=', obj, ', m=', m, ', arg=', args, typeof obj);
@@ -234,7 +249,7 @@ export class Application {
       this.version, this.onReadyCallback, this.onCreateLoginElement);
   }
 
-  private onReadyCallback = (response, newApp) => {
+  private onReadyCallback = (response, newApp: Application) => {
     doConsole('Application.onReadyCallback', response, newApp);
     this._app = newApp;
     // Register an error handler to catch errors.

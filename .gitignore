@@ -7,6 +7,7 @@ e2e_test.*
 node_modules
 tools/gulp-tasks/cldr/cldr-data/
 /build
+/documentation
 # Include when developing application packages.
 pubspec.lock
 .c9
@@ -14,6 +15,8 @@ pubspec.lock
 .settings/
 .vscode/launch.json
 *.swo
+*.tgz
+*.map
 modules/.settings
 modules/.vscode
 

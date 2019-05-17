@@ -24,61 +24,121 @@ declare let spotfire: any;
 })
 
 export class SpotfireViewerComponent implements OnChanges, OnInit {
+  /**
+   * @description
+   * print debug logs to JS console. Default to false
+   */
   @Input() debug = false;
+
+  /**
+   * @description
+   * The URL to the Web Player server
+   */
   @Input() url: string;
-  @Input() page: string;
-  @Input() sid: string;
+
+  /**
+   * @description
+   * The path in the library to the analysis to open.
+   */
   @Input() path: string;
+
+  /**
+   * @description
+   * Optional initial page. The page can either be expressed
+   * as an integer (0-based page index) or as a string (page name).
+   */
+  @Input() page: string;
+
+  /**
+  * @description
+  * Optional unique id to read/write settings from local storage
+  */
+  @Input() sid: string;
+
+  /**
+  * @description
+  * Optional instance of a Customization instance. 
+  * If set, this will override the customizationInfo instance held by the application.
+  */
   @Input() customization: SpotfireCustomization | string;
+
+  /**
+    * @description
+    * Optional. Array of filters that will be applied once page is loaded.
+    */
   @Input() filters: Array<SpotfireFilter> | string;
   private version = '7.14';
   @Input() markingOn: {} | string;
   @Input() maxRows = 10;
+
+  /**
+    * @description
+    * Optional. Load parameters for the analysis.
+    */
   @Input() set parameters(value: string) {
     this._parameters = value;
     if (this.app) {
       this.openPath(this.path);
     }
   }
+  private _parameters: string;
+
   @ViewChild('spot', { read: ElementRef }) spot: ElementRef;
   errorMessages = [];
 
-  private _parameters: string;
+  /* metadata contains Information about the Spotfire analysis */
   metadata: DocMetadata;
   edit = false;
-
-  // Optional configuration block
   private reloadAnalysisInstance = false;
   private document: Document;
   private app: Application;
 
+  /* Filtering observables, emitter and subject*/
   private filterSubject = new BehaviorSubject<Array<{}>>([]);
   public filter$: Observable<Array<{}>> = this.filterSubject.asObservable();
+  /**
+    * @description
+    * Optional. emit filters set by user in dashboard
+    */
   @Output() filteringEvent: EventEmitter<any> = new EventEmitter(false);
 
+  /* Marking observables, emitter and subject*/
   private markerSubject = new BehaviorSubject<{}>({});
   public marker$: Observable<{}> = this.markerSubject.asObservable();
+  /**
+   * @description
+   * Optional. emit marking set by user in dashboard
+   */
   @Output() markingEvent: EventEmitter<any> = new EventEmitter(false);
   private markedRows = {};
 
   view: any;
   longTime = false;
 
-  doConsole = (...args: any[]) => {
-    if (this.debug) {
-      console.log('[SPOTFIRE-VIEWER]', ...args);
-    }
-  }
   constructor(
     public lazySvc: LazyLoadingLibraryService,
     public storSvc: PersistanceService) {
     this.doConsole('Welcome !');
     setTimeout(() => this.longTime = true, 6000);
   }
+
   ngOnInit(): void {
     this.doConsole('OnInit', this.url, this.path);
     this.display();
   }
+
+  doConsole = (...args: any[]) => {
+    if (this.debug) {
+      console.log('[SPOTFIRE-VIEWER]', ...args);
+    }
+  }
+
+  /**
+   * @description
+   * Redraw the dashboard.
+   * Depending on nature of change (url/path/page) the dashboard is fully refreshed or adjusted accordingly
+   * @param changes The list of changes to apply
+   */
 
   display(changes?: SimpleChanges) {
     this.doConsole('Display', changes);
@@ -114,7 +174,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     }
   }
 
-  stopPropagation = (e) => e.stopPropagation();
+  stopPropagation = (e: Event) => e.stopPropagation();
   private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
   private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
   private displayErrorMessage = (message: string) => {
@@ -142,6 +202,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   /**
+   * @description
    * Get Spotfire JavaScript API (webPlayer) from url
    *
    * When a componenet is initiated or url is updated, it lazy loads the library
@@ -178,6 +239,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   /**
+   * @description
    * Open the path using JavaScript API (spotfire.webPlayer.createApplication)
    *
    * @param path the absolute analysis path
@@ -208,6 +270,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   /**
+   * @description
    * Callback played if Spotfire requires some login
    *
    */
@@ -219,6 +282,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
   protected doForm(doc: Document) { }
   /**
+   * @description
    * Open the Document page
    *
    * @param page the document page that will be displayed
@@ -293,10 +357,14 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   /**
+   * @description
    * Callback method played when marking changes are detected.
    *
    * Will gather all marking and emit an event back to caller.
    *
+   * @param tName Table name
+   * @param mName Maring name
+   * @param res marked rows returned by Spotfire
    */
   private updateMarking = (tName: string, mName: string, res: {}) => {
     if (Object.keys(res).length > 0) {
@@ -328,6 +396,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   /**
+   * @description
    * Emit to caller the filters
    */
   private loadFilters() {

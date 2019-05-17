@@ -100,12 +100,16 @@ Run `ng serve --port=4204` for a dev server. Navigate to `http://localhost:4204/
 ## Demos
 ### Demo #1: Use &lt;spotfire-viewer> in a raw HTML code:
 
-After building the JS library (step above), run `cd demo` and `cp ../build/spotfire-wrapper.js .`
+After building the JS library (step below), run `cd demo` and `cp ../build/spotfire-wrapper.js .`
 
 Start a HTTP server : 
 ```bash
 python -m SimpleHTTPServer 4404
 ``` 
+or 
+``back
+python3 -m http.server 4404
+```
 
 and navigale to `http://localhost:4404`, to see how to easily display a Spotfire dashboard in raw html pages.
 
