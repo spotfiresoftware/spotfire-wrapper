@@ -43,11 +43,20 @@ export class SpotfireFilter {
   filteringSchemeName: string;
   dataTableName: string;
   dataColumnName: string;
-  filterType: string;
+  filterType: string | any;
   filterSettings: Array<SpotfireFilterSetting>;
   constructor(vars?: {}) {
     if (vars) {
       Object.keys(vars).forEach(key => this[key] = vars[key]);
     }
   }
+  /*
+  setFilterType(s) {
+    console.log('ON SET LE TYPER', this.filterType);
+    if (this.filterType === 'ListBoxFilter') {
+      this.filterType = s.webPlayer.filterType.LIST_BOX_FILTER;
+      console.log('ON SET LE TYPE a ', s.webPlayer.filterType.LIST_BOX_FILTER);
+    }
+  }
+  */
 }

@@ -1,12 +1,11 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { FormGroup, Validators, FormControl, FormBuilder } from '@angular/forms';
-import { filter } from 'rxjs/operators';
 
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
 import { Document as SpotDoc, CUSTLABELS } from '../spotfire-webplayer';
-import { LazyLoadingLibraryService } from '../lazy-loading-library.service';
 import { PersistanceService } from '../persitence.service';
 import { SpotfireViewerComponent } from '../viewer/spotfire-viewer.component';
+import { DocumentService } from '../document.service';
 
 @Component({
     selector: 'spotfire-editor',
@@ -26,8 +25,8 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
     possibleValues = '';
     custLabels = CUSTLABELS;
 
-    constructor(public fb: FormBuilder, l: LazyLoadingLibraryService, s: PersistanceService) {
-        super(l, s);
+    constructor(public fb: FormBuilder, private storSvc: PersistanceService, d: DocumentService) {
+        super(d);
     }
 
     update = (e) => {
@@ -40,7 +39,8 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
             `u:${isD('url')}, p:${isD('path')}, a:${isD('page')}, c:${isD('cust')}, f:${isD('filters')}, m:${isD('marking')}`);
         const cus = new SpotfireCustomization(this.form.get('cust').value);
         if (isD('url')) {
-            this.openWebPlayer(this.form.get('url').value, this.form.get('path').value, cus);
+            this.docSvc.openWebPlayer$(this.spotParams).subscribe();
+            //            this.openWebPlayer(this.form.get('url').value, this.form.get('path').value, cus);
         } else if (isD('path') || isD('filters') || isD('marking') || isD('cust')) {
             this.path = isD('path') ? this.form.get('path').value : this.path;
             this.page = isD('page') ? this.form.get('page').value : this.page;
@@ -69,14 +69,14 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
                 this.storSvc.set('flts', this.filters);
                 this.storSvc.set('mark', this.markingOn);
             }
-            this.openPath(this.path);
+            this.docSvc.openPath$(this.spotParams).subscribe();
         } else if (isD('page')) {
             // if only page has changed, just refresh it
             //
             if (this.sid) {
                 this.storSvc.set('page', this.form.get('page').value);
             }
-            this.openPage(this.form.get('page').value);
+            this.docSvc.openPage$(this.form.get('page').value).subscribe();
         }
     }
     doForm(doc: SpotDoc) {

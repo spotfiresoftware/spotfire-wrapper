@@ -1,7 +1,7 @@
 
 // Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
 import { Observable, forkJoin, of as observableOf, zip, BehaviorSubject, of, throwError, TimeoutError } from 'rxjs';
-import { SpotfireCustomization, SpotfireFilter } from './spotfire-customization';
+import { SpotfireCustomization as Customization, SpotfireFilter } from './spotfire-customization';
 import { mergeMap, tap, pluck, map, filter, timeout, catchError } from 'rxjs/operators';
 
 declare let spotfire: any;
@@ -50,6 +50,30 @@ class Filtering {
   )
 }
 
+export class SpotfireParameters {
+  url: string;
+  path: string;
+  page: string | number;
+  domid: string;
+  sid: string;
+  customization: Customization;
+  version = '7.14';
+  debug = false;
+  reloadAnalysisInstance = false;
+  document: any;
+  app: any;
+  _parameters: string;
+  constructor(vars?: {}) {
+    console.log('CONSTR SpotfireParameters', vars, this);
+    if (vars) {
+      Object.keys(vars).forEach(key => this[key] = vars[key]);
+    }
+    // Create a Unique ID for this Spotfire dashboard
+    //
+    this.domid = this.domid ? this.domid : this.sid ? `${this.sid}` : `${new Date().getTime()}`;
+  }
+}
+
 export class Data {
   allTables = {};
   constructor(private _data) { }
@@ -58,27 +82,21 @@ export class Data {
   // getActiveDataTable and getDataTables methods.
   private getDataTables$ = () => doCall<DataTable[]>(this._data, 'getDataTables');
 
-  private getDataTableColNames$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t).pipe(
-    mergeMap(f => this.getDataColumns$(f)))
+  private getDataTableColNames$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t)
+    .pipe(mergeMap(f => this.getDataColumns$(f)), map(d => ({ [t]: d })))
 
-  private getDataTable$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t).pipe(
-    mergeMap(f => this.getDataColumns$(f)))
+  private getDataTable$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t)
+    .pipe(mergeMap(f => this.getDataColumns$(f)))
 
   // Each data table contains one or more data columns, retrieved by the getDataColumn,
   // getDataColumns and searchDataColumns.
   private getDataColumns$ = (t) => doCall<DataColumn[]>(t, 'getDataColumns').pipe(
     mergeMap(columns => {
       const obs = [];
-      columns.forEach((col: DataColumn) => {
-        obs.push(zip(...[observableOf(col), observableOf([])],
-          (a: DataColumn, b) => ({ colName: a.dataColumnName, tabName: a.dataTableName })));
-        if (col.dataType === 'zString') {
-          obs.push(zip(...[observableOf(col), this.getDistinctValues$(col)],
-            (a: DataColumn, b) => ({ colName: a.dataColumnName, tabName: a.dataTableName, vals: b })));
-        }
-      });
+      columns.forEach((col: DataColumn) => obs.push(zip(...[observableOf(col)], (a: DataColumn, b) => a.dataColumnName)));
       return forkJoin(obs);
-    }))
+    })
+  )
 
 
   // From the DataColumn class it is possible to retrieve metadata, such as column name and data type.
@@ -94,23 +112,19 @@ export class Data {
       const obs = [];
       tables.forEach(table => obs.push(this.getDataTableColNames$(table.dataTableName)));
       return forkJoin(obs);
-    }), map(tables => {
-      const dataTables: [][] = [];
-      tables.forEach((table: []) => table.forEach(column => {
-        const tname = column['tabName'];
-        if (!dataTables[tname]) { dataTables[tname] = []; }
-        dataTables[tname].push(column['colName']);
-      }));
-      return dataTables;
-    }))
-
+    }),
+    map(k => {
+      let z = {};
+      k.forEach(p => z = { ...z, ...p });
+      return z;
+    })
+  )
   getAllTables$ = () => this.getDataTables$().pipe(
     mergeMap(tables => {
       const obs = [];
       tables.forEach(table => obs.push(this.getDataTable$(table.dataTableName)));
       return forkJoin(obs);
     }), map(tables => {
-
       const dataTables = [];
       (tables[0] as []).forEach(columns => {
         const tname = columns['tabName'];
@@ -189,7 +203,7 @@ export class Document {
 /**
  * @description
  * Turn async calls into Observables.
- * 
+ *
  * For methods which name starts with 'on', the observable continues providing data it's received.
  * Otherwise the observable stops sending data at first buffer received.
  * An error is raised when the 50min timeout expires.
@@ -199,8 +213,7 @@ export class Document {
  * @param ...a list of arguments to be sent along with the method
  *
  * @return Observable<T> an observable that corresponds to the original callback
- * 
- * 
+ *
  */
 function doCall<T>(obj, m: string, ...a: any[]): Observable<T> {
   return new Observable<T>(observer => {
@@ -238,7 +251,7 @@ export class Application {
 
   constructor(
     public url: string,
-    public customization: SpotfireCustomization,
+    public customization: Customization,
     public path: string,
     public parameters: string,
     public reloadAnalysisInstance: boolean,
@@ -266,10 +279,9 @@ export class Application {
     }
   }
   // Displays an error message if something goes wrong in the Web Player.
-  private onErrorCallback = (errCode: string, desc: string) =>
-    console.error(`[SPOTFIRE-WEBPLAYER] ${errCode}: ${desc}`);
+  private onErrorCallback = (errCode: string, desc: string) => console.error(`[SPOTFIRE-WEBPLAYER] ${errCode}: ${desc}`);
   onOpened$ = () => doCall(this._app, 'onOpened');
-  getDocument = (id: string, page: string, custo?: SpotfireCustomization): Document =>
+  getDocument = (id: string, page: string | number, custo?: Customization): Document =>
     new Document(this, id, page, custo ? custo : this.customization)
-  openDocument = (id: string, page: string, custo: SpotfireCustomization) => this._app.openDocument(id, page, custo);
+  openDocument = (id: string, page: string | number, custo: Customization) => this._app.openDocument(id, page, custo);
 }

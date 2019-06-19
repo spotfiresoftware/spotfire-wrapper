@@ -6,10 +6,9 @@ import {
 
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { LazyLoadingLibraryService } from '../lazy-loading-library.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
-import { DocMetadata, Application, Document } from '../spotfire-webplayer';
-import { PersistanceService } from '../persitence.service';
+import { DocMetadata, Application, Document, SpotfireParameters } from '../spotfire-webplayer';
+import { DocumentService } from '../document.service';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
@@ -67,16 +66,17 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     * Optional. Array of filters that will be applied once page is loaded.
     */
   @Input() filters: Array<SpotfireFilter> | string;
-  private version = '7.14';
   @Input() markingOn: {} | string;
   @Input() maxRows = 10;
 
+  protected spotParams: SpotfireParameters = new SpotfireParameters();
   /**
     * @description
     * Optional. Load parameters for the analysis.
     */
   @Input() set parameters(value: string) {
     this._parameters = value;
+    this.spotParams._parameters = value;
     if (this.app) {
       this.openPath(this.path);
     }
@@ -89,13 +89,12 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   /* metadata contains Information about the Spotfire analysis */
   metadata: DocMetadata;
   edit = false;
-  private reloadAnalysisInstance = false;
   private document: Document;
   private app: Application;
-
   /* Filtering observables, emitter and subject*/
   private filterSubject = new BehaviorSubject<Array<{}>>([]);
   public filter$: Observable<Array<{}>> = this.filterSubject.asObservable();
+
   /**
     * @description
     * Optional. emit filters set by user in dashboard
@@ -115,9 +114,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   view: any;
   longTime = false;
 
-  constructor(
-    public lazySvc: LazyLoadingLibraryService,
-    public storSvc: PersistanceService) {
+  constructor(public docSvc: DocumentService) {
     this.doConsole('Welcome !');
     setTimeout(() => this.longTime = true, 6000);
   }
@@ -127,11 +124,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.display();
   }
 
-  doConsole = (...args: any[]) => {
-    if (this.debug) {
-      console.log('[SPOTFIRE-VIEWER]', ...args);
-    }
-  }
+  doConsole = (...args: any[]) => this.debug && console.log('[SPOTFIRE-VIEWER]', ...args);
 
   /**
    * @description
@@ -157,7 +150,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.markingOn = JSON.parse(this.markingOn);
     }
 
-    this.doConsole('display', changes, this.url, this.path, this.customization, this.maxRows, this.app, this.markingOn);
+    this.doConsole('display', changes, this.url, this.path, 'PAGE=', this.page, this.customization, this.maxRows, this.app, this.markingOn);
     if (!changes || changes.url) {
       this.openWebPlayer(this.url, this.path, this.customization);
     } else if (this.app && changes.page) {
@@ -180,7 +173,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   private displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
     this.errorMessages.push(message);
-    if (!this.document) {
+    if (!this.spotParams.document) {
       // Do not display the info Message when document is running
       this.spot.nativeElement.style.fontFamily = 'monospace';
       this.spot.nativeElement.style.color = '#e82127';
@@ -192,7 +185,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
 
   private displayInfoMessage = (message: string) => {
     console.log(message);
-    if (!this.document && this.debug) {
+    if (!this.spotParams.document && this.debug) {
       // Do not display the info Message when document is running
       this.spot.nativeElement.style.fontFamily = 'monospace';
       this.spot.nativeElement.style.color = 'black';
@@ -212,30 +205,23 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * @param path the path to the page
    * @param custo the initial customization info
    */
-  protected openWebPlayer(url: string, path: string, custo: SpotfireCustomization) {
+  protected openWebPlayer(url: string, path: string, customization: SpotfireCustomization) {
     this.edit = false;
     this.url = url;
     this.path = path;
-    this.customization = custo;
+    this.customization = customization;
     this.doConsole(`SpotfireViewerComponent openWebPlayer(${url})`);
 
     this.displayInfoMessage(`${this.url}...`);
 
-    // lazy load the spotfire js API
+    // Create a Unique ID for this Spotfire dashboard
     //
-    setTimeout(() => {
-      const sfLoaderUrl = `${this.url}/spotfire/js-api/loader.js`;
-      this.lazySvc.loadJs(sfLoaderUrl).subscribe(() => {
-        try {
-          this.doConsole(`Spotfire ${sfLoaderUrl} is LOADED !!!`,
-            spotfire, this.page, this.spot.nativeElement, this.customization);
-        } catch (e) {
-          this.displayErrorMessage(`Spotfire is not loaded from ${this.url}`);
-          throw new Error('Spotfire is not loaded');
-        }
-        this.openPath(this.path);
-      }, err => this.displayErrorMessage(err));
-    }, 1000);
+    this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
+    this.spotParams = { ...this.spotParams, path, url, customization, domid: this.spot.nativeElement.id, page: this.page };
+
+    this.docSvc.openWebPlayer$(this.spotParams).subscribe(
+      doc => this.afterDisplay(doc),
+      err => this.displayErrorMessage(err));
   }
 
   /**
@@ -246,40 +232,14 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    */
   protected openPath(path: string) {
     this.path = path;
-    if (this.document) {
-      this.document.close();
-    }
-    // FIXTHIS, we might need to wait for onClosed callback
-    this.document = null;
     this.displayInfoMessage(`${this.url}/${path}...`);
     this.doConsole(`SpotfireViewerComponent openPath(${path})`, this.sid);
-    // Create a Unique ID for this Spotfire dashboard
-    //
-    this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
-    // Prepare Spotfire app with path/page/customization
-    //
-    this.app = new Application(this.url, this.customization as SpotfireCustomization, this.path,
-      this._parameters, this.reloadAnalysisInstance, this.version, this.onCreateLoginElement);
-
-    /**
-     * Callback played once Spotfire API responds to Application creation
-     *
-     * Will open the target page
-     */
-    this.app.onApplicationReady$.subscribe(_ => this.openPage(this.page), e => console.error('[SPOTFIRE-VIEWER]', e));
+    this.spotParams = { ...this.spotParams, path, domid: this.spot.nativeElement.id };
+    this.docSvc.openPath$(this.spotParams).subscribe(
+      doc => this.afterDisplay(doc),
+      err => this.displayErrorMessage(err));
   }
 
-  /**
-   * @description
-   * Callback played if Spotfire requires some login
-   *
-   */
-  onCreateLoginElement = () => {
-    this.doConsole('Creating the login element');
-    // Optionally create and return a div to host the login button
-    this.displayErrorMessage(`Cannot login to ${this.url}/${this.path}`);
-    return null;
-  }
   protected doForm(doc: Document) { }
   /**
    * @description
@@ -291,69 +251,65 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.displayInfoMessage(`${this.url}/${this.path}/${page ? page : ''}...`);
     this.doConsole(`SpotfireViewerComponent openPage(${page})`);
     this.page = page;
-    // Ask Spotfire library to display this path/page (with optional customization)
-    //
-    if (!this.app || !(this.app instanceof Application)) {
-      throw new Error('Spotfire webapp is not created yet');
+    this.spotParams = { ...this.spotParams, page };
+    const p = this.spotParams;
+    this.docSvc.openPage$(p).subscribe(doc => this.afterDisplay(doc));
+  }
+
+  private afterDisplay = (doc: Document) => {
+    this.doConsole(`SpotfireViewerComponent openPage(${this.spotParams.page}) returns`, doc);
+    this.document = doc;
+    if (this.filters && this.document.getFiltering()) {
+      const flt = this.document.getFiltering();
+      flt.resetAllFilters();
+      /*
+      this.doConsole(`SpotfireViewerComponent set Filter(avant)`, this.filters);
+      (this.filters as Array<SpotfireFilter>).forEach(t => t.setFilterType(spotfire));
+      this.doConsole(`SpotfireViewerComponent set Filter(apres)`, this.filters);
+    */
+      flt.set(this.filters);
+      this.loadFilters();
+      this.doConsole('FILTER', this.filters);
     }
 
-    this.doConsole('SpotfireService openDocument', this.spot.nativeElement.id, `cnf=${page}`, this.app, this.customization);
-
-    // Here is the call to 'spotfire.webPlayer.createApplication'
-    //
-    if (this.document) {
-      this.doConsole(`SpotfireViewerComponent setActivePage(${page})`);
-      this.document.setActivePage(page);
-    } else {
-      this.document = this.app.getDocument(this.spot.nativeElement.id, this.page, this.customization as SpotfireCustomization);
-      this.document.onDocumentReady$().subscribe(z => {
-        this.doConsole(`Document.onDocumentReady$: document is now ready:`, this.document);
-        if (this.filters && this.document.getFiltering()) {
-          const flt = this.document.getFiltering();
-          flt.resetAllFilters();
-          flt.set(this.filters);
-          this.loadFilters();
-          this.doConsole('FILTER', this.filters);
-        }
-
-        this.doForm(this.document);
-        if (this.markingOn) {
-          // Clear marking
-          this.markerSubject.next({});
-          this.document.getData().getTables$()
-            .pipe(tap(allTableNames => this.doConsole(`All tables and column names:`, allTableNames)))
-            .subscribe(allTableNames => this.document.getMarking().getMarkingNames$()
-              .pipe(tap(markingNames => this.doConsole(`All marking names:`, markingNames)))
-              .subscribe(markingNames => markingNames.forEach(markingName => {
-                const tableNames = this.markingOn === '*' ? allTableNames : this.markingOn;
-                Object.keys(tableNames).forEach(tName => {
-                  let columnNames: Array<string> = this.markingOn === '*' ? allTableNames[tName] : tableNames[tName];
-                  if (columnNames.length === 1 && columnNames[0] === '*') {
-                    columnNames = allTableNames[tName];
-                  }
-                  this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(columnNames)}, ${this.maxRows})`);
-                  this.document.getMarking().onChanged$(markingName, tName, columnNames, this.maxRows)
-                    .subscribe(f => this.updateMarking(tName, markingName, f));
-                });
-              })));
-        }
-        if (this.isFiltingWiredUp()) {
-          this.doConsole('we have observers for filtering');
-          // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
-          //
-          this.filter$.pipe(tap(f => this.doConsole('Emit filter', f)))
-            .subscribe(f => this.filteringEvent.emit(f));
-        }
-
-        if (this.isMarkingWiredUp()) {
-          this.doConsole('we have observers for marking');
-          // Subscribe to markingEvent and emit the result to the Output
-          //
-          this.marker$.pipe(tap(f => this.doConsole('Emit marking', f)))
-            .subscribe(f => this.markingEvent.emit(f));
-        }
-      });
+    this.doForm(this.document);
+    if (this.markingOn) {
+      // Clear marking
+      this.markerSubject.next({});
+      this.document.getData().getTables$()
+        .pipe(tap(allTableNames => this.doConsole(`All tables and column names:`, allTableNames)))
+        .subscribe(allTableNames => this.document.getMarking().getMarkingNames$()
+          .pipe(tap(markingNames => this.doConsole(`All marking names:`, markingNames)))
+          .subscribe(markingNames => markingNames.forEach(markingName => {
+            const tableNames = this.markingOn === '*' ? allTableNames : this.markingOn;
+            Object.keys(tableNames).forEach(tName => {
+              let columnNames: Array<string> = this.markingOn === '*' ? allTableNames[tName] : tableNames[tName];
+              if (columnNames.length === 1 && columnNames[0] === '*') {
+                columnNames = allTableNames[tName];
+              }
+              this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(columnNames)}, ${this.maxRows})`);
+              this.document.getMarking().onChanged$(markingName, tName, columnNames, this.maxRows)
+                .subscribe(f => this.updateMarking(tName, markingName, f));
+            });
+          })));
     }
+    if (this.isFiltingWiredUp()) {
+      this.doConsole('we have observers for filtering');
+      // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
+      //
+      this.filter$.pipe(tap(f => this.doConsole('Emit filter', f)))
+        .subscribe(f => this.filteringEvent.emit(f));
+    }
+
+    if (this.isMarkingWiredUp()) {
+      this.doConsole('we have observers for marking');
+      // Subscribe to markingEvent and emit the result to the Output
+      //
+      this.marker$.pipe(tap(f => this.doConsole('Emit marking', f)))
+        .subscribe(f => this.markingEvent.emit(f));
+    }
+    // console.log('YES loadFilters');
+    // setInterval(() => this.loadFilters(), 3000);
   }
 
   /**
@@ -400,9 +356,12 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * Emit to caller the filters
    */
   private loadFilters() {
+  //  console.log('AA Nicolas loadFilters BLOUP ! (19 juin 2019)');
     if (this.isFiltingWiredUp()) {
       this.document.getFiltering().getAllModifiedFilterColumns()
         .subscribe(fs => this.filterSubject.next(fs));
     }
+//    this.document.getFiltering().getAllModifiedFilterColumns()
+//      .subscribe(fs => console.log('les FILTERS:', fs));
   }
 }

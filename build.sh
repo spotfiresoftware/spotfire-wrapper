@@ -5,6 +5,21 @@ aws=$?
 
 set -e
 host=$(hostname)
+if [ "$1" = "local" ]
+then
+    echo "Local build of the NPM pacage, then install it in node_modules"
+    set -x
+    ./node_modules/.bin/ng build spotfire-webplayer 
+    (cd dist/spotfire-webplayer/ ; npm pack) 
+    cp -f dist/spotfire-webplayer/*.tgz build/spotfire-wrapper.tgz 
+    npm install /opt/tibco/users/spotfire-wrapper/build/spotfire-wrapper.tgz --no-save
+    set +x
+    date
+    npm run build:elements
+    
+    echo "That's all folks!"
+    exit 0
+fi
 if [ $aws -eq 1 ]
 then
     echo "CAUTION: aws is not installed on $host."

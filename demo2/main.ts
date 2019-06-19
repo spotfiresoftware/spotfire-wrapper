@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { SpotfireViewerComponent } from '@tibco/spotfire-wrapper';
+import { SpotfireViewerComponent, DocumentService } from '@tibco/spotfire-wrapper';
 import { MatTabsModule } from '@angular/material';
 
 @Component({
@@ -21,8 +21,8 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
   ngOnInit(): void {
     // Url and customization have been initialized when using <my-spotfire> but may be set here,
     // just like path, markingOn, ... are:
-    //    this.path = 'Samples/Sales and Marketing';
-    this.path = '/TIBCO Labs/ProcessMining_custom_queries_final';
+    this.path = 'Samples/Sales and Marketing';
+    // this.path = '/TIBCO Labs/ProcessMining_custom_queries_final';
     // Marking can detail list of tables and their columns or '*' for all tables.
     // When tables names are specified, user can detail list of columns to retrieve or all with '*'
     // this.markingOn = { SalesAndMarketing: ['*'] };
@@ -35,15 +35,15 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
 
     // show default page:
     this.display();
+    this.metadata$.subscribe(f => console.log('Metadata', f, JSON.stringify(f)));
   }
 }
-
 @Component({
   selector: 'app-root',
   template: `
 <h2>Angular app "{{title|uppercase}}"</h2>
 <div style='display:flex'>
-
+<!--
 <my-spotfire  style='width:80%; height:800px;'
 [url]="urlA"
 [page]="'Case Details'" [customization]="cust"
@@ -52,18 +52,18 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
 (filteringEvent)="onFiltering($event)"
 [debug]="true">
 </my-spotfire>
+-->
 
-<!-- 
 <my-spotfire  style='width:50%'
-[url]="url" [customization]="cust"
+[url]="urlA" [customization]="cust"
 (markingEvent)="onMarking($event)"
 [filters]="filters"
 (filteringEvent)="onFiltering($event)"
 [debug]="true">
 </my-spotfire>
--->
 
 
+<div style="display:none" id="ddom"></div>
 <mat-tab-group *ngIf="false">
     <mat-tab label="First"> Content 1 </mat-tab>
     <mat-tab label="Second">
@@ -78,10 +78,11 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
 </div>
 `})
 class AppComponent {
-  urlA = 'https://23.22.187.212';
-  url = 'https://spotfire-next.cloud.tibco.com';
+  url = 'https://23.22.187.212';
+  urlA = 'https://spotfire-next.cloud.tibco.com';
   cust = { showAuthor: true, showFilterPanel: true, showToolBar: true };
-  filtersA = [{
+  filtersA = [];
+  filtersB = [{
     dataColumnName: 'case_id',
     dataTableName: 'events',
     filterSettings: { values: ['A_07898', 'A_07896', 'A_07892'] }
@@ -113,6 +114,16 @@ class AppComponent {
   title = 'demo2';
   markedData = {};
   filtersOut = {};
+
+
+  constructor(public docSvc: DocumentService) {
+    this.docSvc.dump('main');
+
+    this.docSvc.openWebPlayer$('ddom', this.urlA, 'Samples/Sales and Marketing').subscribe(g =>
+      console.log('DocumentService.openWebPlayer$ returns', this.urlA, g));
+  }
+
+
   // Marking can be subscribed outside component
   onMarking = (e: Event) => {
     console.log('[AppComponent] MARKING MySpot returns', e);
@@ -122,6 +133,7 @@ class AppComponent {
     console.log('[AppComponent] FILTERING MySpot returns', e);
     this.filtersOut = e;
   }
+
 }
 
 @NgModule({
