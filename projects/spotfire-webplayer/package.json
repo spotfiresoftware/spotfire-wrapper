@@ -2,10 +2,20 @@
   "name": "@tibco/spotfire-wrapper",
   "version": "0.4.0",
   "private": false,
+  "scripts": {
+    "build": "../../node_modules/.bin/tsc -p tsconfig.schematics.json",
+    "copy:schemas": "../../node_modules/.bin/cpx -v \"schematics/**/schema.json\" ../../dist/spotfire-webplayer/schematics",
+    "copy:files": "../../node_modules/.bin/cpx -v -p \"schematics/**/files/**\" ../../dist/spotfire-webplayer/schematics",
+    "copy:assets": "../../node_modules/.bin/cpx -v -p \"assets/*\" ../../dist/spotfire-webplayer/assets",
+    "copy:styles": "../../node_modules/.bin/cpx -v -p \"styles/*\" ../../dist/spotfire-webplayer/styles",
+    "copy:collection": "cp -v schematics/collection.json ../../dist/spotfire-webplayer/schematics/collection.json",
+    "postbuild": "npm run copy:schemas && npm run copy:files && npm run copy:styles && npm run copy:collection"
+  },
   "peerDependencies": {
     "@angular/common": "^8.0.0",
     "@angular/core": "^8.0.0"
   },
+  "schematics": "./schematics/collection.json",
   "author": {
     "name": "Nicolas Deroche",
     "email": "nderoche@tibco.com",

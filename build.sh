@@ -10,6 +10,7 @@ then
     echo "Local build of the NPM package, then install it in node_modules"
     set -x
     ./node_modules/.bin/ng build spotfire-webplayer 
+    (cd projects/spotfire-webplayer/ ; npm run build )
     (cd dist/spotfire-webplayer/ ; npm pack) 
     cp -f dist/spotfire-webplayer/*.tgz build/spotfire-wrapper.tgz 
     npm install /opt/tibco/users/spotfire-wrapper/build/spotfire-wrapper.tgz --no-save
@@ -51,6 +52,7 @@ npm install
 
 title "[spotfire-webplayer] Build the NPM package:"
 ./node_modules/.bin/ng build spotfire-webplayer
+(cd projects/spotfire-webplayer/ ; npm run build )
 
 # if [ "$HOSTNAME" = "vmkabirabld1.tibco.com" ]
 if [ "$HOSTNAME" = "rcxxxxbld12" ]

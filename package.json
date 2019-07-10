@@ -10,7 +10,12 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "builddev:elements": "ng build  && node build-script.js && wc elements/spotfire-wrapper.js",
-    "build:elements": "ng build --prod && node build-script.js && wc elements/spotfire-wrapper.js"
+    "build:elements": "ng build --prod && node build-script.js && wc elements/spotfire-wrapper.js",
+    "sptf:watch": "(cd projects/spotfire-webplayer ; ../../node_modules/.bin/tsc -w  --pretty -p tsconfig.schematics.json)",
+    "sptf:buildlib": "ng build spotfire-webplayer",
+    "sptf:buildschematics": "(cd projects/spotfire-webplayer && npm run build)",
+    "sptf:build": "npm run sptf:buildlib && npm run sptf:buildschematics",
+    "build:lib": "npm run sptf:build && (cd dist/spotfire-webplayer ; npm pack ; ls -l *tgz) && npm install --no-save dist/spotfire-webplayer/*tgz && date"  
   },
   "author": {
     "name": "Nicolas Deroche",
@@ -46,6 +51,7 @@
     "@types/node": "^12.6.2",
     "codelyzer": "^5.0.1",
     "concat": "^1.0.3",
+    "cpx": "^1.5.0",
     "fs-extra": "^8.1.0",
     "jasmine-core": "~3.4.0",
     "jasmine-spec-reporter": "~4.2.1",
