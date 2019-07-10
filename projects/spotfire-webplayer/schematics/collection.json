@@ -2,7 +2,7 @@
     "$schema": "../../../node_modules/@angular-devkit/schematics/collection-schema.json",
     "schematics": {
         "ng-add": {
-            "description": "Add my library to the project.",
+            "description": "Add spotfire-wrapper library to the project.",
             "factory": "./ng-add/index#ngAdd"
         },
         "ng-add-setup-project": {

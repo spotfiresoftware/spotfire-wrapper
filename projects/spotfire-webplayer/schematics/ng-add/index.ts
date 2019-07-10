@@ -1,7 +1,10 @@
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 
 import { getWorkspace } from '@schematics/angular/utility/config';
-import { getProjectFromWorkspace, getProjectMainFile, hasNgModuleImport, addModuleImportToRootModule } from '@angular/cdk/schematics';
+import {
+    getProjectFromWorkspace, getProjectMainFile, hasNgModuleImport,
+    addModuleImportToRootModule
+} from '@angular/cdk/schematics';
 import { getAppModulePath } from '@schematics/angular/utility/ng-ast-utils';
 import { Schema } from './schema';
 import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
