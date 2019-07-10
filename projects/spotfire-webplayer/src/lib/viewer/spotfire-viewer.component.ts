@@ -83,7 +83,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
   private _parameters: string;
 
-  @ViewChild('spot', { read: ElementRef }) spot: ElementRef;
+  @ViewChild('spot', { static: true, read: ElementRef }) spot: ElementRef;
   errorMessages = [];
 
   /* metadata contains Information about the Spotfire analysis */
@@ -115,6 +115,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   longTime = false;
 
   constructor(public docSvc: DocumentService) {
+    console.log('SPOTFIRE WRAPPER - 10 juillet - Angular 8')
     this.doConsole('Welcome !');
     setTimeout(() => this.longTime = true, 6000);
   }
@@ -356,12 +357,12 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * Emit to caller the filters
    */
   private loadFilters() {
-  //  console.log('AA Nicolas loadFilters BLOUP ! (19 juin 2019)');
+    //  console.log('AA Nicolas loadFilters BLOUP ! (19 juin 2019)');
     if (this.isFiltingWiredUp()) {
       this.document.getFiltering().getAllModifiedFilterColumns()
         .subscribe(fs => this.filterSubject.next(fs));
     }
-//    this.document.getFiltering().getAllModifiedFilterColumns()
-//      .subscribe(fs => console.log('les FILTERS:', fs));
+    //    this.document.getFiltering().getAllModifiedFilterColumns()
+    //      .subscribe(fs => console.log('les FILTERS:', fs));
   }
 }

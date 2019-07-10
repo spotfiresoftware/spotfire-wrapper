@@ -7,7 +7,7 @@ set -e
 host=$(hostname)
 if [ "$1" = "local" ]
 then
-    echo "Local build of the NPM pacage, then install it in node_modules"
+    echo "Local build of the NPM package, then install it in node_modules"
     set -x
     ./node_modules/.bin/ng build spotfire-webplayer 
     (cd dist/spotfire-webplayer/ ; npm pack) 
