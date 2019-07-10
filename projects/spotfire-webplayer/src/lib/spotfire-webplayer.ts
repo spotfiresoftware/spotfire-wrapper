@@ -14,12 +14,10 @@ export const CUSTLABELS = {
   showCustomizableHeader: 'Show the customizable header',
   showDodPanel: 'Show the details on demand panel in the visualization.',
   showExportFile: 'Show the export file menu item',
-  showExportVisualization: 'Show the export visualization menu item',
   showFilterPanel: 'Show the filter panel.',
   showHelp: 'Show the help menu item',
   showLogout: 'Show the logout menu item',
   showPageNavigation: 'Show the page navigation controls in the analysis',
-  showReloadAnalysis: 'Show the Reload analysis button in the toolbar',
   showStatusBar: 'Show status bar in the Web Player',
   showToolBar: 'Show the analysis toolbar and menu',
   showUndoRedo: 'Show the undo/redo menu item'

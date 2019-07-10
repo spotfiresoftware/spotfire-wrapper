@@ -15,7 +15,7 @@
     "sptf:buildlib": "ng build spotfire-webplayer",
     "sptf:buildschematics": "(cd projects/spotfire-webplayer && npm run build)",
     "sptf:build": "npm run sptf:buildlib && npm run sptf:buildschematics",
-    "build:lib": "npm run sptf:build && (cd dist/spotfire-webplayer ; npm pack ; ls -l *tgz) && npm install --no-save dist/spotfire-webplayer/*tgz && date"  
+    "build:lib": "npm run sptf:build && (cd dist/spotfire-webplayer ; npm pack ; ls -l *tgz) && npm install --no-save dist/spotfire-webplayer/*tgz && date"
   },
   "author": {
     "name": "Nicolas Deroche",

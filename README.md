@@ -43,12 +43,21 @@ Spotfire Wrapper is a Javascript library that defines 2 new HTML elements to eas
 </html>    
 ```
 
-
 ## Spotfire Wrapper Package
 
 Spotfire Webplayer is an Angular Component built for and with Angular.
 
-### Installation:
+### Installation using schematics:
+
+```
+$ ng add @tibco/spotfire-wrapper --registry http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general
+$ ng generate @tibco/spotfire-wrapper:dashboard --name MySpot
+```
+
+Then add `MySpotComponent` to `declarations` array of your `@ngModule`, and use `<myspot></myspot>` in your html templates.
+You can them edit the `src/myspot.component.ts` as you wish.
+
+### Installation with `npm install`:
 ```
 $ npm install @tibco/spotfire-wrapper --registry http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general
 $ npm install @angular/cdk @angular/material @angular/flex-layout
@@ -62,7 +71,8 @@ The package provides two modules with a component each :
 For exemple, user can extend `SpotfireViewerComponent` like this : 
 
 ```typescript
-import { SpotfireModuleComponent, SpotfireViewerComponent} from '@tibco/spotfire-wrapper`;
+import { OnInit, Component } from '@angular/core';
+import { SpotfireViewerComponent, SpotfireCustomization } from '@tibco/spotfire-wrapper';
 
 @Component({
   selector: 'my-spotfire',
@@ -74,7 +84,7 @@ import { SpotfireModuleComponent, SpotfireViewerComponent} from '@tibco/spotfire
   button { padding:10px }
 `]
 })
-class MySpotfireViewerComponent extends SpotfireViewerComponent implements OnInit {
+export class MySpotfireViewerComponent extends SpotfireViewerComponent implements OnInit {
   // No var please (or set a contructor)
   ngOnInit(): void {
     this.url = 'https://spotfire-next.cloud.tibco.com';

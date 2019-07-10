@@ -8,12 +8,12 @@ export class SpotfireCustomization {
   showCustomizableHeader = false;
   showDodPanel = false; // Details-on-Demand panel
   showExportFile = false;
-  showExportVisualization = false;
+  // showExportVisualization = false; marked as obsolete since Spotfire X
   showFilterPanel = false;
   showHelp = false;
   showLogout = false;
   showPageNavigation = false;
-  showAnalysisInfo = false;
+  // showAnalysisInfo = false;  marked as obsolete since Spotfire X
   showReloadAnalysis = false;
   showStatusBar = false;
   showToolBar = false;

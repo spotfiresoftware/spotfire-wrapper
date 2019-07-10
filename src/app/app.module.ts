@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, Injector } from '@angular/core';
 import { createCustomElement } from '@angular/elements';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { SpotfireEditorModule, SpotfireViewerComponent, SpotfireEditorComponent } from 'projects/spotfire-webplayer/src/public_api';
+import { SpotfireEditorModule, SpotfireViewerComponent, SpotfireEditorComponent } from '@tibco/spotfire-wrapper';
 
 @NgModule({
   imports: [BrowserModule, NoopAnimationsModule, SpotfireEditorModule]
