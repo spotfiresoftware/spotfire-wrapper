@@ -176,10 +176,6 @@ The script `build.sh` does all the steps above and publishes the artefacts to S3
 
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
 ## Further help
 
 Use Slack or email to send me any question or concern you have 
