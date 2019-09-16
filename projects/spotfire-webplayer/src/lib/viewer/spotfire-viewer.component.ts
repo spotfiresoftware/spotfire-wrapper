@@ -56,7 +56,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
 
   /**
   * @description
-  * Optional instance of a Customization instance. 
+  * Optional instance of a Customization instance.
   * If set, this will override the customizationInfo instance held by the application.
   */
   @Input() customization: SpotfireCustomization | string;
@@ -115,7 +115,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   longTime = false;
 
   constructor(public docSvc: DocumentService) {
-    console.log('SPOTFIRE WRAPPER - 10 juillet - Angular 8')
+    console.log('SPOTFIRE WRAPPER - 16 September - Angular 8');
     this.doConsole('Welcome !');
     setTimeout(() => this.longTime = true, 6000);
   }
@@ -278,10 +278,11 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       // Clear marking
       this.markerSubject.next({});
       this.doConsole(`SpotfireViewerComponent afterDisplay has markingOn=`, this.markingOn);
-      if (this.document.getData() === undefined) {
-        console.warn('[SpotfireViewerComponent] document getData() contains', this.document.getData());
+      const data = this.document.getData();
+      if (data === undefined) {
+        console.warn('[SpotfireViewerComponent] document getData() contains', data);
       } else {
-        this.document.getData().getTables$()
+        data.getTables$()
           .pipe(tap(allTableNames => this.doConsole(`All tables and column names:`, allTableNames)))
           .subscribe(allTableNames => this.document.getMarking().getMarkingNames$()
             .pipe(tap(markingNames => this.doConsole(`All marking names:`, markingNames)))

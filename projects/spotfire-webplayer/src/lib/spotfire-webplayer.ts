@@ -179,6 +179,16 @@ export class Document {
       this.data = new Data(this._doc.data);
     });
   }
+  public getData() {
+    doConsole(`Document.getData: a)`, JSON.stringify(this.data));
+    if (!this.data) {
+      this.marking = new Marking(this._doc.marking);
+      this.filtering = new Filtering(this._doc.filtering);
+      this.data = new Data(this._doc.data);
+    }
+    doConsole(`Document.getData: b)`, JSON.stringify(this.data));
+    return this.data;
+  }
   private onActivePageChangedCallback = (pageState) => console.log('onActivePageChangedCallback', pageState);
   private do = <T>(m: string) => doCall<T>(this._doc, m);
   getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(
@@ -190,7 +200,7 @@ export class Document {
   // getReports$ = () => this.do('getReports');
   getActivePage$ = () => this.do<PageState>('getActivePage');
   setActivePage = (p: string | number) => this._doc.setActivePage(p);
-  getData = () => this.data;
+  // getData = () => this.data;
   getMarking = () => this.marking;
   getFiltering = () => this.filtering;
   public onDocumentReady$ = () => doCall(this._doc, 'onDocumentReady');
