@@ -258,7 +258,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   private afterDisplay = (doc: Document) => {
-    this.doConsole(`SpotfireViewerComponent openPage(${this.spotParams.page}) returns`, doc);
+    this.doConsole(`SpotfireViewerComponent afterDisplay`, doc, ', filters:', this.filters, ', markingON', this.markingOn);
     this.document = doc;
     if (this.filters && this.document.getFiltering()) {
       const flt = this.document.getFiltering();
@@ -277,22 +277,27 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     if (this.markingOn) {
       // Clear marking
       this.markerSubject.next({});
-      this.document.getData().getTables$()
-        .pipe(tap(allTableNames => this.doConsole(`All tables and column names:`, allTableNames)))
-        .subscribe(allTableNames => this.document.getMarking().getMarkingNames$()
-          .pipe(tap(markingNames => this.doConsole(`All marking names:`, markingNames)))
-          .subscribe(markingNames => markingNames.forEach(markingName => {
-            const tableNames = this.markingOn === '*' ? allTableNames : this.markingOn;
-            Object.keys(tableNames).forEach(tName => {
-              let columnNames: Array<string> = this.markingOn === '*' ? allTableNames[tName] : tableNames[tName];
-              if (columnNames.length === 1 && columnNames[0] === '*') {
-                columnNames = allTableNames[tName];
-              }
-              this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(columnNames)}, ${this.maxRows})`);
-              this.document.getMarking().onChanged$(markingName, tName, columnNames, this.maxRows)
-                .subscribe(f => this.updateMarking(tName, markingName, f));
-            });
-          })));
+      this.doConsole(`SpotfireViewerComponent afterDisplay has markingOn=`, this.markingOn);
+      if (this.document.getData() === undefined) {
+        console.warn('[SpotfireViewerComponent] document getData() contains', this.document.getData());
+      } else {
+        this.document.getData().getTables$()
+          .pipe(tap(allTableNames => this.doConsole(`All tables and column names:`, allTableNames)))
+          .subscribe(allTableNames => this.document.getMarking().getMarkingNames$()
+            .pipe(tap(markingNames => this.doConsole(`All marking names:`, markingNames)))
+            .subscribe(markingNames => markingNames.forEach(markingName => {
+              const tableNames = this.markingOn === '*' ? allTableNames : this.markingOn;
+              Object.keys(tableNames).forEach(tName => {
+                let columnNames: Array<string> = this.markingOn === '*' ? allTableNames[tName] : tableNames[tName];
+                if (columnNames.length === 1 && columnNames[0] === '*') {
+                  columnNames = allTableNames[tName];
+                }
+                this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(columnNames)}, ${this.maxRows})`);
+                this.document.getMarking().onChanged$(markingName, tName, columnNames, this.maxRows)
+                  .subscribe(f => this.updateMarking(tName, markingName, f));
+              });
+            })));
+      }
     }
     if (this.isFiltingWiredUp()) {
       this.doConsole('we have observers for filtering');
