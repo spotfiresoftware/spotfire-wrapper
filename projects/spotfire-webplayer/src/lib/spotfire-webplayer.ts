@@ -1,5 +1,9 @@
+/*
+* Copyright (c) 2019. TIBCO Software Inc.
+* This file is subject to the license terms contained
+* in the license file that is distributed with this file.
+*/
 
-// Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
 import { Observable, forkJoin, of as observableOf, zip, BehaviorSubject, of, throwError, TimeoutError } from 'rxjs';
 import { SpotfireCustomization as Customization, SpotfireFilter } from './spotfire-customization';
 import { mergeMap, tap, pluck, map, filter, timeout, catchError } from 'rxjs/operators';

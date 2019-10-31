@@ -1,4 +1,9 @@
-// Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
+/*
+* Copyright (c) 2019. TIBCO Software Inc.
+* This file is subject to the license terms contained
+* in the license file that is distributed with this file.
+*/
+
 import { Injectable } from '@angular/core';
 
 import { delay, map, mergeMap, tap } from 'rxjs/operators';

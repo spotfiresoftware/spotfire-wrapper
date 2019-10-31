@@ -1,10 +1,14 @@
-// Copyright (c) 2018-2018. TIBCO Software Inc. All Rights Reserved. Confidential & Proprietary.
+/*
+* Copyright (c) 2019. TIBCO Software Inc.
+* This file is subject to the license terms contained
+* in the license file that is distributed with this file.
+*/
+
 import { Injectable, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
 import { ReplaySubject, Observable } from 'rxjs';
 
-// https://stackoverflow.com/questions/46240293/how-to-lazyload-library-in-angular-4-module
 @Injectable({
   providedIn: 'root'
 })
