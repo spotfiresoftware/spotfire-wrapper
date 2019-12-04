@@ -1,3 +1,8 @@
+/*
+* Copyright (c) 2019. TIBCO Software Inc.
+* This file is subject to the license terms contained
+* in the license file that is distributed with this file.
+*/
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit } from '@angular/core';

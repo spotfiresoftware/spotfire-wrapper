@@ -1,6 +1,6 @@
 {
   "name": "@tibco/spotfire-wrapper",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": false,
   "scripts": {
     "build": "../../node_modules/.bin/tsc -p tsconfig.schematics.json",

@@ -1,3 +1,8 @@
+/*
+* Copyright (c) 2019. TIBCO Software Inc.
+* This file is subject to the license terms contained
+* in the license file that is distributed with this file.
+*/
 const fs = require('fs-extra');
 const concat = require('concat');
 (async function buid() {
