@@ -1,6 +1,6 @@
-# Spotfire-Wrapper
+# TIBCO Wrapper for Spotfire
 
-This is the home for the __Spotfire Wrapper Library__ and the __Spotfire Wrapper Package__.
+This is the home for the __Tibco Wrapper for Spotfire__ library and package.
 
 > ### Notes:
 > * Library can be found here: https://s3-us-west-2.amazonaws.com/sf-library/spotfire-wrapper.js
@@ -117,7 +117,7 @@ Start a HTTP server :
 python -m SimpleHTTPServer 4404
 ``` 
 or 
-``back
+```bash
 python3 -m http.server 4404
 ```
 
@@ -133,7 +133,7 @@ It will open a browser `http://localhost:4205`.
 
 Sources are available in `demo1` directory.
 
-### Demo #3: Extend SpotfireViexerComponent inside an Angular application:
+### Demo #3: Extend SpotfireViewerComponent inside an Angular application:
 
 ```bash
 ng serve demo2 --port=4206 --open
@@ -157,7 +157,7 @@ $ npm install
 $ ng build spotfire-webplayer
 $ (cd dist/spotfire-webplayer/ ; npm pack)
 $ mkdir build
-$ cp -f dist/spotfire-webplayer/spotfire-webplayer-0.0.1.tgz build/spotfire-wrapper.tgz
+$ cp -f dist/spotfire-webplayer/spotfire-webplayer-X.Y.Z.tgz build/spotfire-wrapper.tgz
 ```
 
 ### Build: Step #2 the library:
@@ -167,14 +167,7 @@ $ npm run build:elements
 $ cp -f elements/spotfire-wrapper.js ./build
 ```
 
-
-The script `build.sh` does all the steps above and publishes the artefacts to S3 bucket https://s3-us-west-2.amazonaws.com/sf-library/ and to NPM private repository.
-
 ---
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
 ## Further help
 
