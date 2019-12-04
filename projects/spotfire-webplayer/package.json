@@ -26,7 +26,7 @@
     "url": "http://www.tibco.com"
   },
   "keywords": ["tibco", "spotfire"],
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "BSD-3-Clause",
   "publishConfig": {
     "registry": "http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general"
   },
