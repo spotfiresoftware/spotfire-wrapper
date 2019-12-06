@@ -4,9 +4,10 @@
 * in the license file that is distributed with this file.
 */
 
-import { Observable, forkJoin, of as observableOf, zip, BehaviorSubject, of, throwError, TimeoutError } from 'rxjs';
+import { forkJoin, of, of as observableOf, throwError, zip, BehaviorSubject, Observable, TimeoutError } from 'rxjs';
+import { catchError, filter, map, mergeMap, pluck, tap, timeout } from 'rxjs/operators';
+
 import { SpotfireCustomization as Customization, SpotfireFilter } from './spotfire-customization';
-import { mergeMap, tap, pluck, map, filter, timeout, catchError } from 'rxjs/operators';
 
 declare let spotfire: any;
 
@@ -34,7 +35,6 @@ class PageState { index: number; pageTitle: string; }
 class DataTable { dataTableName: string; }
 class DataColumn { dataColumnName: string; dataTableName: string; dataType: string; values: {}; }
 class DistinctValues { count: number; values: Array<string>; }
-
 
 export class Marking {
   constructor(public _marking) { }
@@ -66,7 +66,6 @@ export class SpotfireParameters {
   app: any;
   _parameters: string;
   constructor(vars?: {}) {
-    console.log('CONSTR SpotfireParameters', vars, this);
     if (vars) {
       Object.keys(vars).forEach(key => this[key] = vars[key]);
     }
@@ -79,35 +78,6 @@ export class SpotfireParameters {
 export class Data {
   allTables = {};
   constructor(private _data) { }
-
-  // A Spotfire analysis contains one or more data tables, retrieved by the getDataTable,
-  // getActiveDataTable and getDataTables methods.
-  private getDataTables$ = () => doCall<DataTable[]>(this._data, 'getDataTables');
-
-  private getDataTableColNames$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t)
-    .pipe(mergeMap(f => this.getDataColumns$(f)), map(d => ({ [t]: d })))
-
-  private getDataTable$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t)
-    .pipe(mergeMap(f => this.getDataColumns$(f)))
-
-  // Each data table contains one or more data columns, retrieved by the getDataColumn,
-  // getDataColumns and searchDataColumns.
-  private getDataColumns$ = (t) => doCall<DataColumn[]>(t, 'getDataColumns').pipe(
-    mergeMap(columns => {
-      const obs = [];
-      columns.forEach((col: DataColumn) => obs.push(zip(...[observableOf(col)], (a: DataColumn, b) => a.dataColumnName)));
-      return forkJoin(obs);
-    })
-  )
-
-
-  // From the DataColumn class it is possible to retrieve metadata, such as column name and data type.
-  // It is also possible to get a list of the unique values in the data column with the getDistinctValues method.
-  private getDistinctValues$ = (t: DataColumn) => doCall<DistinctValues>(t, 'getDistinctValues', 0, 20).pipe(
-    tap(g => doConsole('Data.DistinctValues$', t, g, g.count > 0 && g.count < 25)),
-    // filter(g => g.count > 0 && g.count < 25),
-    //  tap(g => doConsole('[OBS]', 'DistinctValues filtres', g)),
-    pluck('values'))
 
   getTables$ = () => this.getDataTables$().pipe(
     mergeMap(tables => {
@@ -135,6 +105,34 @@ export class Data {
       });
       return dataTables;
     }))
+
+  // A Spotfire analysis contains one or more data tables, retrieved by the getDataTable,
+  // getActiveDataTable and getDataTables methods.
+  private getDataTables$ = () => doCall<DataTable[]>(this._data, 'getDataTables');
+
+  private getDataTableColNames$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t)
+    .pipe(mergeMap(f => this.getDataColumns$(f)), map(d => ({ [t]: d })))
+
+  private getDataTable$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t)
+    .pipe(mergeMap(f => this.getDataColumns$(f)))
+
+  // Each data table contains one or more data columns, retrieved by the getDataColumn,
+  // getDataColumns and searchDataColumns.
+  private getDataColumns$ = (t) => doCall<DataColumn[]>(t, 'getDataColumns').pipe(
+    mergeMap(columns => {
+      const obs = [];
+      columns.forEach((col: DataColumn) => obs.push(zip(...[observableOf(col)], (a: DataColumn, b) => a.dataColumnName)));
+      return forkJoin(obs);
+    })
+  )
+
+  // From the DataColumn class it is possible to retrieve metadata, such as column name and data type.
+  // It is also possible to get a list of the unique values in the data column with the getDistinctValues method.
+  private getDistinctValues$ = (t: DataColumn) => doCall<DistinctValues>(t, 'getDistinctValues', 0, 20).pipe(
+    tap(g => doConsole('Data.DistinctValues$', t, g, g.count > 0 && g.count < 25)),
+    // filter(g => g.count > 0 && g.count < 25),
+    //  tap(g => doConsole('[OBS]', 'DistinctValues filtres', g)),
+    pluck('values'))
 }
 
 export class DocMetadata {
@@ -193,8 +191,6 @@ export class Document {
     doConsole(`Document.getData: b)`, JSON.stringify(this.data));
     return this.data;
   }
-  private onActivePageChangedCallback = (pageState) => console.log('onActivePageChangedCallback', pageState);
-  private do = <T>(m: string) => doCall<T>(this._doc, m);
   getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(
     map(g => new DocMetadata(g)))
   getPages$ = () => this.do('getPages').pipe(map(m => Object.keys(m).map(f => m[f].pageTitle)));
@@ -209,6 +205,8 @@ export class Document {
   getFiltering = () => this.filtering;
   public onDocumentReady$ = () => doCall(this._doc, 'onDocumentReady');
   public close = () => this._doc ? this._doc.close() : null;
+  private onActivePageChangedCallback = (pageState) => doConsole('onActivePageChangedCallback', pageState);
+  private do = <T>(m: string) => doCall<T>(this._doc, m);
   private onActivePageChanged$ = () => doCall(this._doc, 'onActivePageChanged');
 }
 
@@ -257,9 +255,10 @@ function doCall<T>(obj, m: string, ...a: any[]): Observable<T> {
 }
 
 export class Application {
-  private _app: any;
   private readySubject = new BehaviorSubject<boolean>(false);
+  // tslint:disable-next-line:member-ordering
   public onApplicationReady$ = this.readySubject.asObservable().pipe(filter(d => d));
+  private _app: any;
 
   constructor(
     public url: string,
@@ -273,6 +272,10 @@ export class Application {
       this.customization, this.path, this.parameters, this.reloadAnalysisInstance,
       this.version, this.onReadyCallback, this.onCreateLoginElement);
   }
+  onOpened$ = () => doCall(this._app, 'onOpened');
+  getDocument = (id: string, page: string | number, custo?: Customization): Document =>
+    new Document(this, id, page, custo ? custo : this.customization)
+  openDocument = (id: string, page: string | number, custo: Customization) => this._app.openDocument(id, page, custo);
 
   private onReadyCallback = (response, newApp: Application) => {
     doConsole('Application.onReadyCallback', response, newApp);
@@ -292,8 +295,4 @@ export class Application {
   }
   // Displays an error message if something goes wrong in the Web Player.
   private onErrorCallback = (errCode: string, desc: string) => console.error(`[SPOTFIRE-WEBPLAYER] ${errCode}: ${desc}`);
-  onOpened$ = () => doCall(this._app, 'onOpened');
-  getDocument = (id: string, page: string | number, custo?: Customization): Document =>
-    new Document(this, id, page, custo ? custo : this.customization)
-  openDocument = (id: string, page: string | number, custo: Customization) => this._app.openDocument(id, page, custo);
 }

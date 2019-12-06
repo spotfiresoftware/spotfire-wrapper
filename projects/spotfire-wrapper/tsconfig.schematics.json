@@ -15,7 +15,7 @@
       "noUnusedParameters": true,
       "noUnusedLocals": true,
       "rootDir": "schematics",
-      "outDir": "../../dist/spotfire-webplayer/schematics",
+      "outDir": "../../build/spotfire-wrapper/schematics",
       "skipDefaultLibCheck": true,
       "skipLibCheck": true,
       "sourceMap": true,

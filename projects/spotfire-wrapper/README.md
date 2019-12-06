@@ -1,25 +1,29 @@
-# Spotfire-Wrapper
+# Wrapper for TIBCO Spotfire(R)
 
-This is the home for the __Spotfire Wrapper Package__.
-Spotfire Webplayer is an Angular Component built for and with Angular.
+This is the home for the __Wrapper for TIBCO Spotfire(R)__ package.
 
-### Installation:
+Wrapper for TIBCO Spotfire(R) is an Angular Component built for and with Angular 8+.
+
+## Install Wrapper for TIBCO Spotfire(R):
+
+Use the Angular CLI's install schematic to add Wrapper for TIBCO Spotfire(R) to your project by running the following command:
 ```bash
-$ npm install @tibco/spotfire-wrapper --registry http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general
+ng add @tibco/spotfire-wrapper
 ```
 
-To let know `npm` tool that packages with `@tibco` scope need to be retrieved from artifactory, you may type this command once (it will update your `~/.npmrc` file): 
-```bash
-npm config set @tibco:registry http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general"
-```
-Next you can type any of these commands, and `npm` will look into the right repository:
-```bash
-npm install @tibco/spotfire-wrapper@latest --save
-npm outdated -l
-npm update
-````
+__Then it's really easy to get started !__
 
-__Really easy to get started !__
+## Dashboard schematics 
+
+Running the dashboard schematic generates a new SpotfireDashboard component that can be used and modified to display a dashboard of your Spotfire(R):
+
+```
+ng generate @tibco/spotfire-wrapper:dashboard --name MySpot
+```
+
+## Create your own component
+
+You may also want to create your own component:
 
 ```typescript
 import { BrowserModule        } from '@angular/platform-browser';
@@ -61,8 +65,10 @@ The package provides two modules and two components:
  * `SpotfireEditorModule` depends on `SpotfireViewerModule` and exports `SpotfireEditorComponent`
 
 
----
-User can also extend `SpotfireViewerComponent` like this : 
+
+## Extend SpotfireViewerComponent component
+
+You can also extend `SpotfireViewerComponent` like this : 
 
 ```typescript
 @Component({
@@ -93,9 +99,15 @@ class MySpotfireViewerComponent extends SpotfireViewerComponent implements OnIni
 }
 ```
 
+and use your new directove <mu-spotfire><my-spotifire>` in your templates
+
+## Demos
+
+Take a look at examples at 
+ - https://github.com/TIBCOSoftware/spotfire-wrapper/demo
+ - https://github.com/TIBCOSoftware/spotfire-wrapper/demo1
+ - https://github.com/TIBCOSoftware/spotfire-wrapper/demo2
+
+
 ---
-## Further help
 
-Use Slack or email to send me any question, suggestion or concern you have 
-
-Nicolas Deroche - part of **The Tibco Company**

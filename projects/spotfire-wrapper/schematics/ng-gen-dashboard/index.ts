@@ -3,11 +3,12 @@
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
-import { normalize, strings, experimental } from '@angular-devkit/core';
+import { experimental, normalize, strings } from '@angular-devkit/core';
 import {
-    Rule, Tree, move, chain, mergeWith, apply, url,
-    applyTemplates, SchematicContext, SchematicsException
+    apply, applyTemplates, chain, mergeWith, move, url, Rule,
+    SchematicsException, SchematicContext, Tree
 } from '@angular-devkit/schematics';
+
 import { Schema } from './schema';
 // import { addDeclarationToModule } from '@schematics/angular/utility/ast-utils';
 export function ngGenDashboard(options: Schema): Rule {
@@ -28,9 +29,7 @@ export function ngGenDashboard(options: Schema): Rule {
         }
 
         const projectName = options.project as string;
-
         const project = workspace.projects[projectName];
-
         const projectType = project.projectType === 'application' ? 'app' : 'lib';
 
         if (options.path === undefined) {
@@ -50,6 +49,5 @@ export function ngGenDashboard(options: Schema): Rule {
         return chain([
             mergeWith(templateSource)
         ]);
-
     };
 }

@@ -5,7 +5,7 @@
 */
 
 /*
- * Public API Surface of spotfire-webplayer
+ * Public API Surface of spotfire-wrapper
  */
 
 export * from './lib/viewer/spotfire-viewer.component';

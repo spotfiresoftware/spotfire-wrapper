@@ -4,7 +4,7 @@
 * in the license file that is distributed with this file.
 */
 
-import { TestBed, inject } from '@angular/core/testing';
+import { inject, TestBed } from '@angular/core/testing';
 
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 

@@ -6,10 +6,11 @@
 
 import { Injectable } from '@angular/core';
 
+import { forkJoin, Observable } from 'rxjs';
 import { delay, map, mergeMap, tap } from 'rxjs/operators';
-import { Observable, forkJoin } from 'rxjs';
-import { SpotfireCustomization } from './spotfire-customization';
+
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
+import { SpotfireCustomization } from './spotfire-customization';
 import { Application, Document, SpotfireParameters } from './spotfire-webplayer';
 
 declare let spotfire: any;
@@ -19,6 +20,7 @@ export class DocumentService {
 
   constructor(public lazySvc: LazyLoadingLibraryService) { }
 
+  // tslint:disable-next-line:no-console
   doConsole = (...args: any[]) => console.log('[DOCUMENT-SERVICE]', ...args);
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,18 +76,6 @@ export class DocumentService {
       tap(f => this.doConsole('onApplicationReady$ is done')),
       mergeMap(_ => this.openPage$(params)));
   }
-  /**
-     * @description
-     * Callback played if Spotfire requires some login
-     *
-     */
-
-  private onCreateLoginElement = () => {
-    this.doConsole('Creating the login element');
-    // Optionally create and return a div to host the login button
-    console.warn(`Cannot login`);
-    return null;
-  }
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
@@ -99,7 +89,6 @@ export class DocumentService {
       throw new Error('Spotfire webapp is not created yet');
     }
     //    const idDom = `is${new Date().getTime()}`;
-
 
     this.doConsole('getDocument', params.domid, `cnf=${params.page}`, params.app, params.document, params.customization);
     // Here is the call to 'spotfire.webPlayer.createApplication'
@@ -117,6 +106,18 @@ export class DocumentService {
         map(f => params.document as Document),
         tap(f => this.doConsole('onDocumentReady$ is done', f)));
     }
+  }
+  /**
+   * @description
+   * Callback played if Spotfire requires some login
+   *
+   */
+
+  private onCreateLoginElement = () => {
+    this.doConsole('Creating the login element');
+    // Optionally create and return a div to host the login button
+    console.warn(`Cannot login`);
+    return null;
   }
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

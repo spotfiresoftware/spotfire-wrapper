@@ -4,15 +4,16 @@
 * in the license file that is distributed with this file.
 */
 import {
-  Component, Input, EventEmitter, ViewChild,
-  ElementRef, Output, OnChanges, SimpleChanges, ViewEncapsulation, OnInit
+  Component, ElementRef, EventEmitter, Input,
+  OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation
 } from '@angular/core';
 
-import { Observable, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
-import { DocMetadata, Application, Document, SpotfireParameters } from '../spotfire-webplayer';
+
 import { DocumentService } from '../document.service';
+import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
+import { Application, Document, DocMetadata, SpotfireParameters } from '../spotfire-webplayer';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
@@ -27,6 +28,17 @@ declare let spotfire: any;
 })
 
 export class SpotfireViewerComponent implements OnChanges, OnInit {
+  /**
+   * @description
+   * Optional. Load parameters for the analysis.
+   */
+  @Input() set parameters(value: string) {
+    this._parameters = value;
+    this.spotParams._parameters = value;
+    if (this.app) {
+      this.openPath(this.path);
+    }
+  }
   /**
    * @description
    * print debug logs to JS console. Default to false
@@ -53,39 +65,25 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   @Input() page: string;
 
   /**
-  * @description
-  * Optional unique id to read/write settings from local storage
-  */
+   * @description
+   * Optional unique id to read/write settings from local storage
+   */
   @Input() sid: string;
 
   /**
-  * @description
-  * Optional instance of a Customization instance.
-  * If set, this will override the customizationInfo instance held by the application.
-  */
+   * @description
+   * Optional instance of a Customization instance.
+   * If set, this will override the customizationInfo instance held by the application.
+   */
   @Input() customization: SpotfireCustomization | string;
 
   /**
-    * @description
-    * Optional. Array of filters that will be applied once page is loaded.
-    */
+   * @description
+   * Optional. Array of filters that will be applied once page is loaded.
+   */
   @Input() filters: Array<SpotfireFilter> | string;
   @Input() markingOn: {} | string;
   @Input() maxRows = 10;
-
-  protected spotParams: SpotfireParameters = new SpotfireParameters();
-  /**
-    * @description
-    * Optional. Load parameters for the analysis.
-    */
-  @Input() set parameters(value: string) {
-    this._parameters = value;
-    this.spotParams._parameters = value;
-    if (this.app) {
-      this.openPath(this.path);
-    }
-  }
-  private _parameters: string;
 
   @ViewChild('spot', { static: true, read: ElementRef }) spot: ElementRef;
   errorMessages = [];
@@ -93,34 +91,38 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   /* metadata contains Information about the Spotfire analysis */
   metadata: DocMetadata;
   edit = false;
-  private document: Document;
-  private app: Application;
-  /* Filtering observables, emitter and subject*/
-  private filterSubject = new BehaviorSubject<Array<{}>>([]);
-  public filter$: Observable<Array<{}>> = this.filterSubject.asObservable();
 
   /**
-    * @description
-    * Optional. emit filters set by user in dashboard
-    */
+   * @description
+   * Optional. emit filters set by user in dashboard
+   */
   @Output() filteringEvent: EventEmitter<any> = new EventEmitter(false);
-
-  /* Marking observables, emitter and subject*/
-  private markerSubject = new BehaviorSubject<{}>({});
-  public marker$: Observable<{}> = this.markerSubject.asObservable();
   /**
    * @description
    * Optional. emit marking set by user in dashboard
    */
   @Output() markingEvent: EventEmitter<any> = new EventEmitter(false);
-  private markedRows = {};
 
   view: any;
   longTime = false;
 
+  protected spotParams: SpotfireParameters = new SpotfireParameters();
+  private _parameters: string;
+  private document: Document;
+  private app: Application;
+  /* Filtering observables, emitter and subject*/
+  private filterSubject = new BehaviorSubject<Array<{}>>([]);
+  // tslint:disable-next-line:member-ordering
+  public filter$: Observable<Array<{}>> = this.filterSubject.asObservable();
+
+  /* Marking observables, emitter and subject*/
+  private markerSubject = new BehaviorSubject<{}>({});
+  // tslint:disable-next-line:member-ordering
+  public marker$: Observable<{}> = this.markerSubject.asObservable();
+  private markedRows = {};
+
   constructor(public docSvc: DocumentService) {
-    console.log('SPOTFIRE WRAPPER - 16 September - Angular 8');
-    this.doConsole('Welcome !');
+    this.doConsole('Welcome to Wrapper for TIBCO Spotfire(R)!');
     setTimeout(() => this.longTime = true, 6000);
   }
 
@@ -129,6 +131,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.display();
   }
 
+  // tslint:disable-next-line:no-console
   doConsole = (...args: any[]) => this.debug && console.log('[SPOTFIRE-VIEWER]', ...args);
 
   /**
@@ -173,30 +176,19 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   stopPropagation = (e: Event) => e.stopPropagation();
-  private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
-  private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
-  private displayErrorMessage = (message: string) => {
-    console.error('ERROR:', message);
-    this.errorMessages.push(message);
-    if (!this.spotParams.document) {
-      // Do not display the info Message when document is running
-      this.spot.nativeElement.style.fontFamily = 'monospace';
-      this.spot.nativeElement.style.color = '#e82127';
-      this.spot.nativeElement.style.textAlign = 'center';
-      this.spot.nativeElement.style.padding = '30px';
-      this.spot.nativeElement.textContent = this.errorMessages.join('<br>');
-    }
-  }
-
-  private displayInfoMessage = (message: string) => {
-    console.log(message);
-    if (!this.spotParams.document && this.debug) {
-      // Do not display the info Message when document is running
-      this.spot.nativeElement.style.fontFamily = 'monospace';
-      this.spot.nativeElement.style.color = 'black';
-      this.spot.nativeElement.style.textAlign = 'center';
-      this.spot.nativeElement.textContent = message;
-    }
+  /**
+   * @description
+   * Open the Document page
+   *
+   * @param page the document page that will be displayed
+   */
+  public openPage(page: string) {
+    this.displayInfoMessage(`${this.url}/${this.path}/${page ? page : ''}...`);
+    this.doConsole(`SpotfireViewerComponent openPage(${page})`);
+    this.page = page;
+    this.spotParams = { ...this.spotParams, page };
+    const p = this.spotParams;
+    this.docSvc.openPage$(p).subscribe(doc => this.afterDisplay(doc));
   }
 
   /**
@@ -246,19 +238,30 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   protected doForm(doc: Document) { }
-  /**
-   * @description
-   * Open the Document page
-   *
-   * @param page the document page that will be displayed
-   */
-  public openPage(page: string) {
-    this.displayInfoMessage(`${this.url}/${this.path}/${page ? page : ''}...`);
-    this.doConsole(`SpotfireViewerComponent openPage(${page})`);
-    this.page = page;
-    this.spotParams = { ...this.spotParams, page };
-    const p = this.spotParams;
-    this.docSvc.openPage$(p).subscribe(doc => this.afterDisplay(doc));
+  private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
+  private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
+  private displayErrorMessage = (message: string) => {
+    console.error('ERROR:', message);
+    this.errorMessages.push(message);
+    if (!this.spotParams.document) {
+      // Do not display the info Message when document is running
+      this.spot.nativeElement.style.fontFamily = 'monospace';
+      this.spot.nativeElement.style.color = '#e82127';
+      this.spot.nativeElement.style.textAlign = 'center';
+      this.spot.nativeElement.style.padding = '30px';
+      this.spot.nativeElement.textContent = this.errorMessages.join('<br>');
+    }
+  }
+
+  private displayInfoMessage = (message: string) => {
+    // console.log(message);
+    if (!this.spotParams.document && this.debug) {
+      // Do not display the info Message when document is running
+      this.spot.nativeElement.style.fontFamily = 'monospace';
+      this.spot.nativeElement.style.color = 'black';
+      this.spot.nativeElement.style.textAlign = 'center';
+      this.spot.nativeElement.textContent = message;
+    }
   }
 
   private afterDisplay = (doc: Document) => {

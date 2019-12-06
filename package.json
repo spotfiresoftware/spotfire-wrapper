@@ -1,20 +1,20 @@
 {
   "name": "spotfire-wrapper",
-  "version": "0.4.3",
+  "version": "0.7.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build-webplayer": "ng build spotfire-webplayer && (cd dist/spotfire-webplayer/ ; npm pack)",
+    "build-webplayer": "ng build spotfire-wrapper && (cd build/spotfire-wrapper/ ; npm pack)",
     "build-wrapper": "npm run build:elements",
     "test": "ng test",
     "lint": "ng lint",
     "builddev:elements": "ng build  && node build-script.js && wc elements/spotfire-wrapper.js",
     "build:elements": "ng build --prod && node build-script.js && wc elements/spotfire-wrapper.js",
-    "sptf:watch": "(cd projects/spotfire-webplayer ; ../../node_modules/.bin/tsc -w  --pretty -p tsconfig.schematics.json)",
-    "sptf:buildlib": "ng build spotfire-webplayer",
-    "sptf:buildschematics": "(cd projects/spotfire-webplayer && npm run build)",
+    "sptf:watch": "(cd projects/spotfire-wrapper ; ../../node_modules/.bin/tsc -w  --pretty -p tsconfig.schematics.json)",
+    "sptf:buildlib": "ng build spotfire-wrapper",
+    "sptf:buildschematics": "(cd projects/spotfire-wrapper && npm run build)",
     "sptf:build": "npm run sptf:buildlib && npm run sptf:buildschematics",
-    "build:lib": "npm run sptf:build && (cd dist/spotfire-webplayer ; npm pack ; ls -l *tgz) && npm install --no-save dist/spotfire-webplayer/*tgz && date"
+    "build:lib": "npm run sptf:build && (cd build/spotfire-wrapper ; npm pack ; ls -l *tgz) && npm install --no-save build/spotfire-wrapper/*tgz && date"
   },
   "author": {
     "name": "Nicolas Deroche",
@@ -68,7 +68,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TIBCOSoftware/spotfire-wrapper.git"
+    "url": "git+https://github.com/TIBCOSoftware/spotfire-wrapper"
   },
   "homepage": "https://github.com/TIBCOSoftware/spotfire-wrapper"
 }

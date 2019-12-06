@@ -20,11 +20,11 @@
       "dom"
     ],
     "paths": {
-      "spotfire-webplayer": [
-        "dist/spotfire-webplayer"
+      "spotfire-wrapper": [
+        "build/spotfire-wrapper"
       ],
-      "spotfire-webplayer/*": [
-        "dist/spotfire-webplayer/*"
+      "spotfire-wrapper/*": [
+        "build/spotfire-wrapper/*"
       ]
     }
   }

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "spotfire-wrapper": {
+    "spotfire-wrapper-lib": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist",
+            "outputPath": "build/spotfire-wrapper-lib",
             "index": "demo/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -154,33 +154,33 @@
         }
       }
     },
-    "spotfire-webplayer": {
-      "root": "projects/spotfire-webplayer",
-      "sourceRoot": "projects/spotfire-webplayer/src",
+    "spotfire-wrapper": {
+      "root": "projects/spotfire-wrapper",
+      "sourceRoot": "projects/spotfire-wrapper/src",
       "projectType": "library",
       "prefix": "tibco",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
-            "tsConfig": "projects/spotfire-webplayer/tsconfig.lib.json",
-            "project": "projects/spotfire-webplayer/ng-package.json"
+            "tsConfig": "projects/spotfire-wrapper/tsconfig.lib.json",
+            "project": "projects/spotfire-wrapper/ng-package.json"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/spotfire-webplayer/src/test.ts",
-            "tsConfig": "projects/spotfire-webplayer/tsconfig.spec.json",
-            "karmaConfig": "projects/spotfire-webplayer/karma.conf.js"
+            "main": "projects/spotfire-wrapper/src/test.ts",
+            "tsConfig": "projects/spotfire-wrapper/tsconfig.spec.json",
+            "karmaConfig": "projects/spotfire-wrapper/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/spotfire-webplayer/tsconfig.lib.json",
-              "projects/spotfire-webplayer/tsconfig.spec.json"
+              "projects/spotfire-wrapper/tsconfig.lib.json",
+              "projects/spotfire-wrapper/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -190,7 +190,7 @@
       }
     }
   },
-  "defaultProject": "spotfire-wrapper",
+  "defaultProject": "spotfire-wrapper-lib",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",

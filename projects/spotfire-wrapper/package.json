@@ -1,15 +1,15 @@
 {
   "name": "@tibco/spotfire-wrapper",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": false,
   "scripts": {
     "build": "../../node_modules/.bin/tsc -p tsconfig.schematics.json",
-    "copy:schemas": "../../node_modules/.bin/cpx -v \"schematics/**/schema.json\" ../../dist/spotfire-webplayer/schematics",
-    "copy:files": "../../node_modules/.bin/cpx -v -p \"schematics/**/files/**\" ../../dist/spotfire-webplayer/schematics",
-    "copy:assets": "../../node_modules/.bin/cpx -v -p \"assets/*\" ../../dist/spotfire-webplayer/assets",
-    "copy:tps": "../../node_modules/.bin/cpx -v -p \"3rdpartylicenses.txt\" ../../dist/spotfire-webplayer",
-    "copy:styles": "../../node_modules/.bin/cpx -v -p \"styles/*\" ../../dist/spotfire-webplayer/styles",
-    "copy:collection": "cp -v schematics/collection.json ../../dist/spotfire-webplayer/schematics/collection.json",
+    "copy:schemas": "../../node_modules/.bin/cpx -v \"schematics/**/schema.json\" ../../build/spotfire-wrapper/schematics",
+    "copy:files": "../../node_modules/.bin/cpx -v -p \"schematics/**/files/**\" ../../build/spotfire-wrapper/schematics",
+    "copy:assets": "../../node_modules/.bin/cpx -v -p \"assets/*\" ../../build/spotfire-wrapper/assets",
+    "copy:tps": "../../node_modules/.bin/cpx -v -p \"3rdpartylicenses.txt\" ../../build/spotfire-wrapper",
+    "copy:styles": "../../node_modules/.bin/cpx -v -p \"styles/*\" ../../build/spotfire-wrapper/styles",
+    "copy:collection": "cp -v schematics/collection.json ../../build/spotfire-wrapper/schematics/collection.json",
     "postbuild": "npm run copy:schemas && npm run copy:files && npm run copy:tps && npm run copy:styles && npm run copy:collection"
   },
   "peerDependencies": {
@@ -25,7 +25,7 @@
     "email": "nderoche@tibco.com",
     "url": "http://www.tibco.com"
   },
-  "keywords": ["tibco", "spotfire"],
+  "keywords": ["TIBCO", "Spotfire"],
   "license": "BSD-3-Clause",
   "publishConfig": {
     "registry": "http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general"

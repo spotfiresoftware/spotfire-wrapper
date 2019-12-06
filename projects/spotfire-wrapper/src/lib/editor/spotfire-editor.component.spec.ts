@@ -5,6 +5,7 @@
 */
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+
 import { SpotfireEditorComponent } from './spotfire-editor.component';
 
 describe('SpotfireWrapperComponent', () => {

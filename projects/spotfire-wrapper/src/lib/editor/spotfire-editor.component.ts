@@ -5,13 +5,13 @@
 */
 
 import { Component, ViewEncapsulation } from '@angular/core';
-import { FormGroup, Validators, FormControl, FormBuilder } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
-import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
-import { Document as SpotDoc, CUSTLABELS } from '../spotfire-webplayer';
-import { PersistanceService } from '../persitence.service';
-import { SpotfireViewerComponent } from '../viewer/spotfire-viewer.component';
 import { DocumentService } from '../document.service';
+import { PersistanceService } from '../persitence.service';
+import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
+import { CUSTLABELS, Document as SpotDoc } from '../spotfire-webplayer';
+import { SpotfireViewerComponent } from '../viewer/spotfire-viewer.component';
 
 @Component({
     selector: 'spotfire-editor',
@@ -23,9 +23,9 @@ import { DocumentService } from '../document.service';
 export class SpotfireEditorComponent extends SpotfireViewerComponent {
     form: FormGroup;
     /**
-      * When user hits Update button, depending on what settings are modified, call the right level of
-      * method to update the dashboard
-      */
+     * When user hits Update button, depending on what settings are modified, call the right level of
+     * method to update the dashboard
+     */
     dataTables = {};
     pages = [];
     possibleValues = '';
@@ -41,8 +41,8 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
         const isD = (z) => this.form.get(z).dirty;
         const onlyTrueProps = (t) => Object.keys(t).filter(key => t[key] === true)
             .reduce((obj, key) => { obj[key] = t[key]; return obj; }, {});
-        console.log('[SPOTFIRE-EDITOR] SpotfireEditorComponent Update', this.form.getRawValue(),
-            `u:${isD('url')}, p:${isD('path')}, a:${isD('page')}, c:${isD('cust')}, f:${isD('filters')}, m:${isD('marking')}`);
+        // console.log('[SPOTFIRE-EDITOR] SpotfireEditorComponent Update', this.form.getRawValue(),
+        // `u:${isD('url')}, p:${isD('path')}, a:${isD('page')}, c:${isD('cust')}, f:${isD('filters')}, m:${isD('marking')}`);
         const cus = new SpotfireCustomization(this.form.get('cust').value);
         if (isD('url')) {
             this.docSvc.openWebPlayer$(this.spotParams).subscribe();
@@ -50,7 +50,7 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
         } else if (isD('path') || isD('filters') || isD('marking') || isD('cust')) {
             this.path = isD('path') ? this.form.get('path').value : this.path;
             this.page = isD('page') ? this.form.get('page').value : this.page;
-            console.log('[SPOTFIRE-EDITOR] Marking : ', this.form.get('marking').value);
+            // console.log('[SPOTFIRE-EDITOR] Marking : ', this.form.get('marking').value);
             this.customization = cus;
             this.pages = [];
             const allFilters: Array<SpotfireFilter> = [];
@@ -96,7 +96,6 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
             marking: this.fb.group({})
         });
 
-
         // then subscribe to observables to retrieves some info about the document
         //
         doc.getDocumentMetadata$().subscribe(g => this.metadata = g);
@@ -112,13 +111,12 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
         // this.marking = doc.marking;
         //  this.marking.getMarkingNames(g => console.log('SFINFO', 'getMarkingNames() = ', g));
 
-
         // get Table info
         //
         const difference = (a, b) => b.filter(i => a.indexOf(i) < 0);
         doc.onDocumentReady$().subscribe(__ => {
             doc.getData().getAllTables$().subscribe(tables => {
-                console.log('[SPOTFIRE-EDITOR] getAllTables$ returns', tables, this.filters, this.markingOn);
+                // console.log('[SPOTFIRE-EDITOR] getAllTables$ returns', tables, this.filters, this.markingOn);
                 const toList = (g) => g.map(f => `'${f}'`).join(', '),
                     errTxt1 = '[spotfire-EDITOr] Attribut marking-on contains unknwon',
                     errTxt2 = '[spotfire-EDITOr] Possible values for',
@@ -126,7 +124,7 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
                     mar: FormGroup = this.form.get('marking') as FormGroup,
                     tNames = Object.keys(tables),
                     tdiff = this.markingOn ? difference(Object.keys(this.markingOn), tNames) : [];
-                console.log('Tables : ', tNames, tdiff, fil);
+                // console.log('Tables : ', tNames, tdiff, fil);
 
                 if (tdiff.length > 0) {
                     this.errorMessages.push(`${errTxt1} table names: ${toList(tdiff)}`);

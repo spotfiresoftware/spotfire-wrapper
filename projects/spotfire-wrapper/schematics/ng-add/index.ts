@@ -4,16 +4,16 @@
 * in the license file that is distributed with this file.
 */
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
+import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
+import {
+    addModuleImportToRootModule, getProjectFromWorkspace, getProjectMainFile,
+    hasNgModuleImport
+} from '@angular/cdk/schematics';
 
 import { getWorkspace } from '@schematics/angular/utility/config';
-import {
-    getProjectFromWorkspace, getProjectMainFile, hasNgModuleImport,
-    addModuleImportToRootModule
-} from '@angular/cdk/schematics';
 import { getAppModulePath } from '@schematics/angular/utility/ng-ast-utils';
-import { Schema } from './schema';
-import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
 
+import { Schema } from './schema';
 
 function addPackageToPackageJson(host: Tree, pkg: string, version: string, dev = false): Tree {
     function sortObjectByKeys(obj: object | any) {
