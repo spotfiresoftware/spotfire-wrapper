@@ -3,7 +3,7 @@
 This is the home for the __Wrapper for TIBCO Spotfire(R)__ library and package.
 
 > ### Notes:
-> * Library can be found here: https://github.com/TIBCOSoftware/spotfire-wrapper/dist/spotfire-wrapper.js
+> * Library can be found here: https://github.com/TIBCOSoftware/spotfire-wrapper/blob/master/dist/spotfire-wrapper.js
 > * NPM package can be found here: http://npmjs.com/packages/spotfire-wrapper
 
 
@@ -13,7 +13,7 @@ Wrapper for TIBCO Spotfire(R) provides a Javascript library that defines a new H
 ```html
 <html>
     <head>
-        <script src="https://github.com/TIBCOSoftware/spotfire-wrapper/dist/spotfire-wrapper.js"></script>
+        <script src="https://github.com/TIBCOSoftware/spotfire-wrapper/blob/master/dist/spotfire-wrapper.js"></script>
     </head>
     <body>
         <spotfire-viewer 
@@ -51,7 +51,7 @@ The package provides two modules with a component each :
  * `SpotfireEditorModule` depends on `SpotfireViewerModule` and exports `SpotfireEditorComponent`
 
 
-For exemple, user can extend `SpotfireViewerComponent` like this : 
+For example, user can extend `SpotfireViewerComponent` like this : 
 
 ```typescript
 import { OnInit, Component } from '@angular/core';
@@ -159,6 +159,6 @@ $ cp -f elements/spotfire-wrapper.js ./build
   This file is subject to the license terms contained
   in the license file that is distributed with this file.
 
-  Please see LICENCE for details of license and dependent third party components referenced by this library , or it can be found here:
+  Please see LICENSE for details of license and dependent third party components referenced by this library, or it can be found here:
                                                                                                                                                                                                                                                                                       
-https://github.com/TIBCOSoftware/spotfire-wrapper/LICENCE
+https://github.com/TIBCOSoftware/spotfire-wrapper/blob/master/LICENSE
