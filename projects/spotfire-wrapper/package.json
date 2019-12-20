@@ -1,6 +1,6 @@
 {
   "name": "@tibco/spotfire-wrapper",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": false,
   "scripts": {
     "build": "../../node_modules/.bin/tsc -p tsconfig.schematics.json",
@@ -19,19 +19,17 @@
     "@angular/flex-layout": "~8.0.0-beta"
   },
   "schematics": "./schematics/collection.json",
-  "author": {
-    "name": "Nicolas Deroche",
-    "email": "nderoche@tibco.com",
-    "url": "http://www.tibco.com"
-  },
+  "author": "Nicolas Deroche <nderoche@tibco.com> (http://www.tibco.com)",
   "keywords": ["TIBCO", "Spotfire"],
   "license": "BSD-3-Clause",
-  "publishConfig": {
-    "registry": "https://npmjs.com/package"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TIBCOSoftware/spotfire-wrapper.git"
   },
-  "homepage": "https://github.com/TIBCOSoftware/spotfire-wrapper"
+  "homepage": "https://github.com/TIBCOSoftware/spotfire-wrapper",
+  "description": "Wrapper for TIBCO Spotfire(R) package.",
+  "bugs": {
+    "url": "https://github.com/TIBCOSoftware/spotfire-wrapper/issues"
+  },
+  "main": "build-script.js"
 }
