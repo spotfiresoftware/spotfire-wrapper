@@ -1,6 +1,6 @@
 {
   "name": "@tibco/spotfire-wrapper",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "private": false,
   "scripts": {
     "build": "../../node_modules/.bin/tsc -p tsconfig.schematics.json",
@@ -27,7 +27,7 @@
   "keywords": ["TIBCO", "Spotfire"],
   "license": "BSD-3-Clause",
   "publishConfig": {
-    "registry": "http://artifacts.tibco.com:8081/artifactory/api/npm/npm-general"
+    "registry": "https://npmjs.com/package"
   },
   "repository": {
     "type": "git",

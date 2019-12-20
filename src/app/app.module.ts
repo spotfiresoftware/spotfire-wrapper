@@ -10,10 +10,10 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 // import { SpotfireEditorComponent, SpotfireEditorModule } from '@tibco/spotfire-wrapper';
-import { SpotfireViewerComponent } from '@tibco/spotfire-wrapper';
+import { SpotfireViewerComponent, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
 
 @NgModule({
-  imports: [BrowserModule, NoopAnimationsModule/* , SpotfireEditorModule */]
+  imports: [BrowserModule, NoopAnimationsModule , SpotfireViewerModule ]
 })
 export class AppModule {
   constructor(private i: Injector) { }
