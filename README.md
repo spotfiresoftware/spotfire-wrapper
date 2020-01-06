@@ -1,19 +1,24 @@
-# Wrapper for TIBCO Spotfire(R)
+# Wrapper for TIBCO Spotfire(R) - the Javascript library
 
-This is the home for the __Wrapper for TIBCO Spotfire(R)__ library and package.
+This is the home for the __Wrapper for TIBCO Spotfire(R)__ Javascript library.
+
+
 
 > ### Notes:
-> * Library can be found here: https://github.com/TIBCOSoftware/spotfire-wrapper/blob/master/dist/spotfire-wrapper.js
-> * NPM package can be found here: http://npmjs.com/packages/spotfire-wrapper
+> * Library can be found here: https://cdn.jsdelivr.net/gh/TIBCOSoftware/spotfire-wrapper/dist/spotfire-wrapper.js
+> * Visit [Angular package README](./projects/spotfire-wrapper/README.md) to read more about the Angular package alternate way.
 
 
-## Wrapper for TIBCO Spotfire(R)  -  the Javascript library
+# Installation
 
-Wrapper for TIBCO Spotfire(R) provides a Javascript library that defines a new HTML tag to easily display a Spotfire dashboard in a standard HTML page : `<spotfire-viewer>`:
+Wrapper for TIBCO Spotfire(R) provides a Javascript library that defines a new HTML tag to easily display a Spotfire dashboard in a standard HTML page : `<spotfire-viewer>`.
+
+Include the javascript files via cdn.jsdelivr.net and use `<spotfire-viewer>` tag as followed:
+
 ```html
 <html>
     <head>
-        <script src="https://github.com/TIBCOSoftware/spotfire-wrapper/blob/master/dist/spotfire-wrapper.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/TIBCOSoftware/spotfire-wrapper/dist/spotfire-wrapper.js"></script>
     </head>
     <body>
         <spotfire-viewer 
@@ -25,72 +30,90 @@ Wrapper for TIBCO Spotfire(R) provides a Javascript library that defines a new H
 </html>    
 ```
 
+`url` and  `path` are mandatory. If `page` is missing, it displays the first available page of this `url/path`.
 
-## Wrapper for TIBCO Spotfire(R) - the npm package
-
-Wrapper for TIBCO Spotfire(R) is also an Angular Component built for and with Angular 8+.
-
-### Installation using schematics:
-
-```
-$ ng add @tibco/spotfire-wrapper
-$ ng generate @tibco/spotfire-wrapper:dashboard --name MySpot
-```
-
-Then add `MySpotComponent` to `declarations` array of your `@ngModule`, and use `<myspot></myspot>` in your html templates.
-You can them edit the `src/myspot.component.ts` as you wish.
-
-### Installation with `npm install`:
-```
-$ npm install @tibco/spotfire-wrapper
-$ npm install @angular/cdk @angular/material @angular/flex-layout
-```
-
-The package provides two modules with a component each :
- * `SpotfireViewerModule` exports `SpotfireViewerComponent`
- * `SpotfireEditorModule` depends on `SpotfireViewerModule` and exports `SpotfireEditorComponent`
+You can add as many `<spotfire-viewer></spotfire-viewer>` pair of tags as you want in the same page.
 
 
-For example, user can extend `SpotfireViewerComponent` like this : 
+## Adjust the displayed Spotfire customization :
 
-```typescript
-import { OnInit, Component } from '@angular/core';
-import { SpotfireViewerComponent, SpotfireCustomization } from '@tibco/spotfire-wrapper';
+```html
+<spotfire-viewer 
+     url="https://spotfire-next.cloud.tibco.com" 
+     path="Samples/Sales and Marketing"
+     page="Sales performance"
+     customization='{"showAuthor":true, "showFilterPanel":true, "showStatusBar":true, "showToolBar":true}'>
+</spotfire-viewer>
+````
+Possible settings is listed here : 
+  * `"showAbout": true/false`
+  * `"showAnalysisInformationTool": true/false`
+  * `"showAuthor": true/false`
+  * `"showClose": true/false`
+  * `"showCustomizableHeader": true/false`
+  * `"showDodPanel": true/false`
+  * `"showExportFile": true/false`
+  * `"showFilterPanel": true/false`
+  * `"showHelp": true/false`
+  * `"showLogout": true/false`
+  * `"showPageNavigation": true/false`
+  * `"showReloadAnalysis": true/false`
+  * `"showStatusBar": true/false`
+  * `"showToolBar": true/false`
+  * `"showUndoRedo": true/false`
 
-@Component({
-  selector: 'my-spotfire',
-  template: `Override spotfire-viewer template:
-  <button *ngFor="let p of ['Sales performance', 'Territory analysis', 'Effect of promotions']" (click)="openPage(p)">{{p}}</button>
-  <div class="mys" #spot></div>`,
-  styles: [`
-  div.mys { width:600px; height:400px; background:#ebebeb; border-radius: 20px}
-  button { padding:10px }
-`]
-})
-export class MySpotfireViewerComponent extends SpotfireViewerComponent implements OnInit {
-  // No var please (or set a contructor)
-  ngOnInit(): void {
-    this.url = 'https://spotfire-next.cloud.tibco.com';
-    this.path = 'Samples/Sales and Marketing';
-    this.customization = { showAuthor: true, showFilterPanel: true, showToolBar: true } as SpotfireCustomization;
-    this.markingOn = '{"SalesAndMarketing": ["*"]}';
+## Filter data at load: 
 
-    // Show default page:
-    this.display();
+Loaded data can be filtered at the time the dashboard is first displayed:
 
-    // Subscribe to markingEvent
-    //
-    this.markingEvent.subscribe(e => console.log('MARKING MySpot', e));
-  }
-}
+```html
+<spotfire-viewer
+    url="https://spotfire-next.cloud.tibco.com"
+    path="Samples/Sales and Marketing"
+    page="Sales Performance"
+    filters='[{"dataTableName": "SalesAndMarketing", "dataColumnName": "State", "filterSettings": { "values": ["California", "Arizona"]}}]'>
+</spotfire-viewer>
 ```
 
-Run `ng serve --port=4204` for a dev server. Navigate to `http://localhost:4204/`. The app will automatically reload if you change any of the source files.
+The code above would display rows extracted from Table `SalesAndMarketing` where its column `State` is `California` or `Arizona`.
+
+Multiple filters can be set.  
+
+## Marking: get selected data
+
+```html
+<spotfire-viewer 
+    id="id1" 
+    url="https://spotfire-next.cloud.tibco.com" 
+    path="Samples/Sales and Marketing"
+    page="Effect of promotions"
+    marking-on='{"SalesAndMarketing": [ "BCG segmentation", "State" ]}'>
+</spotfire-viewer>
+<pre id="marker1"></pre>
+<script>
+    const result          = document.getElementById("marker1");
+    const spotfireWrapper = document.getElementById("id1");
+    // listen to the markingEvent
+    spotfireWrapper.addEventListener('markingEvent', event => {
+      result.innerHTML = JSON.stringify(event.detail, null, '   ');
+      console.log('[HTML] markingEvent!', event.detail);
+    });
+</script>
+````
+
+The code above will tell Spotfire(R) to provide values for columns `BCG segmentation` and `State` of table `SalesAndMarketing`.
+The Javascript code right after the `<spotfire-viewer>` tag will register an event listener, and prints result in `<pre id="marker1"></pre>`.
+
+If values of all columns shall be returned, `'{"SalesAndMarketing": ["*"]}'` need to be used.
+
 
 ---
 
 ## Demos
+
 ### Demo #0: Use &lt;spotfire-viewer> in a raw HTML code:
+
+see : https://github.com/TIBCOSoftware/spotfire-wrapper/tree/master/demo
 
 After building the JS library (step below), run `cd demo` and `cp ../build/spotfire-wrapper.js .`
 
@@ -105,56 +128,40 @@ python3 -m http.server 4404
 
 and navigate to `http://localhost:4404`, to see how to easily display a Spotfire dashboard in raw html pages.
 
-### Demo #1: Use &lt;spotfire-viewer> tag inside an Angular application:
-
-```bash
-ng serve demo1 --port=4205 --open
-```
-
-It will open a browser `http://localhost:4205`.
-
-Sources are available in `demo1` directory.
-
-### Demo #2: Extend SpotfireViewerComponent inside an Angular application:
-
-```bash
-ng serve demo2 --port=4206 --open
-```
-
-It will open a browser `http://localhost:4206`.
-
-Sources are available in `demo2` directory.
-
-> Note: 
-> 
-> The code of demo1 and demo2 has been extremely simplified. Check the `demo1/main.ts` and `demo2/main.ts` files.
 
 ---
+
 
 ## Builds
 
 ### Step #1: build the NPM package:
 
 ```bash
-$ npm install
-$ ng build spotfire-wrapper
-$ (cd build/spotfire-wrapper/ ; npm pack)
-$ mkdir build
-$ cp -f build/spotfire-wrapper/spotfire-wrapper-X.Y.Z.tgz dist/spotfire-wrapper.tgz
+npm install
+ng build spotfire-wrapper
+(cd build/spotfire-wrapper/ ; npm pack)
+mkdir build
+cp -f build/spotfire-wrapper/spotfire-wrapper-X.Y.Z.tgz dist/spotfire-wrapper.tgz
 ```
 
 ### Step #2: build the Javascript library:
 ```bash
-$ npm install build//spotfire-wrapper.tgz
-$ npm run build:elements
-$ cp -f elements/spotfire-wrapper.js ./build
+npm install build//spotfire-wrapper.tgz
+npm run build:elements
+cp -f elements/spotfire-wrapper.js ./build
+```
+
+
+### or a one line command ...
+```bash
+./build.sh
 ```
 
 ---
 
 # License
 
-  Copyright &copy; 2019. TIBCO Software Inc.
+  Copyright &copy; 2019-2020. TIBCO Software Inc.
 
   This file is subject to the license terms contained
   in the license file that is distributed with this file.
