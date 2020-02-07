@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2020. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -32,13 +32,8 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * @description
    * Optional. Load parameters for the analysis.
    */
-  @Input() set parameters(value: string) {
-    this._parameters = value;
-    this.spotParams._parameters = value;
-    if (this.app) {
-      this.openPath(this.path);
-    }
-  }
+  @Input() parameters: string;
+
   /**
    * @description
    * print debug logs to JS console. Default to false
@@ -81,7 +76,19 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * @description
    * Optional. Array of filters that will be applied once page is loaded.
    */
-  @Input() filters: Array<SpotfireFilter> | string;
+
+  @Input() set filters(value: Array<SpotfireFilter> | string) {
+
+    if (typeof this._filters === 'string') {
+      const allFilters: Array<SpotfireFilter> = [];
+      JSON.parse(this._filters).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
+      this._filters = allFilters;
+    } else {
+      this._filters = value as Array<SpotfireFilter>;
+    }
+    this.setFilters();
+  }
+
   @Input() markingOn: {} | string;
   @Input() maxRows = 10;
 
@@ -107,7 +114,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   longTime = false;
 
   protected spotParams: SpotfireParameters = new SpotfireParameters();
-  private _parameters: string;
+  private _filters: Array<SpotfireFilter>;
   private document: Document;
   private app: Application;
   /* Filtering observables, emitter and subject*/
@@ -149,10 +156,10 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.customization = new SpotfireCustomization(this.customization);
     }
 
-    if (typeof this.filters === 'string') {
+    if (typeof this._filters === 'string') {
       const allFilters: Array<SpotfireFilter> = [];
-      JSON.parse(this.filters).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
-      this.filters = allFilters;
+      JSON.parse(this._filters).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
+      this._filters = allFilters;
     }
     if (typeof this.markingOn === 'string' && this.markingOn !== '*') {
       this.markingOn = JSON.parse(this.markingOn);
@@ -188,6 +195,9 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.page = page;
     this.spotParams = { ...this.spotParams, page };
     const p = this.spotParams;
+    if (this.parameters !== '') {
+      this.spotParams._parameters = this.parameters;
+    }
     this.docSvc.openPage$(p).subscribe(doc => this.afterDisplay(doc));
   }
 
@@ -214,7 +224,12 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     // Create a Unique ID for this Spotfire dashboard
     //
     this.spot.nativeElement.id = this.sid ? this.sid : new Date().getTime();
-    this.spotParams = { ...this.spotParams, path, url, customization, domid: this.spot.nativeElement.id, page: this.page };
+    this.spotParams = {
+      ...this.spotParams,
+      path, url,
+      customization, domid: this.spot.nativeElement.id,
+      page: this.page, _parameters: this.parameters
+    };
 
     this.docSvc.openWebPlayer$(this.spotParams).subscribe(
       doc => this.afterDisplay(doc),
@@ -265,20 +280,9 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   private afterDisplay = (doc: Document) => {
-    this.doConsole(`SpotfireViewerComponent afterDisplay`, doc, ', filters:', this.filters, ', markingON', this.markingOn);
+    this.doConsole(`SpotfireViewerComponent afterDisplay`, doc, ', filters:', this._filters, ', markingON', this.markingOn);
     this.document = doc;
-    if (this.filters && this.document.getFiltering()) {
-      const flt = this.document.getFiltering();
-      flt.resetAllFilters();
-      /*
-      this.doConsole(`SpotfireViewerComponent set Filter(avant)`, this.filters);
-      (this.filters as Array<SpotfireFilter>).forEach(t => t.setFilterType(spotfire));
-      this.doConsole(`SpotfireViewerComponent set Filter(apres)`, this.filters);
-    */
-      flt.set(this.filters);
-      this.loadFilters();
-      this.doConsole('FILTER', this.filters);
-    }
+    this.setFilters();
 
     this.doForm(this.document);
     if (this.markingOn) {
@@ -326,6 +330,15 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     // setInterval(() => this.loadFilters(), 3000);
   }
 
+  private setFilters() {
+    if (this.document && this._filters && this.document.getFiltering()) {
+      const flt = this.document.getFiltering();
+      flt.resetAllFilters();
+      flt.set(this._filters);
+      this.loadFilters();
+      this.doConsole('setFilters', this._filters);
+    }
+  }
   /**
    * @description
    * Callback method played when marking changes are detected.

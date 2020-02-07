@@ -1,10 +1,10 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2020. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
 
-import { forkJoin, of, of as observableOf, throwError, zip, BehaviorSubject, Observable, TimeoutError } from 'rxjs';
+import { forkJoin, of as observableOf, throwError, zip, BehaviorSubject, Observable, TimeoutError } from 'rxjs';
 import { catchError, filter, map, mergeMap, pluck, tap, timeout } from 'rxjs/operators';
 
 import { SpotfireCustomization as Customization, SpotfireFilter } from './spotfire-customization';
@@ -62,7 +62,7 @@ export class SpotfireParameters {
   version = '7.14';
   debug = false;
   reloadAnalysisInstance = false;
-  document: any;
+  document: Document;
   app: any;
   _parameters: string;
   constructor(vars?: {}) {
@@ -87,7 +87,7 @@ export class Data {
     }),
     map(k => {
       let z = {};
-      k.forEach(p => z = { ...z, ...p });
+      k.forEach((p: {}) => z = { ...z, ...p });
       return z;
     })
   )
@@ -181,7 +181,18 @@ export class Document {
       this.data = new Data(this._doc.data);
     });
   }
-  public getData() {
+  init$(app): Observable<Document> {
+    return app.onOpened$().pipe(map((doc: Document) => {
+      this._doc = doc;
+      // Register event handler for page change events.
+      this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
+      this.marking = new Marking(this._doc.marking);
+      this.filtering = new Filtering(this._doc.filtering);
+      this.data = new Data(this._doc.data);
+      return this;
+    }));
+  }
+  getData() {
     doConsole(`Document.getData: a)`, JSON.stringify(this.data));
     if (!this.data) {
       this.marking = new Marking(this._doc.marking);
@@ -191,8 +202,7 @@ export class Document {
     doConsole(`Document.getData: b)`, JSON.stringify(this.data));
     return this.data;
   }
-  getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(
-    map(g => new DocMetadata(g)))
+  getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(map(g => new DocMetadata(g)));
   getPages$ = () => this.do('getPages').pipe(map(m => Object.keys(m).map(f => m[f].pageTitle)));
   // getDocumentProperties$ = () => this.do('getDocumentProperties');
   // getBookmarks$ = () => this.do('getBookmarks');
@@ -203,8 +213,8 @@ export class Document {
   // getData = () => this.data;
   getMarking = () => this.marking;
   getFiltering = () => this.filtering;
-  public onDocumentReady$ = () => doCall(this._doc, 'onDocumentReady');
-  public close = () => this._doc ? this._doc.close() : null;
+  onDocumentReady$ = () => doCall(this._doc, 'onDocumentReady');
+  close = () => this._doc ? this._doc.close() : null;
   private onActivePageChangedCallback = (pageState) => doConsole('onActivePageChangedCallback', pageState);
   private do = <T>(m: string) => doCall<T>(this._doc, m);
   private onActivePageChanged$ = () => doCall(this._doc, 'onActivePageChanged');
@@ -226,6 +236,7 @@ export class Document {
  *
  */
 function doCall<T>(obj, m: string, ...a: any[]): Observable<T> {
+  doConsole('doCall -->', obj, m, a);
   return new Observable<T>(observer => {
     const oneShot = ['onDocumentReady'];
     // doConsole('[OBS]', 'doCall obj=', obj, ', m=', m, ', arg=', args, typeof obj);
@@ -257,7 +268,7 @@ function doCall<T>(obj, m: string, ...a: any[]): Observable<T> {
 export class Application {
   private readySubject = new BehaviorSubject<boolean>(false);
   // tslint:disable-next-line:member-ordering
-  public onApplicationReady$ = this.readySubject.asObservable().pipe(filter(d => d));
+  onApplicationReady$ = this.readySubject.asObservable().pipe(filter(d => d));
   private _app: any;
 
   constructor(
@@ -273,8 +284,10 @@ export class Application {
       this.version, this.onReadyCallback, this.onCreateLoginElement);
   }
   onOpened$ = () => doCall(this._app, 'onOpened');
-  getDocument = (id: string, page: string | number, custo?: Customization): Document =>
-    new Document(this, id, page, custo ? custo : this.customization)
+  getDocument$ = (id: string, page: string | number, custo?: Customization): Observable<Document> => {
+    const doc = new Document(this, id, page, custo ? custo : this.customization);
+    return doc.init$(this);
+  }
   openDocument = (id: string, page: string | number, custo: Customization) => this._app.openDocument(id, page, custo);
 
   private onReadyCallback = (response, newApp: Application) => {

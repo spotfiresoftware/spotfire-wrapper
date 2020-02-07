@@ -1,8 +1,6 @@
-<a name="0.2.2"></a>
-## [0.2.2] (2019-03-29)
-
-### Features
- * Update dashboard on `parameters` changes
+<a name="0.7.3"></a>
+## [0.7.3] (2020-02-07)
+ * Listen for change of `filters` parameters
 
 
 <a name="0.2.1"></a>

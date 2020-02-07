@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2020. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -18,7 +18,7 @@ export class SpotfireCustomization {
   showLogout = false;
   showPageNavigation = false;
   // showAnalysisInfo = false;  marked as obsolete since Spotfire X
-  showReloadAnalysis = false;
+  /* showReloadAnalysis = false; marked as obsolete */
   showStatusBar = false;
   showToolBar = false;
   showUndoRedo = false;

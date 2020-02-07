@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2020. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -25,7 +25,7 @@ export class DocumentService {
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
-  public getMetadata$ = (params: SpotfireParameters): Observable<{}> =>
+  getMetadata$ = (params: SpotfireParameters): Observable<{}> =>
     this.openWebPlayer$(params).pipe(
       mergeMap(doc => forkJoin([
         doc.getDocumentMetadata$(),
@@ -35,7 +35,7 @@ export class DocumentService {
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
-  public openWebPlayer$(params: SpotfireParameters): Observable<Document> {
+  openWebPlayer$(params: SpotfireParameters): Observable<Document> {
     this.doConsole(`openWebPlayer(${params.domid}, ${params.url})`, params);
 
     // lazy load the spotfire js API
@@ -49,7 +49,7 @@ export class DocumentService {
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
-  public openPath$(params: SpotfireParameters): Observable<Document> {
+  openPath$(params: SpotfireParameters): Observable<Document> {
     this.doConsole(`openPath(${params.path})`, params);
     if (params.document) {
       params.document.close();
@@ -79,7 +79,7 @@ export class DocumentService {
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
-  public openPage$(params: SpotfireParameters): Observable<Document> {
+  openPage$(params: SpotfireParameters): Observable<Document> {
 
     this.doConsole(`openPage(${params.page})`, params);
 
@@ -90,7 +90,7 @@ export class DocumentService {
     }
     //    const idDom = `is${new Date().getTime()}`;
 
-    this.doConsole('getDocument', params.domid, `cnf=${params.page}`, params.app, params.document, params.customization);
+    this.doConsole('getDocument$', params.domid, `cnf=${params.page}`, params.app, params.document, params.customization);
     // Here is the call to 'spotfire.webPlayer.createApplication'
     //
     if (params.document) {
@@ -100,12 +100,14 @@ export class DocumentService {
         o.next(params.document as Document);
         o.complete();
       });
-    } else {
-      params.document = params.app.getDocument(params.domid, params.page, params.customization as SpotfireCustomization);
-      return params.document.onDocumentReady$().pipe(
-        map(f => params.document as Document),
-        tap(f => this.doConsole('onDocumentReady$ is done', f)));
     }
+    return params.app.getDocument$(params.domid, params.page, params.customization as SpotfireCustomization)
+      .pipe(
+        tap(doc => params.document = doc),
+        mergeMap(doc => doc.onDocumentReady$().pipe(
+          map(() => params.document as Document),
+          tap(f => this.doConsole('onDocumentReady$ is done', f)))
+        ));
   }
   /**
    * @description
