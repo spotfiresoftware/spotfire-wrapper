@@ -213,11 +213,43 @@ export class Document {
   // getData = () => this.data;
   getMarking = () => this.marking;
   getFiltering = () => this.filtering;
+  _d = () => this._doc ? this._doc : null;
   onDocumentReady$ = () => doCall(this._doc, 'onDocumentReady');
   close = () => this._doc ? this._doc.close() : null;
   private onActivePageChangedCallback = (pageState) => doConsole('onActivePageChangedCallback', pageState);
   private do = <T>(m: string) => doCall<T>(this._doc, m);
   private onActivePageChanged$ = () => doCall(this._doc, 'onActivePageChanged');
+}
+
+/**
+ * @description
+ * Class holder to provide export features outside of the dashboard.
+ * On Angular side, the onReporting output parameter has to be set like this:
+ *    <spotfire-wrapper
+ *       (reportingEvent)="onReporting($event)"
+ *       ...
+ *    </spotfire-wrapper>
+ *    ...
+ *    onReporting = (e: SpotfireReporting) => this.reporting = e;
+ *    exportAsImage = () => this.reporting.exportActiveVisualAsImage();
+ */
+export class SpotfireReporting {
+  private exp;
+  constructor(doc: Document) {
+    this.exp = doc._d();
+  }
+  /** Launch the print wizard. */
+  print = () => this.exp.print();
+  /** Launch the export to PowerPoint wizard. */
+  exportToPowerPoint = () => this.exp.exportToPowerPoint();
+  /** Launch the export to Pdf wizard. */
+  exportToPdf = () => this.exp.exportToPdf();
+  /** Exports the report, specified by name, to PDF. */
+  exportReport = (reportName: string) => this.exp.exportReport(reportName);
+  /** Get the names of the reports in the analysis. */
+  getReports = (callback) => this.exp.getReports(callback);
+  /** Export the active visual as image. The image will be opened in a new browser tab or window. */
+  exportActiveVisualAsImage = (width = 800, height = 600) => this.exp.exportActiveVisualAsImage(width, height);
 }
 
 /**

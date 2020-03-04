@@ -13,7 +13,7 @@ import { tap } from 'rxjs/operators';
 
 import { DocumentService } from '../document.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
-import { Application, Document, DocMetadata, SpotfireParameters } from '../spotfire-webplayer';
+import { Application, Document, DocMetadata, SpotfireParameters, SpotfireReporting } from '../spotfire-webplayer';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
@@ -78,10 +78,9 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    */
 
   @Input() set filters(value: Array<SpotfireFilter> | string) {
-
-    if (typeof this._filters === 'string') {
+    if (typeof value === 'string') {
       const allFilters: Array<SpotfireFilter> = [];
-      JSON.parse(this._filters).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
+      JSON.parse(value).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
       this._filters = allFilters;
     } else {
       this._filters = value as Array<SpotfireFilter>;
@@ -109,6 +108,12 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * Optional. emit marking set by user in dashboard
    */
   @Output() markingEvent: EventEmitter<any> = new EventEmitter(false);
+
+  /**
+   * @description
+   * Optional. emit an instance of a SpotfireReporting  whenever a new page it ready
+   */
+  @Output() reportingEvent: EventEmitter<SpotfireReporting> = new EventEmitter();
 
   view: any;
   longTime = false;
@@ -255,6 +260,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   protected doForm(doc: Document) { }
   private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
   private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
+  private isReportingWiredUp = () => this.reportingEvent.observers.length > 0;
   private displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
     this.errorMessages.push(message);
@@ -284,6 +290,11 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.document = doc;
     this.setFilters();
 
+    if (this.isReportingWiredUp()) {
+      this.doConsole(`SpotfireViewerComponent afterDisplay has reportingEvent`);
+      const report = new SpotfireReporting(this.document);
+      this.reportingEvent.emit(report);
+    }
     this.doForm(this.document);
     if (this.markingOn) {
       // Clear marking
