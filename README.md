@@ -140,13 +140,12 @@ and navigate to `http://localhost:4404`, to see how to easily display a Spotfire
 npm install
 ng build spotfire-wrapper
 (cd build/spotfire-wrapper/ ; npm pack)
-mkdir build
-cp -f build/spotfire-wrapper/spotfire-wrapper-X.Y.Z.tgz dist/spotfire-wrapper.tgz
+cp -f build/spotfire-wrapper/tibco-spotfire-wrapper-X.Y.Z.tgz dist/spotfire-wrapper.tgz
 ```
 
 ### Step #2: build the Javascript library:
 ```bash
-npm install build//spotfire-wrapper.tgz
+npm install build/spotfire-wrapper.tgz
 npm run build:elements
 cp -f elements/spotfire-wrapper.js ./build
 ```
