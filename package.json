@@ -9,7 +9,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "builddev:elements": "ng build  && node build-script.js && wc elements/spotfire-wrapper.js",
-    "build:elements": "ng build --prod && node build-script.js && wc elements/spotfire-wrapper.js",
+    "build:elements": "ng build --prod && node build-script.js && wc dist/spotfire-wrapper.js",
     "sptf:watch": "(cd projects/spotfire-wrapper ; ../../node_modules/.bin/tsc -w  --pretty -p tsconfig.schematics.json)",
     "sptf:buildlib": "ng build spotfire-wrapper",
     "sptf:buildschematics": "(cd projects/spotfire-wrapper && npm run build)",
