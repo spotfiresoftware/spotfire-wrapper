@@ -31,5 +31,8 @@
   "bugs": {
     "url": "https://github.com/TIBCOSoftware/spotfire-wrapper/issues"
   },
-  "main": "build-script.js"
+  "main": "build-script.js",
+  "dependencies": {
+    "tslib": "^2.0.0"
+  }
 }
