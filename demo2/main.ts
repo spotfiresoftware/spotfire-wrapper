@@ -8,7 +8,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { SpotfireViewerComponent, DocumentService } from '@tibco/spotfire-wrapper';
+import { SpotfireViewerComponent, DocumentService, SpotfireParameters, SpotfireCustomization } from '@tibco/spotfire-wrapper';
 import { MatTabsModule } from '@angular/material/tabs';
 
 @Component({
@@ -40,7 +40,7 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
 
     // show default page:
     this.display();
-    this.metadata$.subscribe(f => console.log('Metadata', f, JSON.stringify(f)));
+    //this.metadataEvent.subscribe(f => console.log('Metadata', f, JSON.stringify(f)));
   }
 }
 @Component({
@@ -85,9 +85,9 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
 class AppComponent {
   url = 'https://23.22.187.212';
   urlA = 'https://spotfire-next.cloud.tibco.com';
-  cust = { showAuthor: true, showFilterPanel: true, showToolBar: true };
+  
   filtersA = [];
-  filtersB = [{
+  filters = [{
     dataColumnName: 'case_id',
     dataTableName: 'events',
     filterSettings: { values: ['A_07898', 'A_07896', 'A_07892'] }
@@ -119,12 +119,28 @@ class AppComponent {
   title = 'demo2';
   markedData = {};
   filtersOut = {};
-
+  spotParams: SpotfireParameters = new SpotfireParameters();
+  cust: SpotfireCustomization = new SpotfireCustomization();
 
   constructor(public docSvc: DocumentService) {
-    this.docSvc.dump('main');
+    // this.docSvc.dump('main');
 
-    this.docSvc.openWebPlayer$('ddom', this.urlA, 'Samples/Sales and Marketing').subscribe(g =>
+    this.cust = {
+      ...this.cust,
+      showAuthor: true,
+      showFilterPanel: true,
+      showToolBar: true
+    }
+    this.spotParams = {
+      ...this.spotParams,
+      path : '',
+      url: this.urlA,
+      domid: 'ddom',
+      page: 'Samples/Sales and Marketing',
+      customization: this.cust
+    };
+
+    this.docSvc.openWebPlayer$(this.spotParams).subscribe(g =>
       console.log('DocumentService.openWebPlayer$ returns', this.urlA, g));
   }
 
