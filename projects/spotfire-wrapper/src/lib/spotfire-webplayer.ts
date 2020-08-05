@@ -59,7 +59,7 @@ export class SpotfireParameters {
   domid: string;
   sid: string;
   customization: Customization;
-  version = '7.14';
+  version = '10.10';
   debug = false;
   reloadAnalysisInstance = false;
   document: Document;

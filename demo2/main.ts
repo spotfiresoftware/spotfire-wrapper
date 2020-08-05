@@ -9,7 +9,7 @@ import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit } from '@angular/co
 import { ReactiveFormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { SpotfireViewerComponent, DocumentService } from '@tibco/spotfire-wrapper';
-import { MatTabsModule } from '@angular/material';
+import { MatTabsModule } from '@angular/material/tabs';
 
 @Component({
   selector: 'my-spotfire',

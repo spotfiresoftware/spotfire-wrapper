@@ -21,8 +21,8 @@ Include the javascript files via cdn.jsdelivr.net and use `<spotfire-viewer>` ta
         <script src="https://cdn.jsdelivr.net/gh/TIBCOSoftware/spotfire-wrapper/dist/spotfire-wrapper.js"></script>
     </head>
     <body>
-        <spotfire-viewer 
-            url="https://spotfire-next.cloud.tibco.com" 
+        <spotfire-viewer
+            url="https://spotfire-next.cloud.tibco.com"
             path="Samples/Introduction to Spotfire"
             page="Example dashboard">
         </spotfire-viewer>
@@ -38,14 +38,14 @@ You can add as many `<spotfire-viewer></spotfire-viewer>` pair of tags as you wa
 ## Adjust the displayed Spotfire customization :
 
 ```html
-<spotfire-viewer 
-     url="https://spotfire-next.cloud.tibco.com" 
+<spotfire-viewer
+     url="https://spotfire-next.cloud.tibco.com"
      path="Samples/Sales and Marketing"
      page="Sales performance"
      customization='{"showAuthor":true, "showFilterPanel":true, "showStatusBar":true, "showToolBar":true}'>
 </spotfire-viewer>
 ````
-Possible settings is listed here : 
+Possible settings is listed here :
   * `"showAbout": true/false`
   * `"showAnalysisInformationTool": true/false`
   * `"showAuthor": true/false`
@@ -62,7 +62,7 @@ Possible settings is listed here :
   * `"showToolBar": true/false`
   * `"showUndoRedo": true/false`
 
-## Filter data at load: 
+## Filter data at load:
 
 Loaded data can be filtered at the time the dashboard is first displayed:
 
@@ -82,9 +82,9 @@ Multiple filters can be set.
 ## Marking: get selected data
 
 ```html
-<spotfire-viewer 
-    id="id1" 
-    url="https://spotfire-next.cloud.tibco.com" 
+<spotfire-viewer
+    id="id1"
+    url="https://spotfire-next.cloud.tibco.com"
     path="Samples/Sales and Marketing"
     page="Effect of promotions"
     marking-on='{"SalesAndMarketing": [ "BCG segmentation", "State" ]}'>
@@ -115,13 +115,13 @@ If values of all columns shall be returned, `'{"SalesAndMarketing": ["*"]}'` nee
 
 see : https://github.com/TIBCOSoftware/spotfire-wrapper/tree/master/demo
 
-After building the JS library (step below), run `cd demo` and `cp ../build/spotfire-wrapper.js .`
+After building the JS library (step below), run `cd demo` and `cp ../dist/spotfire-wrapper.js .`
 
-Start a HTTP server : 
+Start a HTTP server :
 ```bash
 python -m SimpleHTTPServer 4404
-``` 
-or 
+```
+or
 ```bash
 python3 -m http.server 4404
 ```
@@ -140,13 +140,12 @@ and navigate to `http://localhost:4404`, to see how to easily display a Spotfire
 npm install
 ng build spotfire-wrapper
 (cd build/spotfire-wrapper/ ; npm pack)
-mkdir build
-cp -f build/spotfire-wrapper/spotfire-wrapper-X.Y.Z.tgz dist/spotfire-wrapper.tgz
+cp -f build/spotfire-wrapper/tibco-spotfire-wrapper-X.Y.Z.tgz dist/spotfire-wrapper.tgz
 ```
 
 ### Step #2: build the Javascript library:
 ```bash
-npm install build//spotfire-wrapper.tgz
+npm install ${PWD}/dist/spotfire-wrapper.tgz --no-save
 npm run build:elements
 cp -f elements/spotfire-wrapper.js ./build
 ```
@@ -167,5 +166,5 @@ cp -f elements/spotfire-wrapper.js ./build
   in the license file that is distributed with this file.
 
   Please see LICENSE for details of license and dependent third party components referenced by this library, or it can be found here:
-                                                                                                                                                                                                                                                                                      
+
 https://github.com/TIBCOSoftware/spotfire-wrapper/blob/master/LICENSE
