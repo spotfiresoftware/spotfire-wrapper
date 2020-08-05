@@ -78,7 +78,7 @@ class AppComponent {
     this.markedData = e;
   }
 
-  setFilters = (t) => {
+  setFilters = () => {
     this.b = (this.b + 1) % 4;
     // this.b = this.b === 3 ? 1 : this.b + 1;
     switch (this.b) {
