@@ -36,4 +36,5 @@ yarn-error.log
 .bazelrc.user
 
 # js files
-*.js
+# *.js
+!dist/spotfire-wrapper.js

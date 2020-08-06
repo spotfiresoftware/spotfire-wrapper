@@ -1,15 +1,16 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2020. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, NgModule, OnInit } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { SpotfireViewerComponent, DocumentService } from '@tibco/spotfire-wrapper';
 import { MatTabsModule } from '@angular/material/tabs';
+import { BrowserModule } from '@angular/platform-browser';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+
+import { DocumentService, SpotfireParameters, SpotfireViewerComponent } from '@tibco/spotfire-wrapper';
 
 @Component({
   selector: 'my-spotfire',
@@ -40,7 +41,7 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
 
     // show default page:
     this.display();
-    this.metadata$.subscribe(f => console.log('Metadata', f, JSON.stringify(f)));
+    // this.mtadata$.subscribe(f => console.log('Metadata', f, JSON.stringify(f)));
   }
 }
 @Component({
@@ -60,7 +61,7 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
 -->
 
 <my-spotfire  style='width:50%'
-[url]="urlA" [customization]="cust"
+[url]="url" [customization]="cust"
 (markingEvent)="onMarking($event)"
 [filters]="filters"
 (filteringEvent)="onFiltering($event)"
@@ -83,10 +84,9 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
 </div>
 `})
 class AppComponent {
-  url = 'https://23.22.187.212';
-  urlA = 'https://spotfire-next.cloud.tibco.com';
+  url = 'https://spotfire-next.cloud.tibco.com';
   cust = { showAuthor: true, showFilterPanel: true, showToolBar: true };
-  filtersA = [];
+  filters = [];
   filtersB = [{
     dataColumnName: 'case_id',
     dataTableName: 'events',
@@ -115,19 +115,18 @@ class AppComponent {
     dataColumnName: 'Class Sales',
     filterSettings: { 'highValue': '123', 'lowValue': '67' }
   }];*/
-  //{ Region: ['NE'] };
+  // { Region: ['NE'] };
   title = 'demo2';
   markedData = {};
   filtersOut = {};
 
-
   constructor(public docSvc: DocumentService) {
-    this.docSvc.dump('main');
 
-    this.docSvc.openWebPlayer$('ddom', this.urlA, 'Samples/Sales and Marketing').subscribe(g =>
-      console.log('DocumentService.openWebPlayer$ returns', this.urlA, g));
+    // this.docSvc.dump('main');
+    const p = new SpotfireParameters({ domid: 'ddom', url: this.url, page: 'Samples/Sales and Marketing' });
+    this.docSvc.openWebPlayer$(p).subscribe(g =>
+      console.log('DocumentService.openWebPlayer$ returns', this.url, g));
   }
-
 
   // Marking can be subscribed outside component
   onMarking = (e: Event) => {

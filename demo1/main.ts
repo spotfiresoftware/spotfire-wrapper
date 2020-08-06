@@ -25,13 +25,13 @@ import { SpotfireReporting, SpotfireViewerModule } from '@tibco/spotfire-wrapper
   <spotfire-viewer [class.normsize]="!fullsize" [class.fullsize]="fullsize"
       [url]="url"
       [path]="path"
-      [customization]="cust2"
+      [customization]="cust"
       [markingOn]="{ SalesAndMarketing: ['*'] }"
       [maxRows]="10"
       (markingEvent)="onMarking($event)"
       (reportingEvent)="onReporting($event)"
       (filteringEvent)="onFiltering($event)"
-     [filters]='filters'
+      [filters]='filters'
       [parameters]="param"
       [debug]="true">
     </spotfire-viewer>
@@ -78,7 +78,7 @@ class AppComponent {
     this.markedData = e;
   }
 
-  setFilters = (t) => {
+  setFilters = () => {
     this.b = (this.b + 1) % 4;
     // this.b = this.b === 3 ? 1 : this.b + 1;
     switch (this.b) {
