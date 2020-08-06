@@ -25,13 +25,13 @@ import { SpotfireReporting, SpotfireViewerModule } from '@tibco/spotfire-wrapper
   <spotfire-viewer [class.normsize]="!fullsize" [class.fullsize]="fullsize"
       [url]="url"
       [path]="path"
-      [customization]="cust2"
+      [customization]="cust"
       [markingOn]="{ SalesAndMarketing: ['*'] }"
       [maxRows]="10"
       (markingEvent)="onMarking($event)"
       (reportingEvent)="onReporting($event)"
       (filteringEvent)="onFiltering($event)"
-     [filters]='filters'
+      [filters]='filters'
       [parameters]="param"
       [debug]="true">
     </spotfire-viewer>
