@@ -1,6 +1,6 @@
 {
   "name": "@tibco/spotfire-wrapper",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": false,
   "scripts": {
     "build": "../../node_modules/.bin/tsc -p tsconfig.schematics.json",
@@ -12,11 +12,11 @@
     "postbuild": "npm run copy:schemas && npm run copy:files && npm run copy:styles && npm run copy:collection"
   },
   "peerDependencies": {
-    "@angular/common": "^9.1",
-    "@angular/core": "^9.1",
-    "@angular/cdk": "~9.2",
-    "@angular/material": "~9.2",
-    "@angular/flex-layout": "~9.0.0-beta"
+    "@angular/common": "^10.0.8",
+    "@angular/core": "^10.0.8",
+    "@angular/cdk": "~10.1.2",
+    "@angular/material": "~10.0.8",
+    "@angular/flex-layout": "~10.0.0-beta.32"
   },
   "schematics": "./schematics/collection.json",
   "author": "Nicolas Deroche <nderoche@tibco.com> (http://www.tibco.com)",
