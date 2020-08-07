@@ -18,7 +18,7 @@ npm install
 
 title "[spotfire-wrapper] Build the NPM package:"
 ./node_modules/.bin/ng build spotfire-wrapper --prod
-(cd projects/spotfire-wrapper/ ; npm run build )
+(cd projects/spotfire-wrapper/ ; npm run build --prod )
 
 title "[spotfire-wrapper] Create a tarball for the package:"
 (cd build/spotfire-wrapper/ ; npm pack) 

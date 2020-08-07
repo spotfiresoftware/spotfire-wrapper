@@ -8,6 +8,7 @@
     "build-wrapper": "npm run build:elements",
     "test": "ng test",
     "lint": "ng lint",
+    "publish": "npm publish projects/spotfire-wrapper --dry-run",
     "builddev:elements": "ng build  && node build-script.js && wc elements/spotfire-wrapper.js",
     "build:elements": "ng build --prod && node build-script.js && wc dist/spotfire-wrapper.js",
     "sptf:watch": "(cd projects/spotfire-wrapper ; ../../node_modules/.bin/tsc -w  --pretty -p tsconfig.schematics.json)",
@@ -17,7 +18,7 @@
     "build:lib": "npm run sptf:build && (cd build/spotfire-wrapper ; npm pack ; ls -l *tgz) && npm install --no-save build/spotfire-wrapper/*tgz && date"
   },
   "author": "Nicolas Deroche <nderoche@tibco.com> (http://www.tibco.com)",
-  "private": false,
+  "private": true,
   "dependencies": {
     "@angular/animations": "^9.1.12",
     "@angular/cdk": "^9.2.4",
