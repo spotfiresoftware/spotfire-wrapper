@@ -13,7 +13,7 @@ import { tap } from 'rxjs/operators';
 
 import { DocumentService } from '../document.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
-import { Application, Document, DocMetadata, SpotfireParameters, SpotfireReporting } from '../spotfire-webplayer';
+import { Application, Document, DocMetadata, SpotfireFiltering, SpotfireParameters, SpotfireReporting } from '../spotfire-webplayer';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
@@ -111,9 +111,26 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
 
   /**
    * @description
-   * Optional. emit an instance of a SpotfireReporting  whenever a new page it ready
+   * Optional. emit an instance of a SpotfireReporting whenever a new page it ready
+   * Following methods are available based on returned instance:
+   *  - print()
+   *  - exportToPowerPoint()
+   *  - exportToPdf()
+   *  - exportReport(reportName)
+   *  - getReports(callback)
+   *  - exportActiveVisualAsImage(width, height)
    */
-  @Output() reportingEvent: EventEmitter<SpotfireReporting> = new EventEmitter();
+  @Output() reporting: EventEmitter<SpotfireReporting> = new EventEmitter();
+
+  /**
+   * @description
+   * Optional. emit an instance of a Filtering whenever a new page it ready
+   * Following methods are available based on returned instance:
+   *  - getFilteringScheme(filteringSchemeName)
+   *  - getFilteringSchemes()
+   *  - getActiveFilteringScheme()
+   */
+  @Output() filtering: EventEmitter<SpotfireFiltering> = new EventEmitter();
 
   view: any;
   longTime = false;
@@ -260,7 +277,8 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   protected doForm(doc: Document) { }
   private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
   private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
-  private isReportingWiredUp = () => this.reportingEvent.observers.length > 0;
+  private isFilteringWiredUp = () => this.filtering.observers.length > 0;
+  private isReportingWiredUp = () => this.reporting.observers.length > 0;
   private displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
     this.errorMessages.push(message);
@@ -291,10 +309,15 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.setFilters();
 
     if (this.isReportingWiredUp()) {
-      this.doConsole(`SpotfireViewerComponent afterDisplay has reportingEvent`);
+      this.doConsole(`we have observers for reportingEvent`);
       const report = new SpotfireReporting(this.document);
-      this.reportingEvent.emit(report);
+      this.reporting.emit(report);
     }
+    if (this.isFilteringWiredUp()) {
+      this.doConsole('we have observers for filtering');
+      this.filtering.emit(this.document.getFiltering());
+    }
+
     this.doForm(this.document);
     if (this.markingOn) {
       // Clear marking
@@ -323,18 +346,18 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       }
     }
     if (this.isFiltingWiredUp()) {
-      this.doConsole('we have observers for filtering');
+      this.doConsole('we have observers for filteringEvent');
       // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
       //
-      this.filter$.pipe(tap(f => this.doConsole('Emit filter', f)))
+      this.filter$.pipe(tap(f => this.doConsole('Emit filteringEvent', f)))
         .subscribe(f => this.filteringEvent.emit(f));
     }
 
     if (this.isMarkingWiredUp()) {
-      this.doConsole('we have observers for marking');
+      this.doConsole('we have observers for markingEvent');
       // Subscribe to markingEvent and emit the result to the Output
       //
-      this.marker$.pipe(tap(f => this.doConsole('Emit marking', f)))
+      this.marker$.pipe(tap(f => this.doConsole('Emit markingEvent', f)))
         .subscribe(f => this.markingEvent.emit(f));
     }
     // console.log('YES loadFilters');
@@ -345,7 +368,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     if (this.document && this._filters && this.document.getFiltering()) {
       const flt = this.document.getFiltering();
       flt.resetAllFilters();
-      flt.set(this._filters);
+      flt.setFilters(this._filters);
       this.loadFilters();
       this.doConsole('setFilters', this._filters);
     }
@@ -396,7 +419,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   private loadFilters() {
     //  console.log('AA Nicolas loadFilters BLOUP ! (19 juin 2019)');
     if (this.isFiltingWiredUp()) {
-      this.document.getFiltering().getAllModifiedFilterColumns()
+      this.document.getFiltering().getAllModifiedFilterColumns$()
         .subscribe(fs => this.filterSubject.next(fs));
     }
     //    this.document.getFiltering().getAllModifiedFilterColumns()

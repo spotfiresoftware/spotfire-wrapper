@@ -42,14 +42,41 @@ export class Marking {
   onChanged$ = (m, t, c, n) => doCall(this._marking, 'onChanged', m, t, c, n);
 }
 
-class Filtering {
-  constructor(public _filtering) { }
-  set = (flts) => this._filtering.setFilters(flts, spotfire.webPlayer.filteringOperation.REPLACE);
+/**
+ * @description
+ * Class holder to provide filtering features outside of the dashboard.
+ * On Angular side, the onFiltering output parameter has to be set like this:
+ *    <spotfire-wrapper
+ *       (filtering)="onFiltering($event)"
+ *       ...
+ *    </spotfire-wrapper>
+ *    ...
+ *    import { SpotfireFiltering } from '@tibco/spotfire-wrapper';
+ *    ...
+ *    filtering: SpotfireFiltering = null;
+ *    onFiltering = (e: SpotfireFiltering) => this.filtering = e;
+ *    getSchemes = () => this.filtering.getFilteringSchemes$()
+ *         .subscribe(schemes => console.log('My Schemes', schemes));
+ */
+export class SpotfireFiltering {
+  constructor(private _filtering) { }
+  setFilters = (flts) => this._filtering.setFilters(flts, spotfire.webPlayer.filteringOperation.REPLACE);
   resetAllFilters = () => this._filtering.resetAllFilters();
-  getAllModifiedFilterColumns = () => doCall<SpotfireFilter[]>(
+  getAllModifiedFilterColumns$ = () => doCall<SpotfireFilter[]>(
     this._filtering, 'getAllModifiedFilterColumns',
     spotfire.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES
   )
+  getFilteringScheme$ = (filteringSchemeName: string) => doCall<FillteringScheme>(
+    this._filtering, 'getFilteringScheme', filteringSchemeName)
+  getFilteringSchemes$ = () => doCall<FillteringScheme>(
+    this._filtering, 'getFilteringSchemes')
+  getActiveFilteringScheme$ = () => doCall<FillteringScheme[]>(
+    this._filtering, 'getActiveFilteringScheme')
+}
+
+class FillteringScheme {
+  filteringSchemeName: string;
+  dataTables: DataTable[];
 }
 
 export class SpotfireParameters {
@@ -167,7 +194,7 @@ export class DocMetadata {
 export class Document {
   private _doc;
   private marking: Marking;
-  private filtering: Filtering;
+  private filtering: SpotfireFiltering;
   private data: Data;
   constructor(app, id, page, custo) {
     this._doc = app.openDocument(id, page, custo);
@@ -177,7 +204,7 @@ export class Document {
       // Register event handler for page change events.
       this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
       this.marking = new Marking(this._doc.marking);
-      this.filtering = new Filtering(this._doc.filtering);
+      this.filtering = new SpotfireFiltering(this._doc.filtering);
       this.data = new Data(this._doc.data);
     });
   }
@@ -187,7 +214,7 @@ export class Document {
       // Register event handler for page change events.
       this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
       this.marking = new Marking(this._doc.marking);
-      this.filtering = new Filtering(this._doc.filtering);
+      this.filtering = new SpotfireFiltering(this._doc.filtering);
       this.data = new Data(this._doc.data);
       return this;
     }));
@@ -196,7 +223,7 @@ export class Document {
     doConsole(`Document.getData: a)`, JSON.stringify(this.data));
     if (!this.data) {
       this.marking = new Marking(this._doc.marking);
-      this.filtering = new Filtering(this._doc.filtering);
+      this.filtering = new SpotfireFiltering(this._doc.filtering);
       this.data = new Data(this._doc.data);
     }
     doConsole(`Document.getData: b)`, JSON.stringify(this.data));
@@ -226,10 +253,13 @@ export class Document {
  * Class holder to provide export features outside of the dashboard.
  * On Angular side, the onReporting output parameter has to be set like this:
  *    <spotfire-wrapper
- *       (reportingEvent)="onReporting($event)"
+ *       (reporting)="onReporting($event)"
  *       ...
  *    </spotfire-wrapper>
  *    ...
+ *    import { SpotfireReporting } from '@tibco/spotfire-wrapper';
+ *    ...
+ *    reporting: SpotfireReporting = null;
  *    onReporting = (e: SpotfireReporting) => this.reporting = e;
  *    exportAsImage = () => this.reporting.exportActiveVisualAsImage();
  */
