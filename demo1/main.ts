@@ -7,7 +7,7 @@ import { Component, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-import { SpotfireReporting, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
+import { SpotfireFiltering, SpotfireReporting, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +20,9 @@ import { SpotfireReporting, SpotfireViewerModule } from '@tibco/spotfire-wrapper
   <button (click)="doPdf()">Export to PDF...</button>
   <button (click)="doImage()">Save as Image</button>
 </div>
+<div *ngIf="filtering">
+  <button (click)="doFilteringSchemes()">get Filtering Schemes</button>
+</div>
 <h1>{{filterNames[b]}}</h1>
 <div style='display:flex'>
   <spotfire-viewer [class.normsize]="!fullsize" [class.fullsize]="fullsize"
@@ -31,14 +34,17 @@ import { SpotfireReporting, SpotfireViewerModule } from '@tibco/spotfire-wrapper
       (markingEvent)="onMarking($event)"
       (reportingEvent)="onReporting($event)"
       (filteringEvent)="onFiltering($event)"
+      (filtering)="filtering = $event"
       [filters]='filters'
       [parameters]="param"
       [debug]="true">
     </spotfire-viewer>
     <pre style='border-right:1px solid #bbb; padding:5px; font-size:10px'>what we send to <code>filter</code>={{filtersOut|json}}</pre>
- <pre style='font-size:10px;  padding:5px;'>what we mark ({{buffersize}} o): {{markedData|json}}</pre>
-
-</div>
+    <pre style='font-size:10px;  padding:5px;'>what we mark ({{buffersize}} o): {{markedData|json}}</pre>
+   
+    
+  </div>
+  <pre style='border-right:1px solid #bbb; padding:5px; font-size:10px'>FilteringSchemes={{schemesOut|json}}</pre>
 `, styles: [`
 .normsize { width:50%; height:600px}
 .fullsize { position: absolute; top: 60px; left:0; right:0; bottom:0; width:100%; height:100%} `]
@@ -56,6 +62,7 @@ class AppComponent {
   filters: any = null;
   fullsize = false;
   reporting: SpotfireReporting = null;
+  filtering: SpotfireFiltering = null;
   filters1 = [
     { dataTableName: 'SalesAndMarketing', dataColumnName: 'State', filterSettings: { values: ['Florida'] } },
     { dataTableName: 'SalesAndMarketing', dataColumnName: 'City', filterSettings: { values: ['Fort Lauderdale'] } },
@@ -70,6 +77,7 @@ class AppComponent {
   filters3 = '[{"dataTableName":"SalesAndMarketing","dataColumnName":"State","filterSettings":{"values":["Arizona"]}}]';
 
   filtersOut = {};
+  schemesOut = {};
 
   // Marking can be subscribed outside component
   onMarking = (e: Event) => {
@@ -110,6 +118,13 @@ class AppComponent {
     console.log('doImage', this.reporting);
     this.reporting.exportActiveVisualAsImage();
   }
+
+  doFilteringSchemes = () =>
+    this.filtering.getFilteringSchemes$().subscribe(s => {
+      console.log('doFilteringSchemes returns', s);
+      this.schemesOut = s;
+    })
+
   toggleFullsize = () => this.fullsize = !this.fullsize;
 }
 
