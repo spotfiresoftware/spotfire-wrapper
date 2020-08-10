@@ -283,6 +283,20 @@ export class SpotfireReporting {
 }
 
 /**
+ * @description 
+ * An observable object that decribes the status of the TIBCO Spotfire Server.
+ */
+export class SpotfireServer {
+  constructor(serverUrl: string, isOnline: boolean) {
+    this.isOnline = isOnline;
+    this.serverUrl = serverUrl;
+  }
+  isOnline: boolean;
+  serverUrl: string;
+  statusMessage: string;
+}
+
+/**
  * @description
  * Turn async calls into Observables.
  *

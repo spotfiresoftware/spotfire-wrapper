@@ -12,6 +12,7 @@ import { PersistanceService } from '../persitence.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
 import { CUSTLABELS, Document as SpotDoc } from '../spotfire-webplayer';
 import { SpotfireViewerComponent } from '../viewer/spotfire-viewer.component';
+import { SpotfireServerService } from '../spotfire-server.service';
 
 @Component({
     selector: 'spotfire-editor',
@@ -31,8 +32,11 @@ export class SpotfireEditorComponent extends SpotfireViewerComponent {
     possibleValues = '';
     custLabels = CUSTLABELS;
 
-    constructor(public fb: FormBuilder, private storSvc: PersistanceService, d: DocumentService) {
-        super(d);
+    constructor(public fb: FormBuilder,
+        private storSvc: PersistanceService,
+        d: DocumentService,
+        spotfireServerSvc: SpotfireServerService) {
+        super(d, spotfireServerSvc);
     }
 
     update = (e) => {

@@ -5,6 +5,7 @@
 */
 
 import { NgModule } from '@angular/core';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,7 +22,7 @@ import { SpotfireViewerModule } from '../viewer/spotfire-viewer.module';
 @NgModule({
   imports: [SpotfireViewerModule, ReactiveFormsModule, FlexLayoutModule,
     MatSelectModule, MatToolbarModule, MatCheckboxModule,
-    MatButtonModule, MatFormFieldModule, MatInputModule],
+    MatButtonModule, MatFormFieldModule, MatInputModule, HttpClientModule],
   declarations: [SpotfireEditorComponent],
   entryComponents: [SpotfireEditorComponent],
   exports: [SpotfireEditorComponent]

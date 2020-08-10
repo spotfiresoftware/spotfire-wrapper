@@ -13,7 +13,8 @@ import { tap } from 'rxjs/operators';
 
 import { DocumentService } from '../document.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
-import { Application, Document, DocMetadata, SpotfireFiltering, SpotfireParameters, SpotfireReporting } from '../spotfire-webplayer';
+import { Application, Document, DocMetadata, SpotfireFiltering, SpotfireParameters, SpotfireReporting, SpotfireServer } from '../spotfire-webplayer';
+import { SpotfireServerService } from '../spotfire-server.service';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
@@ -132,6 +133,12 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    */
   @Output() filtering: EventEmitter<SpotfireFiltering> = new EventEmitter();
 
+  /**
+   * @description
+   * Optional. Emit an instance of a SpotfireServer whenever TIBCO Spotfire Server status is available.
+   */
+  @Output() serverStatusEvent: EventEmitter<SpotfireServer> = new EventEmitter();
+
   view: any;
   longTime = false;
 
@@ -150,13 +157,19 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   public marker$: Observable<{}> = this.markerSubject.asObservable();
   private markedRows = {};
 
-  constructor(public docSvc: DocumentService) {
+  constructor(public docSvc: DocumentService,
+    private spotfireServerSvc: SpotfireServerService) {
     this.doConsole('Welcome to Wrapper for TIBCO Spotfire(R)!');
     setTimeout(() => this.longTime = true, 6000);
   }
 
   ngOnInit(): void {
     this.doConsole('OnInit', this.url, this.path);
+    this.spotfireServerSvc.monitorSpotfireServerStatus(this.url);
+    this.spotfireServerSvc.serverStatusEvent.subscribe((e: SpotfireServer) => {
+      this.doConsole('SPOTFIRE-SERVER-SERVICE2 received event ' + JSON.stringify(e));
+      this.serverStatusEvent.emit(e);
+    });
     this.display();
   }
 
@@ -256,6 +269,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.docSvc.openWebPlayer$(this.spotParams).subscribe(
       doc => this.afterDisplay(doc),
       err => this.displayErrorMessage(err));
+
   }
 
   /**
