@@ -1,3 +1,12 @@
+<a name="0.11.0"></a>
+## [0.11.0] (2020-08-10)
+
+### Features
+ * Added a new service that monitors the status of the TIBCO Spotfire Server.
+ * Add a new output parameter `serverStatusEvent` that emits a `SpotfireServer` class after the TIBCO Spotfire Server has been monitored.
+ * Demo1 can demonstrate the code.
+   
+
 <a name="0.10.0"></a>
 ## [0.10.0] (2020-08-08)
 
