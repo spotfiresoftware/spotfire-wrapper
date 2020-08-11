@@ -1,3 +1,9 @@
+<a name="0.10.1"></a>
+## [0.10.1] (2020-08-11)
+
+### Features
+* Allow the spotfire-wrapper component to specify a version of the JavaScript API or to default to a reasonable server version.
+
 <a name="0.9.0"></a>
 ## [0.9.0] (2020-08-05)
 
