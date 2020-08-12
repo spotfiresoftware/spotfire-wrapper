@@ -1,6 +1,6 @@
 {
   "name": "@tibco/spotfire-wrapper",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "private": false,
   "scripts": {
     "build": "../../node_modules/.bin/tsc -p tsconfig.schematics.json",
@@ -20,7 +20,10 @@
   },
   "schematics": "./schematics/collection.json",
   "author": "Nicolas Deroche <nderoche@tibco.com> (http://www.tibco.com)",
-  "keywords": ["TIBCO", "Spotfire"],
+  "keywords": [
+    "TIBCO",
+    "Spotfire"
+  ],
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
