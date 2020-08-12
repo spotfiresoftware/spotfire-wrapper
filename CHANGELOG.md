@@ -2,13 +2,17 @@
 ## [0.11.0] (2020-08-10)
 
 ### Features
- * Migrate to Angular 10.0.8
+ * Migrate to Angular 10.0.8  
 
 <a name="0.10.0"></a>
-## [0.10.0] (2020-08-05)
+## [0.10.0] (2020-08-08)
 
 ### Features
- * Migrate to Angular 10.0.8
+ * Add a new output parameter `filtering` that emits a `SpotfireFiltering` class  once document is ready.
+   This `SpotfireFiltering`class provides the following functions: `getFilteringScheme(filteringSchemeName)`, `getFilteringSchemes()`, `getActiveFilteringScheme()`, `setFilters()`, `resetAllFilters()` and `getAllModifiedFilterColumns$()`
+
+### Breaking Changes
+ * The output parameter `reportingEvent` as been renamed `reporting`.
 
 <a name="0.9.0"></a>
 ## [0.9.0] (2020-08-05)
