@@ -13,7 +13,6 @@ import { SpotfireViewerComponent } from './spotfire-viewer.component';
 @NgModule({
   imports: [CommonModule],
   declarations: [SpotfireViewerComponent],
-  entryComponents: [SpotfireViewerComponent],
   exports: [SpotfireViewerComponent, CommonModule]
 })
 export class SpotfireViewerModule { }

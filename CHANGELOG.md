@@ -1,3 +1,15 @@
+<a name="0.11.0"></a>
+## [0.11.0] (2020-08-10)
+
+### Features
+ * Migrate to Angular 10.0.8
+
+<a name="0.10.0"></a>
+## [0.10.0] (2020-08-05)
+
+### Features
+ * Migrate to Angular 10.0.8
+
 <a name="0.9.0"></a>
 ## [0.9.0] (2020-08-05)
 
