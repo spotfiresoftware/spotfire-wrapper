@@ -1,3 +1,9 @@
+<a name="0.11.1"></a>
+## [0.11.1] (2020-08-10)
+
+### Features
+ * Restores the ability to install the NPM package. Issue #75.
+ 
 <a name="0.11.0"></a>
 ## [0.11.0] (2020-08-10)
 
