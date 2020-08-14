@@ -1,6 +1,9 @@
 <a name="0.11.1"></a>
 ## [0.11.1] (2020-08-14)
 
+### Features
+* Allow the spotfire-wrapper component to specify a version of the JavaScript API or to default to a reasonable server version.
+
 ### Bug Fixes
  * Restores the ability to install the NPM package. Issue #75.
  
@@ -9,7 +12,7 @@
 
 ### Features
  * Migrate to Angular 10.0.8
-
+ 
 <a name="0.10.0"></a>
 ## [0.10.0] (2020-08-08)
 

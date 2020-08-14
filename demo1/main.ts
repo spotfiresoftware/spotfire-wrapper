@@ -28,6 +28,7 @@ import { SpotfireFiltering, SpotfireReporting, SpotfireViewerModule } from '@tib
   <spotfire-viewer [class.normsize]="!fullsize" [class.fullsize]="fullsize"
       [url]="url"
       [path]="path"
+      [version]="version"
       [customization]="cust"
       [markingOn]="{ SalesAndMarketing: ['*'] }"
       [maxRows]="10"
@@ -53,6 +54,9 @@ class AppComponent {
   title = 'demo1';
   url = 'https://spotfire-next.cloud.tibco.com';
   path = 'Samples/Sales and Marketing';
+  // Example: Specify a specific version for the JavaScript API or leave it out to use the default.
+  // version = '10.10';
+  version = '';
   cust = { showAuthor: true, showFilterPanel: true, showToolBar: true };
   markedData = {};
   param = 'ApplyBookmark(bookmarkName="Book2");';
