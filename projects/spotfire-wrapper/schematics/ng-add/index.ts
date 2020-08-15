@@ -42,8 +42,8 @@ export function ngAdd(_options: Schema): Rule {
     return (_host: Tree, context: SchematicContext) => {
         context.logger.log('info', `Installing @tibco/spotfire-wrapper`);
         addPackageToPackageJson(_host, '@angular/material', '^10.1.2');
-        addPackageToPackageJson(_host, '@angular/cdk', '~10.1.2');
-        addPackageToPackageJson(_host, '@angular/flex-layout', '~10.0.0-beta.32');
+        addPackageToPackageJson(_host, '@angular/cdk', '^10.1.2');
+        addPackageToPackageJson(_host, '@angular/flex-layout', '^10.0.0-beta.32');
 
         const installTaskId = context.addTask(new NodePackageInstallTask());
 
