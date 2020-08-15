@@ -1,6 +1,6 @@
 {
   "name": "spotfire-wrapper",
-  "version": "0.11.2",
+  "version": "0.11.6",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,7 +8,7 @@
     "build-wrapper": "npm run build:elements",
     "test": "ng test",
     "lint": "ng lint",
-    "publish": "npm publish projects/spotfire-wrapper --dry-run",
+    "publish": "npm publish build/spotfire-wrapper --dry-run",
     "builddev:elements": "ng build  && node build-script.js && wc elements/spotfire-wrapper.js",
     "build:elements": "ng build --prod && node build-script.js && wc dist/spotfire-wrapper.js",
     "sptf:watch": "(cd projects/spotfire-wrapper ; ../../node_modules/.bin/tsc -w  --pretty -p tsconfig.schematics.json)",

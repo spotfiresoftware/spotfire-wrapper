@@ -17,7 +17,7 @@ Wrapper for TIBCO Spotfire(R) is an Angular Component built for and with Angular
 ng new myapp
 cd myapp
 npm outdated
-npm install @angular/cdk
+npm install @angular/cdk@10
 ```
 
 `npm outdated` is used to list libraies that may need upgrade. Make sure you are using Angular 10+ libraries. 

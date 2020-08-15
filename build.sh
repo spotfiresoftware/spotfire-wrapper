@@ -31,6 +31,16 @@ npm install /opt/tibco/users/spotfire-wrapper/dist/spotfire-wrapper.tgz --no-sav
 title "[spotfire-wrapper-lib] Build the WebElement Library:"
 npm run build:elements --prod
 
+
+title "[spotfire-wrapper-lib] Test Schematics "
+(cd /tmp ; 
+\rm -rf testapp ; 
+ng new testapp --minimal --defaults ; 
+cd testapp ; 
+npm install @angular/cdk@10 ; 
+ng add @tibco/spotfire-wrapper@latest )
+
+
 echo ""
 echo "That's all folks!"
 exit 0

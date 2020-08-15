@@ -285,7 +285,6 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       err => this.displayErrorMessage(err));
   }
 
-  protected doForm(doc: Document) { }
   private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
   private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
   private isFilteringWiredUp = () => this.filtering.observers.length > 0;
@@ -329,7 +328,6 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.filtering.emit(this.document.getFiltering());
     }
 
-    this.doForm(this.document);
     if (this.markingOn) {
       // Clear marking
       this.markerSubject.next({});

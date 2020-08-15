@@ -1,22 +1,17 @@
 {
   "name": "@tibco/spotfire-wrapper",
-  "version": "0.11.2",
+  "version": "0.11.6",
   "private": false,
   "scripts": {
     "build": "../../node_modules/.bin/tsc -p tsconfig.schematics.json",
     "copy:schemas": "../../node_modules/.bin/cpx -v \"schematics/**/schema.json\" ../../build/spotfire-wrapper/schematics",
     "copy:files": "../../node_modules/.bin/cpx -v -p \"schematics/**/files/**\" ../../build/spotfire-wrapper/schematics",
-    "copy:assets": "../../node_modules/.bin/cpx -v -p \"assets/*\" ../../build/spotfire-wrapper/assets",
-    "copy:styles": "../../node_modules/.bin/cpx -v -p \"styles/*\" ../../build/spotfire-wrapper/styles",
     "copy:collection": "cp -v schematics/collection.json ../../build/spotfire-wrapper/schematics/collection.json",
-    "postbuild": "npm run copy:schemas && npm run copy:files && npm run copy:styles && npm run copy:collection"
+    "postbuild": "npm run copy:schemas && npm run copy:files && npm run && npm run copy:collection"
   },
   "peerDependencies": {
     "@angular/common": "^10.0.8",
-    "@angular/core": "^10.0.8",
-    "@angular/cdk": "^10.1.2",
-    "@angular/material": "^10.1.2",
-    "@angular/flex-layout": "^10.0.0-beta.32"
+    "@angular/core": "^10.0.8"
   },
   "schematics": "./schematics/collection.json",
   "author": "Nicolas Deroche <nderoche@tibco.com> (http://www.tibco.com)",
@@ -35,7 +30,7 @@
     "url": "https://github.com/TIBCOSoftware/spotfire-wrapper/issues"
   },
   "ng-add": {
-    "save": "devDependencies"
+    "save": "dependencies"
   },
   "main": "build-script.js",
   "dependencies": {

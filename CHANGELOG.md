@@ -1,5 +1,5 @@
-<a name="0.11.2"></a>
-## [0.11.2] (2020-08-15)
+<a name="0.11.6"></a>
+## [0.11.6] (2020-08-15)
 
 ### Bug Fixes
  * Restores the ability to install the NPM package. Reopened Issue #75.
