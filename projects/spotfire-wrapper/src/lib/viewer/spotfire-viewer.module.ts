@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2020. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -15,8 +15,7 @@ import { SpotfireServerService } from '../spotfire-server.service';
 @NgModule({
   imports: [CommonModule, HttpClientModule],
   declarations: [SpotfireViewerComponent],
-  entryComponents: [SpotfireViewerComponent],
-  exports: [SpotfireViewerComponent, CommonModule],
-  providers: [ {provide: HTTP_INTERCEPTORS, useClass: SpotfireServerService, multi: true}]
+  exports: [SpotfireViewerComponent],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: SpotfireServerService, multi: true }]
 })
 export class SpotfireViewerModule { }

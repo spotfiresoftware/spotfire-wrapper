@@ -1,3 +1,42 @@
+<a name="0.12.0"></a>
+## [0.12.0] (2020-08-16)
+
+### Features
+ * Added a new service that monitors the status of the TIBCO Spotfire Server.
+ * Add a new output parameter `serverStatusEvent` that emits a `SpotfireServer` class after the TIBCO Spotfire Server has been monitored.
+ * Demo1 can demonstrate the code.
+
+<a name="0.11.6"></a>
+## [0.11.6] (2020-08-15)
+
+### Bug Fixes
+ * Restores the ability to install the NPM package. Reopened Issue #75.
+
+<a name="0.11.1"></a>
+## [0.11.1] (2020-08-14)
+
+### Features
+* Allow the spotfire-wrapper component to specify a version of the JavaScript API or to default to a reasonable server version.
+
+### Bug Fixes
+ * Restores the ability to install the NPM package. Issue #75.
+
+<a name="0.11.0"></a>
+## [0.11.0] (2020-08-10)
+
+### Features
+ * Migrate to Angular 10.0.8  
+
+<a name="0.10.0"></a>
+## [0.10.0] (2020-08-08)
+
+### Features
+ * Add a new output parameter `filtering` that emits a `SpotfireFiltering` class  once document is ready.
+   This `SpotfireFiltering`class provides the following functions: `getFilteringScheme(filteringSchemeName)`, `getFilteringSchemes()`, `getActiveFilteringScheme()`, `setFilters()`, `resetAllFilters()` and `getAllModifiedFilterColumns$()`
+
+### Breaking Changes
+ * The output parameter `reportingEvent` as been renamed `reporting`.
+
 <a name="0.9.0"></a>
 ## [0.9.0] (2020-08-05)
 

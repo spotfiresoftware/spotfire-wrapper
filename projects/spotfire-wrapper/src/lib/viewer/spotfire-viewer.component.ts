@@ -20,6 +20,7 @@ import { SpotfireServerService } from '../spotfire-server.service';
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
 
 declare let spotfire: any;
+const DEFAULT_VERSION = '7.14';
 
 @Component({
   selector: 'spotfire-viewer',
@@ -65,6 +66,14 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * Optional unique id to read/write settings from local storage
    */
   @Input() sid: string;
+
+  /**
+   * @description
+   * Optional version to customize the version used when requesting the Spotfire JavaScript API.
+   * Defaults to 7.14.
+   */
+
+  @Input() version: string;
 
   /**
    * @description
@@ -164,12 +173,13 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   ngOnInit(): void {
-    this.doConsole('OnInit', this.url, this.path);
     this.spotfireServerSvc.monitorSpotfireServerStatus(this.url);
     this.spotfireServerSvc.serverStatusEvent.subscribe((e: SpotfireServer) => {
-      this.doConsole('SPOTFIRE-SERVER-SERVICE2 received event ' + JSON.stringify(e));
+      this.doConsole('SPOTFIRE-SERVER-SERVICE received event ' + JSON.stringify(e));
       this.serverStatusEvent.emit(e);
     });
+    if (!this.version) this.version = DEFAULT_VERSION;
+    this.doConsole('OnInit', this.url, this.path, this.version);
     this.display();
   }
 
@@ -200,7 +210,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.markingOn = JSON.parse(this.markingOn);
     }
 
-    this.doConsole('display', changes, this.url, this.path, 'PAGE=', this.page, this.customization, this.maxRows, this.app, this.markingOn);
+    this.doConsole('display', changes, this.url, this.version, this.path, 'PAGE=', this.page, this.customization, this.maxRows, this.app, this.markingOn);
     if (!changes || changes.url) {
       this.openWebPlayer(this.url, this.path, this.customization);
     } else if (this.app && changes.page) {
@@ -262,7 +272,8 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.spotParams = {
       ...this.spotParams,
       path, url,
-      customization, domid: this.spot.nativeElement.id,
+      customization, version: this.version,
+      domid: this.spot.nativeElement.id,
       page: this.page, _parameters: this.parameters
     };
 
@@ -288,7 +299,6 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       err => this.displayErrorMessage(err));
   }
 
-  protected doForm(doc: Document) { }
   private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
   private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
   private isFilteringWiredUp = () => this.filtering.observers.length > 0;
@@ -332,7 +342,6 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.filtering.emit(this.document.getFiltering());
     }
 
-    this.doForm(this.document);
     if (this.markingOn) {
       // Clear marking
       this.markerSubject.next({});

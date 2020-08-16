@@ -86,7 +86,7 @@ export class SpotfireParameters {
   domid: string;
   sid: string;
   customization: Customization;
-  version = '10.10';
+  version: string = '7.14'; // Nominal fall back value
   debug = false;
   reloadAnalysisInstance = false;
   document: Document;

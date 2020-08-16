@@ -3,19 +3,24 @@
 This is the home for the __Wrapper for TIBCO Spotfire(R)__ Angular package.
 
 
-Wrapper for TIBCO Spotfire(R) is an Angular Component built for and with Angular 8+.
+Wrapper for TIBCO Spotfire(R) is an Angular Component built for and with Angular 10+.
 
 > ### Notes:
 > * NPM package can be found here: https://www.npmjs.com/package/@tibco/spotfire-wrapper
 > * Visit [JS library README](../../README.md) to read more about the JS alternate way.
+> If you 
 
 
-## [Optional] Create a Angular App if you don't already have one:
+
+## [Optional] Create an Angular 10+ App if you don't already have one:
 ```bash
 ng new myapp
 cd myapp
-npm install @angular/cdk
+npm outdated
+npm install @angular/cdk@10
 ```
+
+`npm outdated` is used to list libraies that may need upgrade. Make sure you are using Angular 10+ libraries. 
 
 Two ways to install the NPM package:
 ## 1 - Install Wrapper for TIBCO Spotfire(R) using Schematics:
