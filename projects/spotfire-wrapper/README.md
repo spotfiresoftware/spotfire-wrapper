@@ -159,9 +159,21 @@ It will open a browser `http://localhost:4206`.
 
 Sources are available in `demo2` directory.
 
+### Demo #3: Use exposed SpotfireDocument to manage properties:
+
+see https://github.com/TIBCOSoftware/spotfire-wrapper/tree/master/demo3
+
+```bash
+ng serve demo3 --port=4207 --open
+```
+
+It will open a browser `http://localhost:4207`.
+
+Sources are available in `demo3` directory.
+
 > Note: 
 > 
-> The code of these two demos has been extremely simplified. Check the `demo1/main.ts` and `demo2/main.ts` files.
+> The code of these demos has been extremely simplified. Check the `demo*/main.ts` files.
 
 ---
 

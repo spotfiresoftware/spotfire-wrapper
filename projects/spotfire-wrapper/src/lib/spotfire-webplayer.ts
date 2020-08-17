@@ -86,10 +86,10 @@ export class SpotfireParameters {
   domid: string;
   sid: string;
   customization: Customization;
-  version: string = '7.14'; // Nominal fall back value
+  version = '7.14'; // Nominal fall back value
   debug = false;
   reloadAnalysisInstance = false;
-  document: Document;
+  document: SpotfireDocument;
   app: any;
   _parameters: string;
   constructor(vars?: {}) {
@@ -191,7 +191,7 @@ export class DocMetadata {
   }
 }
 
-export class Document {
+export class SpotfireDocument {
   private _doc;
   private marking: Marking;
   private filtering: SpotfireFiltering;
@@ -208,8 +208,8 @@ export class Document {
       this.data = new Data(this._doc.data);
     });
   }
-  init$(app): Observable<Document> {
-    return app.onOpened$().pipe(map((doc: Document) => {
+  init$(app): Observable<SpotfireDocument> {
+    return app.onOpened$().pipe(map((doc: SpotfireDocument) => {
       this._doc = doc;
       // Register event handler for page change events.
       this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
@@ -231,7 +231,9 @@ export class Document {
   }
   getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(map(g => new DocMetadata(g)));
   getPages$ = () => this.do('getPages').pipe(map(m => Object.keys(m).map(f => m[f].pageTitle)));
-  // getDocumentProperties$ = () => this.do('getDocumentProperties');
+  getDocumentProperties$ = () => this.do('getDocumentProperties');
+  getDocumentProperty$ = (propertyName: string) => doCall<any>('getDocumentProperty', propertyName);
+  setDocumentProperty = (propertyName: string, value: any) => this._doc.setDocumentProperty(propertyName, value);
   // getBookmarks$ = () => this.do('getBookmarks');
   // getBookmarkNames$ = () => this.do('getBookmarkNames');
   // getReports$ = () => this.do('getReports');
@@ -241,11 +243,11 @@ export class Document {
   getMarking = () => this.marking;
   getFiltering = () => this.filtering;
   _d = () => this._doc ? this._doc : null;
-  onDocumentReady$ = () => doCall(this._doc, 'onDocumentReady');
+  onDocumentReady$ = () => this.do('onDocumentReady');
   close = () => this._doc ? this._doc.close() : null;
   private onActivePageChangedCallback = (pageState) => doConsole('onActivePageChangedCallback', pageState);
   private do = <T>(m: string) => doCall<T>(this._doc, m);
-  private onActivePageChanged$ = () => doCall(this._doc, 'onActivePageChanged');
+  private onActivePageChanged$ = () => this.do('onActivePageChanged');
 }
 
 /**
@@ -265,7 +267,7 @@ export class Document {
  */
 export class SpotfireReporting {
   private exp;
-  constructor(doc: Document) {
+  constructor(doc: SpotfireDocument) {
     this.exp = doc._d();
   }
   /** Launch the print wizard. */
@@ -346,8 +348,8 @@ export class Application {
       this.version, this.onReadyCallback, this.onCreateLoginElement);
   }
   onOpened$ = () => doCall(this._app, 'onOpened');
-  getDocument$ = (id: string, page: string | number, custo?: Customization): Observable<Document> => {
-    const doc = new Document(this, id, page, custo ? custo : this.customization);
+  getDocument$ = (id: string, page: string | number, custo?: Customization): Observable<SpotfireDocument> => {
+    const doc = new SpotfireDocument(this, id, page, custo ? custo : this.customization);
     return doc.init$(this);
   }
   openDocument = (id: string, page: string | number, custo: Customization) => this._app.openDocument(id, page, custo);

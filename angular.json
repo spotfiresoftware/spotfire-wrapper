@@ -163,6 +163,40 @@
         }
       }
     },
+    "demo3": {
+      "root": "",
+      "sourceRoot": "demo3",
+      "projectType": "application",
+      "prefix": "app",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "aot": true,
+            "outputPath": "dist/container_app",
+            "index": "demo3/index.html",
+            "main": "demo3/main.ts",
+            "polyfills": "demo3/polyfills.ts",
+            "tsConfig": "demo3/tsconfig.app.json",
+            "assets": [],
+            "styles": [],
+            "scripts": []
+          },
+          "configurations": {}
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "demo3:build"
+          }
+        }
+      }
+    },
     "spotfire-wrapper": {
       "root": "projects/spotfire-wrapper",
       "sourceRoot": "projects/spotfire-wrapper/src",

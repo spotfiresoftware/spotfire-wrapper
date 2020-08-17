@@ -11,7 +11,7 @@ import { delay, map, mergeMap, tap } from 'rxjs/operators';
 
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization } from './spotfire-customization';
-import { Application, Document, SpotfireParameters } from './spotfire-webplayer';
+import { Application, SpotfireDocument, SpotfireParameters } from './spotfire-webplayer';
 
 declare let spotfire: any;
 
@@ -35,7 +35,7 @@ export class DocumentService {
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
-  openWebPlayer$(params: SpotfireParameters): Observable<Document> {
+  openWebPlayer$(params: SpotfireParameters): Observable<SpotfireDocument> {
     this.doConsole(`openWebPlayer(${params.domid}, ${params.url})`, params);
 
     // lazy load the spotfire js API
@@ -49,7 +49,7 @@ export class DocumentService {
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
-  openPath$(params: SpotfireParameters): Observable<Document> {
+  openPath$(params: SpotfireParameters): Observable<SpotfireDocument> {
     this.doConsole(`openPath(${params.path})`, params);
     if (params.document) {
       params.document.close();
@@ -79,7 +79,7 @@ export class DocumentService {
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
-  openPage$(params: SpotfireParameters): Observable<Document> {
+  openPage$(params: SpotfireParameters): Observable<SpotfireDocument> {
 
     this.doConsole(`openPage(${params.page})`, params);
 
@@ -96,8 +96,8 @@ export class DocumentService {
     if (params.document) {
       this.doConsole(`SpotfireViewerComponent setActivePage(${params.page})`);
       params.document.setActivePage(params.page);
-      return new Observable<Document>(o => {
-        o.next(params.document as Document);
+      return new Observable<SpotfireDocument>(o => {
+        o.next(params.document as SpotfireDocument);
         o.complete();
       });
     }
@@ -105,7 +105,7 @@ export class DocumentService {
       .pipe(
         tap(doc => params.document = doc),
         mergeMap(doc => doc.onDocumentReady$().pipe(
-          map(() => params.document as Document),
+          map(() => params.document as SpotfireDocument),
           tap(f => this.doConsole('onDocumentReady$ is done', f)))
         ));
   }

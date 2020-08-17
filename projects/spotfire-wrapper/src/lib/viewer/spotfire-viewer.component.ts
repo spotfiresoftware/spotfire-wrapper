@@ -13,7 +13,9 @@ import { tap } from 'rxjs/operators';
 
 import { DocumentService } from '../document.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
-import { Application, Document, DocMetadata, SpotfireFiltering, SpotfireParameters, SpotfireReporting } from '../spotfire-webplayer';
+import {
+  Application, DocMetadata, SpotfireDocument, SpotfireFiltering, SpotfireParameters, SpotfireReporting
+} from '../spotfire-webplayer';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
 // https://community.tibco.com/wiki/mashup-example-multiple-views-using-tibco-spotfire-javascript-api
@@ -97,6 +99,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.setFilters();
   }
 
+  // tslint:disable: member-ordering
   @Input() markingOn: {} | string;
   @Input() maxRows = 10;
 
@@ -140,13 +143,14 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    *  - getActiveFilteringScheme()
    */
   @Output() filtering: EventEmitter<SpotfireFiltering> = new EventEmitter();
+  @Output() document: EventEmitter<SpotfireDocument> = new EventEmitter();
 
   view: any;
   longTime = false;
 
   protected spotParams: SpotfireParameters = new SpotfireParameters();
   private _filters: Array<SpotfireFilter>;
-  private document: Document;
+  private _document: SpotfireDocument;
   private app: Application;
   /* Filtering observables, emitter and subject*/
   private filterSubject = new BehaviorSubject<Array<{}>>([]);
@@ -165,7 +169,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   ngOnInit(): void {
-    if (!this.version) this.version = DEFAULT_VERSION;
+    if (!this.version) { this.version = DEFAULT_VERSION; }
     this.doConsole('OnInit', this.url, this.path, this.version);
     this.display();
   }
@@ -197,7 +201,8 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.markingOn = JSON.parse(this.markingOn);
     }
 
-    this.doConsole('display', changes, this.url, this.version, this.path, 'PAGE=', this.page, this.customization, this.maxRows, this.app, this.markingOn);
+    this.doConsole('display', changes, this.url, this.version, this.path, 'PAGE=', this.page, this.customization,
+      this.maxRows, this.app, this.markingOn);
     if (!changes || changes.url) {
       this.openWebPlayer(this.url, this.path, this.customization);
     } else if (this.app && changes.page) {
@@ -289,6 +294,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
   private isFilteringWiredUp = () => this.filtering.observers.length > 0;
   private isReportingWiredUp = () => this.reporting.observers.length > 0;
+  private isDocumentWiredUp = () => this.document.observers.length > 0;
   private displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
     this.errorMessages.push(message);
@@ -313,32 +319,36 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     }
   }
 
-  private afterDisplay = (doc: Document) => {
+  private afterDisplay = (doc: SpotfireDocument) => {
     this.doConsole(`SpotfireViewerComponent afterDisplay`, doc, ', filters:', this._filters, ', markingON', this.markingOn);
-    this.document = doc;
+    this._document = doc;
     this.setFilters();
 
     if (this.isReportingWiredUp()) {
       this.doConsole(`we have observers for reportingEvent`);
-      const report = new SpotfireReporting(this.document);
+      const report = new SpotfireReporting(this._document);
       this.reporting.emit(report);
+    }
+    if (this.isDocumentWiredUp()) {
+      this.doConsole(`we have observers for document`);
+      this.document.emit(this._document);
     }
     if (this.isFilteringWiredUp()) {
       this.doConsole('we have observers for filtering');
-      this.filtering.emit(this.document.getFiltering());
+      this.filtering.emit(this._document.getFiltering());
     }
 
     if (this.markingOn) {
       // Clear marking
       this.markerSubject.next({});
       this.doConsole(`SpotfireViewerComponent afterDisplay has markingOn=`, this.markingOn);
-      const data = this.document.getData();
+      const data = this._document.getData();
       if (data === undefined) {
         console.warn('[SpotfireViewerComponent] document getData() contains', data);
       } else {
         data.getTables$()
           .pipe(tap(allTableNames => this.doConsole(`All tables and column names:`, allTableNames)))
-          .subscribe(allTableNames => this.document.getMarking().getMarkingNames$()
+          .subscribe(allTableNames => this._document.getMarking().getMarkingNames$()
             .pipe(tap(markingNames => this.doConsole(`All marking names:`, markingNames)))
             .subscribe(markingNames => markingNames.forEach(markingName => {
               const tableNames = this.markingOn === '*' ? allTableNames : this.markingOn;
@@ -348,7 +358,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
                   columnNames = allTableNames[tName];
                 }
                 this.doConsole(`marking.onChanged(${markingName}, ${tName}, ${JSON.stringify(columnNames)}, ${this.maxRows})`);
-                this.document.getMarking().onChanged$(markingName, tName, columnNames, this.maxRows)
+                this._document.getMarking().onChanged$(markingName, tName, columnNames, this.maxRows)
                   .subscribe(f => this.updateMarking(tName, markingName, f));
               });
             })));
@@ -374,8 +384,8 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   private setFilters() {
-    if (this.document && this._filters && this.document.getFiltering()) {
-      const flt = this.document.getFiltering();
+    if (this._document && this._filters && this._document.getFiltering()) {
+      const flt = this._document.getFiltering();
       flt.resetAllFilters();
       flt.setFilters(this._filters);
       this.loadFilters();
@@ -428,7 +438,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   private loadFilters() {
     //  console.log('AA Nicolas loadFilters BLOUP ! (19 juin 2019)');
     if (this.isFiltingWiredUp()) {
-      this.document.getFiltering().getAllModifiedFilterColumns$()
+      this._document.getFiltering().getAllModifiedFilterColumns$()
         .subscribe(fs => this.filterSubject.next(fs));
     }
     //    this.document.getFiltering().getAllModifiedFilterColumns()
