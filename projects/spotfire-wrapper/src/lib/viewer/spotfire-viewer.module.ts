@@ -6,16 +6,17 @@
 
 // https://medium.com/@tomsu/how-to-build-a-library-for-angular-apps-4f9b38b0ed11
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { NgModule } from '@angular/core';
 
 import { SpotfireViewerComponent } from './spotfire-viewer.component';
-import { SpotfireServerService } from '../spotfire-server.service';
+
+import { SpotfireServerInterceptor } from '../spotfire-server.interceptor';
 
 @NgModule({
   imports: [CommonModule, HttpClientModule],
   declarations: [SpotfireViewerComponent],
   exports: [SpotfireViewerComponent],
-  providers: [{ provide: HTTP_INTERCEPTORS, useClass: SpotfireServerService, multi: true }]
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: SpotfireServerInterceptor, multi: true }]
 })
 export class SpotfireViewerModule { }

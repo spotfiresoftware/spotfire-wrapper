@@ -7,7 +7,7 @@ import { Component, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-import { SpotfireFiltering, SpotfireReporting, SpotfireViewerModule, SpotfireServer } from '@tibco/spotfire-wrapper';
+import { SpotfireFiltering, SpotfireReporting, SpotfireServer, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
 
 @Component({
   selector: 'app-root',
@@ -50,8 +50,6 @@ import { SpotfireFiltering, SpotfireReporting, SpotfireViewerModule, SpotfireSer
     </spotfire-viewer>
     <pre style='border-right:1px solid #bbb; padding:5px; font-size:10px'>what we send to <code>filter</code>={{filtersOut|json}}</pre>
     <pre style='font-size:10px;  padding:5px;'>what we mark ({{buffersize}} o): {{markedData|json}}</pre>
-   
-    
   </div>
   <pre style='border-right:1px solid #bbb; padding:5px; font-size:10px'>FilteringSchemes={{schemesOut|json}}</pre>
 `, styles: [`

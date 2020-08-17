@@ -3,10 +3,12 @@
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
-import { EventEmitter, Injectable, Output } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpClient, HttpResponse, HttpEventType } from '@angular/common/http';
-import { interval, Observable, throwError, Subject } from 'rxjs';
-import { tap, map, catchError } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
+import { interval, throwError, Observable, Subject } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
+
 import { SpotfireServer } from './spotfire-webplayer';
 
 @Injectable({
@@ -17,9 +19,9 @@ import { SpotfireServer } from './spotfire-webplayer';
  * Provide a means to monitor the TIBCO Spotfire Server. This checks the server's status API to ensure the server is running.
  * An informative message may be presented using the results.
  */
-export class SpotfireServerService implements HttpInterceptor {
+export class SpotfireServerService {
   spotfireServer: SpotfireServer = new SpotfireServer('', false);
-  monitoring: boolean = false;
+  monitoring = false;
 
   /**
    * @description
@@ -35,7 +37,6 @@ export class SpotfireServerService implements HttpInterceptor {
   isSpotfireServerOnline() {
     return this.spotfireServer.isOnline;
   }
-
 
   monitorSpotfireServerStatus(url: string) {
     if (!this.monitoring) {
@@ -68,23 +69,10 @@ export class SpotfireServerService implements HttpInterceptor {
     );
   }
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    this.spotfireServer.statusMessage = 'Attempting to determine server status.';
-
-    let request = req.clone({
-      setHeaders: {
-        'Content-Type': 'text/plain',
-        'Accept': 'application/json'
-      }
-    });
-    return next.handle(request);
-  }
-
   private getStatus(resp: any) {
     this.doConsole('Trying to get the status from ', resp);
     this.spotfireServer.statusMessage = 'Server status received ' + resp;
-    this.doConsole('spotfire server status ', resp.status, resp.status == 200, JSON.stringify(this.spotfireServer));
-
+    this.doConsole('spotfire server status ', resp.status, resp.status === 200, JSON.stringify(this.spotfireServer));
   }
 
   private handleError(err: any): Observable<any> {

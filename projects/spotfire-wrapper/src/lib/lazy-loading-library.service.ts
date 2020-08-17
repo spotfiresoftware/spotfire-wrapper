@@ -17,7 +17,7 @@ export class LazyLoadingLibraryService {
 
   constructor(@Inject(DOCUMENT) private readonly document: any) { }
 
-  public loadJs(url: string): Observable<any> {
+  loadJs(url: string): Observable<any> {
     if (this.loadedLibraries[url]) {
       return this.loadedLibraries[url].asObservable();
     }

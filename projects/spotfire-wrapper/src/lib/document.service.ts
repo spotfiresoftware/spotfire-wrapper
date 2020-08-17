@@ -10,17 +10,15 @@ import { forkJoin, Observable } from 'rxjs';
 import { delay, map, mergeMap, tap } from 'rxjs/operators';
 
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
-import { SpotfireServerService } from './spotfire-server.service';
 import { SpotfireCustomization } from './spotfire-customization';
 import { Application, Document, SpotfireParameters } from './spotfire-webplayer';
-import { EmitterVisitorContext } from '@angular/compiler';
 
 declare let spotfire: any;
 
 @Injectable({ providedIn: 'root' })
 export class DocumentService {
 
-  constructor(public lazySvc: LazyLoadingLibraryService) { }
+  constructor(private lazySvc: LazyLoadingLibraryService) { }
 
   // tslint:disable-next-line:no-console
   doConsole = (...args: any[]) => console.log('[DOCUMENT-SERVICE]', ...args);

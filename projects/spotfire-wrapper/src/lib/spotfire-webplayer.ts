@@ -86,7 +86,7 @@ export class SpotfireParameters {
   domid: string;
   sid: string;
   customization: Customization;
-  version: string = '7.14'; // Nominal fall back value
+  version = '7.14'; // Nominal fall back value
   debug = false;
   reloadAnalysisInstance = false;
   document: Document;
@@ -283,17 +283,17 @@ export class SpotfireReporting {
 }
 
 /**
- * @description 
+ * @description
  * An observable object that decribes the status of the TIBCO Spotfire Server.
  */
 export class SpotfireServer {
+  isOnline: boolean;
+  serverUrl: string;
+  statusMessage: string;
   constructor(serverUrl: string, isOnline: boolean) {
     this.isOnline = isOnline;
     this.serverUrl = serverUrl;
   }
-  isOnline: boolean;
-  serverUrl: string;
-  statusMessage: string;
 }
 
 /**
