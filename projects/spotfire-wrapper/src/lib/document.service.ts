@@ -18,7 +18,7 @@ declare let spotfire: any;
 @Injectable({ providedIn: 'root' })
 export class DocumentService {
 
-  constructor(public lazySvc: LazyLoadingLibraryService) { }
+  constructor(private lazySvc: LazyLoadingLibraryService) { }
 
   // tslint:disable-next-line:no-console
   doConsole = (...args: any[]) => console.log('[DOCUMENT-SERVICE]', ...args);

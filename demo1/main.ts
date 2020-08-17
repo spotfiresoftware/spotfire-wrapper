@@ -7,14 +7,21 @@ import { Component, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-import { SpotfireFiltering, SpotfireReporting, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
+import { SpotfireFiltering, SpotfireReporting, SpotfireServer, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
 
 @Component({
   selector: 'app-root',
   template: `
-<h2>Angular app "{{title|uppercase}}"
-<button (click)="toggleFullsize()">FullSize</button></h2>
+<h2>Angular app "{{title|uppercase}}"</h2>
+<div *ngIf='spotfireServer'>
+<span class='redDot' *ngIf='!spotfireServerStatus'></span>
+<span class='greenDot' *ngIf='spotfireServerStatus'></span>
+  {{spotfireServer}}
+  <div *ngIf='!spotfireServerStatus'>{{spotfireServerStatusMessage}}</div>
+</div>
+<button (click)="toggleFullsize()">FullSize</button>
 <button (click)="setFilters()">Change filters</button>
+
 <div *ngIf="reporting">
   <button (click)="doPrint()">Print...</button>
   <button (click)="doPdf()">Export to PDF...</button>
@@ -36,19 +43,32 @@ import { SpotfireFiltering, SpotfireReporting, SpotfireViewerModule } from '@tib
       (reportingEvent)="onReporting($event)"
       (filteringEvent)="onFiltering($event)"
       (filtering)="filtering = $event"
+      (serverStatusEvent)="onServerStatus($event)"
       [filters]='filters'
       [parameters]="param"
       [debug]="true">
     </spotfire-viewer>
     <pre style='border-right:1px solid #bbb; padding:5px; font-size:10px'>what we send to <code>filter</code>={{filtersOut|json}}</pre>
     <pre style='font-size:10px;  padding:5px;'>what we mark ({{buffersize}} o): {{markedData|json}}</pre>
-   
-    
   </div>
   <pre style='border-right:1px solid #bbb; padding:5px; font-size:10px'>FilteringSchemes={{schemesOut|json}}</pre>
 `, styles: [`
 .normsize { width:50%; height:600px}
-.fullsize { position: absolute; top: 60px; left:0; right:0; bottom:0; width:100%; height:100%} `]
+.fullsize { position: absolute; top: 60px; left:0; right:0; bottom:0; width:100%; height:100%}
+.redDot {
+  height: 15px;
+  width: 15px;
+  background-color: #ff0000;
+  border-radius: 50%;
+  display: inline-block;
+}
+.greenDot {
+  height: 15px;
+  width: 15px;
+  background-color: #33cc33;
+  border-radius: 50%;
+  display: inline-block;
+}`]
 })
 class AppComponent {
   title = 'demo1';
@@ -82,6 +102,9 @@ class AppComponent {
 
   filtersOut = {};
   schemesOut = {};
+  spotfireServer = '';
+  spotfireServerStatus: boolean;
+  spotfireServerStatusMessage = '';
 
   // Marking can be subscribed outside component
   onMarking = (e: Event) => {
@@ -109,6 +132,12 @@ class AppComponent {
   onFiltering = (e: Event) => {
     console.log('[AppComponent] FILTERING MySpot returns', e);
     this.filtersOut = e;
+  }
+  onServerStatus = (e: SpotfireServer) => {
+    console.log('[AppComponent] onServerStatus returns', e);
+    this.spotfireServer = e.serverUrl;
+    this.spotfireServerStatus = e.isOnline;
+    this.spotfireServerStatusMessage = e.statusMessage;
   }
   doPdf = () => {
     console.log('doPdf', this.reporting);
