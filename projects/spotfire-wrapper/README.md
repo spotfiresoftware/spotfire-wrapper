@@ -32,8 +32,7 @@ ng add @tibco/spotfire-wrapper
 
 ## 2 - Install Wrapper for TIBCO Spotfire(R) with `npm install`:
 ```
-npm install @tibco/spotfire-wrapper
-npm install @angular/cdk @angular/material @angular/flex-layout
+npm install @angular/cdk @tibco/spotfire-wrapper
 ```
 
 __Then it's really easy to get started !__
@@ -130,7 +129,7 @@ class MySpotfireViewerComponent extends SpotfireViewerComponent implements OnIni
 }
 ```
 
-and use your new directove <my-spotfire><my-spotifire>` in your templates
+and use your new directove `<my-spotfire><my-spotifire>` in your templates
 
 ## Demos
 

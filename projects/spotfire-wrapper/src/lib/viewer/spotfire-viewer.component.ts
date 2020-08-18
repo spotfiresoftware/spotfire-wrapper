@@ -13,8 +13,9 @@ import { tap } from 'rxjs/operators';
 
 import { DocumentService } from '../document.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
+import { SpotfireServerService } from '../spotfire-server.service';
 import {
-  Application, DocMetadata, SpotfireDocument, SpotfireFiltering, SpotfireParameters, SpotfireReporting
+  Application, DocMetadata, SpotfireDocument, SpotfireFiltering, SpotfireParameters, SpotfireReporting, SpotfireServer
 } from '../spotfire-webplayer';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
@@ -88,18 +89,6 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * Optional. Array of filters that will be applied once page is loaded.
    */
 
-  @Input() set filters(value: Array<SpotfireFilter> | string) {
-    if (typeof value === 'string') {
-      const allFilters: Array<SpotfireFilter> = [];
-      JSON.parse(value).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
-      this._filters = allFilters;
-    } else {
-      this._filters = value as Array<SpotfireFilter>;
-    }
-    this.setFilters();
-  }
-
-  // tslint:disable: member-ordering
   @Input() markingOn: {} | string;
   @Input() maxRows = 10;
 
@@ -145,8 +134,17 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   @Output() filtering: EventEmitter<SpotfireFiltering> = new EventEmitter();
   @Output() document: EventEmitter<SpotfireDocument> = new EventEmitter();
 
+  /**
+   * @description
+   * Optional. Emit an instance of a SpotfireServer whenever TIBCO Spotfire Server status is available.
+   */
+  @Output() serverStatusEvent: EventEmitter<SpotfireServer> = new EventEmitter();
+
   view: any;
   longTime = false;
+
+  readonly filter$: Observable<Array<{}>>;
+  readonly marker$: Observable<{}>;
 
   protected spotParams: SpotfireParameters = new SpotfireParameters();
   private _filters: Array<SpotfireFilter>;
@@ -154,21 +152,35 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   private app: Application;
   /* Filtering observables, emitter and subject*/
   private filterSubject = new BehaviorSubject<Array<{}>>([]);
-  // tslint:disable-next-line:member-ordering
-  public filter$: Observable<Array<{}>> = this.filterSubject.asObservable();
 
   /* Marking observables, emitter and subject*/
   private markerSubject = new BehaviorSubject<{}>({});
-  // tslint:disable-next-line:member-ordering
-  public marker$: Observable<{}> = this.markerSubject.asObservable();
   private markedRows = {};
 
-  constructor(public docSvc: DocumentService) {
+  constructor(public docSvc: DocumentService, private spotfireServerSvc: SpotfireServerService) {
+    this.filter$ = this.filterSubject.asObservable();
+    this.marker$ = this.markerSubject.asObservable();
     this.doConsole('Welcome to Wrapper for TIBCO Spotfire(R)!');
     setTimeout(() => this.longTime = true, 6000);
   }
 
+  @Input() set filters(value: Array<SpotfireFilter> | string) {
+    if (typeof value === 'string') {
+      const allFilters: Array<SpotfireFilter> = [];
+      JSON.parse(value).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
+      this._filters = allFilters;
+    } else {
+      this._filters = value as Array<SpotfireFilter>;
+    }
+    this.setFilters();
+  }
+
   ngOnInit(): void {
+    this.spotfireServerSvc.monitorSpotfireServerStatus(this.url);
+    this.spotfireServerSvc.serverStatusEvent.subscribe((e: SpotfireServer) => {
+      this.doConsole('SPOTFIRE-SERVER-SERVICE received event ' + JSON.stringify(e));
+      this.serverStatusEvent.emit(e);
+    });
     if (!this.version) { this.version = DEFAULT_VERSION; }
     this.doConsole('OnInit', this.url, this.path, this.version);
     this.display();
@@ -201,8 +213,8 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.markingOn = JSON.parse(this.markingOn);
     }
 
-    this.doConsole('display', changes, this.url, this.version, this.path, 'PAGE=', this.page, this.customization,
-      this.maxRows, this.app, this.markingOn);
+    this.doConsole('display', changes, this.url, this.version, this.path, 'PAGE=', this.page, this.customization, this.maxRows,
+      this.app, this.markingOn);
     if (!changes || changes.url) {
       this.openWebPlayer(this.url, this.path, this.customization);
     } else if (this.app && changes.page) {
@@ -226,7 +238,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    *
    * @param page the document page that will be displayed
    */
-  public openPage(page: string) {
+  openPage(page: string) {
     this.displayInfoMessage(`${this.url}/${this.path}/${page ? page : ''}...`);
     this.doConsole(`SpotfireViewerComponent openPage(${page})`);
     this.page = page;
@@ -272,6 +284,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.docSvc.openWebPlayer$(this.spotParams).subscribe(
       doc => this.afterDisplay(doc),
       err => this.displayErrorMessage(err));
+
   }
 
   /**

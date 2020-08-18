@@ -1,3 +1,12 @@
+<a name="0.12.0"></a>
+## [0.12.0] (2020-08-16)
+
+### Features
+ * Added a new service that monitors the status of the TIBCO Spotfire Server.
+ * Add a new output parameter `serverStatusEvent` that emits a `SpotfireServer` class after the TIBCO Spotfire Server has been monitored.
+ * Demo1 can demonstrate the code.
+
+
 <a name="0.11.6"></a>
 ## [0.11.6] (2020-08-15)
 
@@ -13,10 +22,12 @@
 ### Bug Fixes
  * Restores the ability to install the NPM package. Issue #75.
  
+>>>>>>> d27906fa9649a81a70be4b0cf2b1a1aeda03ddba
 <a name="0.11.0"></a>
 ## [0.11.0] (2020-08-10)
 
-### Features
+### Features   
+
  * Migrate to Angular 10.0.8
  
 <a name="0.10.0"></a>
