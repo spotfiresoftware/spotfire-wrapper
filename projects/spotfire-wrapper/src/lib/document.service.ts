@@ -11,7 +11,7 @@ import { delay, map, mergeMap, tap } from 'rxjs/operators';
 
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization } from './spotfire-customization';
-import { Application, SpotfireDocument, SpotfireParameters } from './spotfire-webplayer';
+import { SpotfireApplication, SpotfireDocument, SpotfireParameters } from './spotfire-webplayer';
 
 declare let spotfire: any;
 
@@ -59,7 +59,7 @@ export class DocumentService {
 
     // Prepare Spotfire app with path/page/customization
     //
-    params.app = new Application(
+    params.app = new SpotfireApplication(
       params.url,
       params.customization,
       params.path,
@@ -85,7 +85,7 @@ export class DocumentService {
 
     // Ask Spotfire library to display this path/page (with optional customization)
     //
-    if (!params.app || !(params.app instanceof Application)) {
+    if (!params.app || !(params.app instanceof SpotfireApplication)) {
       throw new Error('Spotfire webapp is not created yet');
     }
     //    const idDom = `is${new Date().getTime()}`;

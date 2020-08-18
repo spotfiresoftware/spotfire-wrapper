@@ -9,11 +9,16 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { SpotfireDocument, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
 
+const WONDERS = ['Great Pyramid of Giza', 'Hanging Gardens of Babylon',
+  'Temple of Artemis at Ephesus', 'Statue of Zeus at Olympia', 'My Marvellous Spotfire Dashboard',
+  'Mausoleum at Halicarnassus', 'Colossus of Rhodes', 'Lighthouse of Alexandria'];
+
 @Component({
   selector: 'app-root',
   template: `
 <h2>Angular app "{{title|uppercase}}"</h2>
 <button [disabled]="!document" (click)="getProperties()">getProperties()</button>
+<button [disabled]="!properties" (click)="setProperty()">Set a random description property</button>
 
 <div style='display:flex; height: 400px;'>
   <spotfire-viewer [url]="url" [path]="path" (document)="document = $event" [debug]="true" style='flex:1 1 0%'></spotfire-viewer>
@@ -28,11 +33,14 @@ class AppComponent {
   document: SpotfireDocument = null;
   properties: {};
 
-  getProperties = () =>
-    this.document.getDocumentProperties$().subscribe(s => {
-      console.log('getDocumentProperties returns', s);
-      this.properties = s;
-    })
+  getProperties = () => this.document.getDocumentProperties$().subscribe(s => this.properties = s);
+
+  setProperty = () => {
+    this.document.setDocumentProperty('Description', WONDERS[Math.floor(Math.random() * 8)]);
+    this.document.getDocumentProperty$('Description').subscribe(w => console.log('Description contains', w));
+    // refresh properties
+    this.getProperties();
+  }
 }
 
 @NgModule({

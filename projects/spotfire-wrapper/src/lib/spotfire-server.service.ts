@@ -6,7 +6,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { interval, throwError, Observable, Subject } from 'rxjs';
+import { throwError, timer, Observable, Subject } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { SpotfireServer } from './spotfire-webplayer';
@@ -34,18 +34,14 @@ export class SpotfireServerService {
   // tslint:disable-next-line:no-console
   doConsole = (...args: any[]) => console.log('[SPOTFIRE-SERVER-SERVICE]', ...args);
 
-  isSpotfireServerOnline() {
-    return this.spotfireServer.isOnline;
-  }
+  isSpotfireServerOnline = () => this.spotfireServer.isOnline;
 
   monitorSpotfireServerStatus(url: string) {
     if (!this.monitoring) {
       this.monitoring = true;
-      this.getSpotfireServerStatus(url).subscribe();
       this.doConsole('jello jello ', url);
-      interval(60000).subscribe(x => {
-        this.getSpotfireServerStatus(url).subscribe();
-      });
+      // timer(0, 60000), will emit values immediatly (0) and every minute (60000)
+      timer(0, 60000).pipe(map(() => this.getSpotfireServerStatus(url))).subscribe();
     }
   }
 
@@ -71,7 +67,7 @@ export class SpotfireServerService {
 
   private getStatus(resp: any) {
     this.doConsole('Trying to get the status from ', resp);
-    this.spotfireServer.statusMessage = 'Server status received ' + resp;
+    this.spotfireServer.statusMessage = `Server status received ${resp}`;
     this.doConsole('spotfire server status ', resp.status, resp.status === 200, JSON.stringify(this.spotfireServer));
   }
 
@@ -87,8 +83,5 @@ export class SpotfireServerService {
     return throwError('an error');
   }
 
-  private getStatusUrl(url: string) {
-    return url + '/spotfire/rest/status/getStatus';
-  }
-
+  private getStatusUrl = (url: string) => `${url}/spotfire/rest/status/getStatus`;
 }

@@ -11,23 +11,6 @@ import { SpotfireCustomization as Customization, SpotfireFilter } from './spotfi
 
 declare let spotfire: any;
 
-export const CUSTLABELS = {
-  showAbout: 'Show the about menu item',
-  showAnalysisInformationTool: 'Show the analysis information tool menu item',
-  showAuthor: 'Show the button for enabling authoring',
-  showClose: 'Show the analysis close menu item',
-  showCustomizableHeader: 'Show the customizable header',
-  showDodPanel: 'Show the details on demand panel in the visualization.',
-  showExportFile: 'Show the export file menu item',
-  showFilterPanel: 'Show the filter panel.',
-  showHelp: 'Show the help menu item',
-  showLogout: 'Show the logout menu item',
-  showPageNavigation: 'Show the page navigation controls in the analysis',
-  showStatusBar: 'Show status bar in the Web Player',
-  showToolBar: 'Show the analysis toolbar and menu',
-  showUndoRedo: 'Show the undo/redo menu item'
-};
-
 function doConsole(...args: any[]) {
   // console.log('[SPOTFIRE-WEBPLAYER]', ...args);
 }
@@ -36,7 +19,7 @@ class DataTable { dataTableName: string; }
 class DataColumn { dataColumnName: string; dataTableName: string; dataType: string; values: {}; }
 class DistinctValues { count: number; values: Array<string>; }
 
-export class Marking {
+export class SpotfireMarking {
   constructor(public _marking) { }
   getMarkingNames$ = () => doCall<string[]>(this._marking, 'getMarkingNames');
   onChanged$ = (m, t, c, n) => doCall(this._marking, 'onChanged', m, t, c, n);
@@ -102,7 +85,7 @@ export class SpotfireParameters {
   }
 }
 
-export class Data {
+export class SpotfireData {
   allTables = {};
   constructor(private _data) { }
 
@@ -162,14 +145,20 @@ export class Data {
     pluck('values'))
 }
 
-export class DocMetadata {
+export class SpotfireDocumentMetadata {
   size: number;
   sizeUnit = 'B';
+  /** Gets the content size in bytes of this item. */
   contentSize: number;
+  /** Gets a DateTime describing when this item was created in the library. */
   created: Date;
+  /** Gets the description of this item. */
   description: string;
+  /** Gets a DateTime describing when the last modification of this item was made in the library. */
   lastModified: Date;
+  /** Gets the path of this item, or null if the path was not retrieved from the library when this item was created. */
   path: string;
+  /** Gets the title of this item. */
   title: string;
 
   constructor(p?) {
@@ -191,11 +180,18 @@ export class DocMetadata {
   }
 }
 
+export class SpotfireProperty {
+  /** The name of the property. */
+  name: string;
+  /** The value of the property as a formatted string or an array of formatted strings, in the users locale. */
+  value: string | string[];
+}
+
 export class SpotfireDocument {
   private _doc;
-  private marking: Marking;
+  private marking: SpotfireMarking;
   private filtering: SpotfireFiltering;
-  private data: Data;
+  private data: SpotfireData;
   constructor(app, id, page, custo) {
     this._doc = app.openDocument(id, page, custo);
     app.onOpened$().subscribe(doc => {
@@ -203,9 +199,9 @@ export class SpotfireDocument {
       this._doc = doc;
       // Register event handler for page change events.
       this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
-      this.marking = new Marking(this._doc.marking);
+      this.marking = new SpotfireMarking(this._doc.marking);
       this.filtering = new SpotfireFiltering(this._doc.filtering);
-      this.data = new Data(this._doc.data);
+      this.data = new SpotfireData(this._doc.data);
     });
   }
   init$(app): Observable<SpotfireDocument> {
@@ -213,36 +209,42 @@ export class SpotfireDocument {
       this._doc = doc;
       // Register event handler for page change events.
       this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
-      this.marking = new Marking(this._doc.marking);
+      this.marking = new SpotfireMarking(this._doc.marking);
       this.filtering = new SpotfireFiltering(this._doc.filtering);
-      this.data = new Data(this._doc.data);
+      this.data = new SpotfireData(this._doc.data);
       return this;
     }));
   }
   getData() {
-    doConsole(`Document.getData: a)`, JSON.stringify(this.data));
     if (!this.data) {
-      this.marking = new Marking(this._doc.marking);
+      this.marking = new SpotfireMarking(this._doc.marking);
       this.filtering = new SpotfireFiltering(this._doc.filtering);
-      this.data = new Data(this._doc.data);
+      this.data = new SpotfireData(this._doc.data);
     }
     doConsole(`Document.getData: b)`, JSON.stringify(this.data));
     return this.data;
   }
-  getDocumentMetadata$ = (): Observable<DocMetadata> => this.do<DocMetadata>('getDocumentMetadata').pipe(map(g => new DocMetadata(g)));
+  getDocumentMetadata$ = (): Observable<SpotfireDocumentMetadata> =>
+    this.do<SpotfireDocumentMetadata>('getDocumentMetadata').pipe(map(g => new SpotfireDocumentMetadata(g)))
+  /** Get a list of the pages in the current document. */
   getPages$ = () => this.do('getPages').pipe(map(m => Object.keys(m).map(f => m[f].pageTitle)));
-  getDocumentProperties$ = () => this.do('getDocumentProperties');
-  getDocumentProperty$ = (propertyName: string) => doCall<any>('getDocumentProperty', propertyName);
-  setDocumentProperty = (propertyName: string, value: any) => this._doc.setDocumentProperty(propertyName, value);
+  /** Get a list of all the properties in the document. */
+  getDocumentProperties$ = () => this.do<SpotfireProperty[]>('getDocumentProperties');
+  /** Get the information about the property with given name. */
+  getDocumentProperty$ = (propertyName: string) => doCall<SpotfireProperty>(this._doc, 'getDocumentProperty', propertyName);
+  setDocumentProperty = (propertyName: string, value: string | string[]) => this._doc.setDocumentProperty(propertyName, value);
   // getBookmarks$ = () => this.do('getBookmarks');
   // getBookmarkNames$ = () => this.do('getBookmarkNames');
   // getReports$ = () => this.do('getReports');
+  /** Get the information about the active page. */
   getActivePage$ = () => this.do<PageState>('getActivePage');
+  /** Change the active page. */
   setActivePage = (p: string | number) => this._doc.setActivePage(p);
   // getData = () => this.data;
   getMarking = () => this.marking;
   getFiltering = () => this.filtering;
   _d = () => this._doc ? this._doc : null;
+  /** Event raised, when the document switches to the ready state (the round icon in the status bar becomes green). */
   onDocumentReady$ = () => this.do('onDocumentReady');
   close = () => this._doc ? this._doc.close() : null;
   private onActivePageChangedCallback = (pageState) => doConsole('onActivePageChangedCallback', pageState);
@@ -338,7 +340,7 @@ function doCall<T>(obj, m: string, ...a: any[]): Observable<T> {
     }));
 }
 
-export class Application {
+export class SpotfireApplication {
   private readySubject = new BehaviorSubject<boolean>(false);
   // tslint:disable-next-line:member-ordering
   onApplicationReady$ = this.readySubject.asObservable().pipe(filter(d => d));
@@ -363,7 +365,7 @@ export class Application {
   }
   openDocument = (id: string, page: string | number, custo: Customization) => this._app.openDocument(id, page, custo);
 
-  private onReadyCallback = (response, newApp: Application) => {
+  private onReadyCallback = (response, newApp: SpotfireApplication) => {
     doConsole('Application.onReadyCallback', response, newApp);
     this._app = newApp;
     // Register an error handler to catch errors.

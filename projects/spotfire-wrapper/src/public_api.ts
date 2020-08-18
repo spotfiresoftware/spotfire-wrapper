@@ -11,5 +11,7 @@
 export * from './lib/viewer/spotfire-viewer.component';
 export * from './lib/viewer/spotfire-viewer.module';
 export { DocumentService } from './lib/document.service';
-export { SpotfireParameters, SpotfireReporting, SpotfireFiltering, SpotfireServer, SpotfireDocument } from './lib/spotfire-webplayer';
+export {
+  SpotfireParameters, SpotfireReporting, SpotfireFiltering, SpotfireServer, SpotfireDocument, SpotfireProperty
+} from './lib/spotfire-webplayer';
 export { SpotfireCustomization } from './lib/spotfire-customization';

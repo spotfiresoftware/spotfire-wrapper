@@ -15,7 +15,7 @@ import { DocumentService } from '../document.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
 import { SpotfireServerService } from '../spotfire-server.service';
 import {
-  Application, DocMetadata, SpotfireDocument, SpotfireFiltering, SpotfireParameters, SpotfireReporting, SpotfireServer
+  SpotfireApplication, SpotfireDocument, SpotfireDocumentMetadata, SpotfireFiltering, SpotfireParameters, SpotfireReporting, SpotfireServer
 } from '../spotfire-webplayer';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
@@ -96,7 +96,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   errorMessages = [];
 
   /* metadata contains Information about the Spotfire analysis */
-  metadata: DocMetadata;
+  metadata: SpotfireDocumentMetadata;
   edit = false;
 
   /**
@@ -149,7 +149,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   protected spotParams: SpotfireParameters = new SpotfireParameters();
   private _filters: Array<SpotfireFilter>;
   private _document: SpotfireDocument;
-  private app: Application;
+  private app: SpotfireApplication;
   /* Filtering observables, emitter and subject*/
   private filterSubject = new BehaviorSubject<Array<{}>>([]);
 
@@ -222,7 +222,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     } else {
       this.doConsole(`The Url attribute is not provided, flip the dashboard and display form!`);
       this.edit = true;
-      this.metadata = new DocMetadata();
+      this.metadata = new SpotfireDocumentMetadata();
     }
   }
   ngOnChanges = (changes: SimpleChanges) => {
