@@ -22,7 +22,9 @@ const WONDERS = ['Great Pyramid of Giza', 'Hanging Gardens of Babylon',
 
 <div style='display:flex; height: 400px;'>
   <spotfire-viewer [url]="url" [path]="path" (document)="document = $event" [debug]="true" style='flex:1 1 0%'></spotfire-viewer>
-  <pre style='flex:1 1 0%; border-right:1px solid #bbb; padding:5px; font-size:10px'><code>Properties</code>={{properties|json}}</pre>
+  <pre style='flex:1 1 0%; border-right:1px solid #bbb; padding:5px; font-size:10px'>
+    <code>Properties</code>={{properties|json}}
+  </pre>
 </div>
 `
 })

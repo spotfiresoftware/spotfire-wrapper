@@ -144,8 +144,7 @@ class AppComponent {
   bootstrap: [AppComponent],
   imports: [BrowserModule, ReactiveFormsModule, NoopAnimationsModule, MatTabsModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  declarations: [AppComponent, MySpotfireWrapperComponent],
-  entryComponents: [MySpotfireWrapperComponent]
+  declarations: [AppComponent, MySpotfireWrapperComponent]
 })
 class AppModule { }
 

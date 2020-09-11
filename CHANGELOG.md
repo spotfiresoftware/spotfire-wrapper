@@ -1,10 +1,17 @@
 <a name="0.12.0"></a>
-## [0.12.0] (2020-08-16)
+## [0.12.0] (2020-09-11)
 
 ### Features
+ * Upgrade to Angular 10.1.1
  * Added a new service that monitors the status of the TIBCO Spotfire Server.
  * Add a new output parameter `serverStatusEvent` that emits a `SpotfireServer` class after the TIBCO Spotfire Server has been monitored.
  * Demo1 can demonstrate the code.
+ * expose SpotfireApplication and SpotfireDocument to have access to their properties and methods 
+   ex: access to Spotfire document properties, as demonstrated in demo3 
+
+### Breaking Changes
+ * All expoed classes have now 'Spotfire' as prefix (S`potfireApplication`, `SpotfireDocument`, `SpotfireReporting`, ...).
+
 
 <a name="0.11.6"></a>
 ## [0.11.6] (2020-08-15)
