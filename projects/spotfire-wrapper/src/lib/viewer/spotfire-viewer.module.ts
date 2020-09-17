@@ -11,12 +11,9 @@ import { NgModule } from '@angular/core';
 
 import { SpotfireViewerComponent } from './spotfire-viewer.component';
 
-import { SpotfireServerInterceptor } from '../spotfire-server.interceptor';
-
 @NgModule({
   imports: [CommonModule, HttpClientModule],
   declarations: [SpotfireViewerComponent],
-  exports: [SpotfireViewerComponent],
-  providers: [{ provide: HTTP_INTERCEPTORS, useClass: SpotfireServerInterceptor, multi: true }]
+  exports: [SpotfireViewerComponent]
 })
 export class SpotfireViewerModule { }

@@ -1,3 +1,9 @@
+<a name="0.12.1"></a>
+## [0.12.1] (2020-09-17)
+
+### Bug Fixes
+ * Removed a problematic HTTP interceptor
+
 <a name="0.12.0"></a>
 ## [0.12.0] (2020-08-16)
 

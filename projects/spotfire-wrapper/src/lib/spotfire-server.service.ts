@@ -3,7 +3,7 @@
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { throwError, timer, Observable, Subject } from 'rxjs';
@@ -39,17 +39,23 @@ export class SpotfireServerService {
   monitorSpotfireServerStatus(url: string) {
     if (!this.monitoring) {
       this.monitoring = true;
-      this.doConsole('jello jello ', url);
       // timer(0, 60000), will emit values immediatly (0) and every minute (60000)
-      timer(0, 60000).pipe(map(() => this.getSpotfireServerStatus(url))).subscribe();
+      timer(0, 10000).pipe(map(() => this.getSpotfireServerStatus(url).subscribe())).subscribe();
     }
   }
 
   getSpotfireServerStatus(url: string): Observable<SpotfireServer> {
+    this.spotfireServer.statusMessage = 'Attempting to determine server status.';
     this.spotfireServer.serverUrl = url;
     const statusUrl = this.getStatusUrl(url);
     this.doConsole('getting spotfire server status from ' + statusUrl);
-    return this.http.get<any>(statusUrl).pipe(
+    const options = {
+      headers: new HttpHeaders({
+        'Content-Type': 'text/plain',
+        'Accept': 'application/json'
+      })
+    }
+    return this.http.get<any>(statusUrl, options).pipe(
       catchError(err => this.handleError(err)),
       tap(resp => {
         this.doConsole('received response', resp, JSON.stringify(resp));
