@@ -16,7 +16,7 @@
    ex: access to Spotfire document properties, as demonstrated in demo3 
 
 ### Breaking Changes
- * All expoed classes have now 'Spotfire' as prefix (S`potfireApplication`, `SpotfireDocument`, `SpotfireReporting`, ...).
+ * All expoed classes have now 'Spotfire' as prefix (`SpotfireApplication`, `SpotfireDocument`, `SpotfireReporting`, ...).
 
 
 <a name="0.11.6"></a>

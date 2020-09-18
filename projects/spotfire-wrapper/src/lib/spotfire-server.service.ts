@@ -7,7 +7,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { throwError, timer, Observable, Subject } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, mergeMap, tap } from 'rxjs/operators';
 
 import { SpotfireServer } from './spotfire-webplayer';
 
@@ -40,7 +40,7 @@ export class SpotfireServerService {
     if (!this.monitoring) {
       this.monitoring = true;
       // timer(0, 60000), will emit values immediatly (0) and every minute (60000)
-      timer(0, 10000).pipe(map(() => this.getSpotfireServerStatus(url).subscribe())).subscribe();
+      timer(0, 10000).pipe(mergeMap(() => this.getSpotfireServerStatus(url))).subscribe();
     }
   }
 
@@ -54,7 +54,7 @@ export class SpotfireServerService {
         'Content-Type': 'text/plain',
         'Accept': 'application/json'
       })
-    }
+    };
     return this.http.get<any>(statusUrl, options).pipe(
       catchError(err => this.handleError(err)),
       tap(resp => {
