@@ -1,3 +1,9 @@
+<a name="0.12.2"></a>
+## [0.12.2] (2020-09-18)
+
+### Bug Fixes
+ * Fixed timer issue on Server monitoring
+
 <a name="0.12.1"></a>
 ## [0.12.1] (2020-09-17)
 
