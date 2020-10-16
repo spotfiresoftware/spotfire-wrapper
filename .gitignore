@@ -1,6 +1,6 @@
 .DS_STORE
 
-/dist/
+dist/
 /bazel-out
 /integration/bazel/bazel-*
 node_modules
@@ -37,4 +37,5 @@ yarn-error.log
 
 # js files
 # *.js
-!dist/spotfire-wrapper.js
+!*/spotfire-wrapper.js
+

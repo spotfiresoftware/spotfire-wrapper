@@ -93,6 +93,8 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   @Input() maxRows = 10;
 
   @ViewChild('spot', { static: true, read: ElementRef }) spot: ElementRef;
+
+  /** List of error messages seen so far */
   errorMessages = [];
 
   /* metadata contains Information about the Spotfire analysis */
@@ -303,11 +305,12 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       err => this.displayErrorMessage(err));
   }
 
-  private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
-  private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
-  private isFilteringWiredUp = () => this.filtering.observers.length > 0;
-  private isReportingWiredUp = () => this.reporting.observers.length > 0;
-  private isDocumentWiredUp = () => this.document.observers.length > 0;
+  /**
+   * @description
+   * Display error message in the DOM content of the spotfire-wrapper
+   * This function can be overriden
+   * @param message error message to be displayed
+   */
   protected displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
     this.errorMessages.push(message);
@@ -321,6 +324,12 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     }
   }
 
+  /**
+   * @description
+   * Display info message if debug mode is set in the DOM content of the spotfire-wrapper
+   * This function can be overriden
+   * @param message INfo message to be displayed
+   */
   protected displayInfoMessage = (message: string) => {
     // console.log(message);
     if (!this.spotParams.document && this.debug) {
@@ -331,6 +340,12 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.spot.nativeElement.textContent = message;
     }
   }
+
+  private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
+  private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
+  private isFilteringWiredUp = () => this.filtering.observers.length > 0;
+  private isReportingWiredUp = () => this.reporting.observers.length > 0;
+  private isDocumentWiredUp = () => this.document.observers.length > 0;
 
   private afterDisplay = (doc: SpotfireDocument) => {
     this.doConsole(`SpotfireViewerComponent afterDisplay`, doc, ', filters:', this._filters, ', markingON', this.markingOn);
