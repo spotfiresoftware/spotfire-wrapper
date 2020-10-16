@@ -13,6 +13,9 @@ title() {
 
 rm -rf dist build
 
+title "Copy Change Log:"
+cp -v projects/spotfire-wrapper/CHANGELOG.md CHANGELOG.md
+
 title "Install dependencies:"
 npm install
 
