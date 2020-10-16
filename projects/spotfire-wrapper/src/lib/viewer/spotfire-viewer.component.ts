@@ -308,7 +308,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   private isFilteringWiredUp = () => this.filtering.observers.length > 0;
   private isReportingWiredUp = () => this.reporting.observers.length > 0;
   private isDocumentWiredUp = () => this.document.observers.length > 0;
-  private displayErrorMessage = (message: string) => {
+  protected displayErrorMessage = (message: string) => {
     console.error('ERROR:', message);
     this.errorMessages.push(message);
     if (!this.spotParams.document) {
@@ -321,7 +321,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     }
   }
 
-  private displayInfoMessage = (message: string) => {
+  protected displayInfoMessage = (message: string) => {
     // console.log(message);
     if (!this.spotParams.document && this.debug) {
       // Do not display the info Message when document is running
