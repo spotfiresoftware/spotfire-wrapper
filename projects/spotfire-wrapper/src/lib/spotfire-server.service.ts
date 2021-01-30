@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2020-2020. TIBCO Software Inc.
+* Copyright (c) 2020-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -31,7 +31,7 @@ export class SpotfireServerService {
 
   constructor(private http: HttpClient) { }
 
-  // tslint:disable-next-line:no-console
+  // eslint-disable-next-line no-console
   doConsole = (...args: any[]) => console.log('[SPOTFIRE-SERVER-SERVICE]', ...args);
 
   isSpotfireServerOnline = () => this.spotfireServer.isOnline;
@@ -48,13 +48,11 @@ export class SpotfireServerService {
     this.spotfireServer.serverUrl = url;
     const statusUrl = this.getStatusUrl(url);
     this.doConsole('getting spotfire server status from ' + statusUrl);
-    const options = {
-      headers: new HttpHeaders({
-        'Content-Type': 'text/plain',
-        'Accept': 'application/json'
-      })
-    };
-    return this.http.get<any>(statusUrl, options).pipe(
+    let headers = new HttpHeaders();
+    headers = headers.set('Content-Type', 'text/plain');
+    headers = headers.set('Accept', 'application/json');
+
+    return this.http.get<any>(statusUrl, { headers }).pipe(
       catchError(err => this.handleError(err)),
       tap(resp => {
         this.doConsole('received response', resp, JSON.stringify(resp));

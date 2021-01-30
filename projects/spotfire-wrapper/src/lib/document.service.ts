@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019-2020. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -20,18 +20,18 @@ export class DocumentService {
 
   constructor(private lazySvc: LazyLoadingLibraryService) { }
 
-  // tslint:disable-next-line:no-console
+  // eslint-disable-next-line no-console
   doConsole = (...args: any[]) => console.log('[DOCUMENT-SERVICE]', ...args);
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
-  getMetadata$ = (params: SpotfireParameters): Observable<{}> =>
+  getMetadata$ = (params: SpotfireParameters): Observable<any> =>
     this.openWebPlayer$(params).pipe(
       mergeMap(doc => forkJoin([
         doc.getDocumentMetadata$(),
         doc.getData().getTables$(),
         doc.getMarking().getMarkingNames$()])),
-      map(([metadata, tables, markings]) => ({ metadata, tables, markings })))
+      map(([metadata, tables, markings]) => ({ metadata, tables, markings })));
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
@@ -120,7 +120,7 @@ export class DocumentService {
     // Optionally create and return a div to host the login button
     console.warn(`Cannot login`);
     return null;
-  }
+  };
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019-2020. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -89,17 +89,10 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * Optional. Array of filters that will be applied once page is loaded.
    */
 
-  @Input() markingOn: {} | string;
+  @Input() markingOn: any | string;
   @Input() maxRows = 10;
 
   @ViewChild('spot', { static: true, read: ElementRef }) spot: ElementRef;
-
-  /** List of error messages seen so far */
-  errorMessages = [];
-
-  /* metadata contains Information about the Spotfire analysis */
-  metadata: SpotfireDocumentMetadata;
-  edit = false;
 
   /**
    * @description
@@ -142,21 +135,28 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    */
   @Output() serverStatusEvent: EventEmitter<SpotfireServer> = new EventEmitter();
 
+  /** List of error messages seen so far */
+  errorMessages = [];
+
+  /* metadata contains Information about the Spotfire analysis */
+  metadata: SpotfireDocumentMetadata;
+  edit = false;
+
   view: any;
   longTime = false;
 
-  readonly filter$: Observable<Array<{}>>;
-  readonly marker$: Observable<{}>;
+  readonly filter$: Observable<any[]>;
+  readonly marker$: Observable<any>;
 
   protected spotParams: SpotfireParameters = new SpotfireParameters();
-  private _filters: Array<SpotfireFilter>;
+  private _filters: SpotfireFilter[];
   private _document: SpotfireDocument;
   private app: SpotfireApplication;
   /* Filtering observables, emitter and subject*/
-  private filterSubject = new BehaviorSubject<Array<{}>>([]);
+  private filterSubject = new BehaviorSubject<any[]>([]);
 
   /* Marking observables, emitter and subject*/
-  private markerSubject = new BehaviorSubject<{}>({});
+  private markerSubject = new BehaviorSubject<any>({});
   private markedRows = {};
 
   constructor(public docSvc: DocumentService, private spotfireServerSvc: SpotfireServerService) {
@@ -166,13 +166,13 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     setTimeout(() => this.longTime = true, 6000);
   }
 
-  @Input() set filters(value: Array<SpotfireFilter> | string) {
+  @Input() set filters(value: SpotfireFilter[] | string) {
     if (typeof value === 'string') {
-      const allFilters: Array<SpotfireFilter> = [];
+      const allFilters: SpotfireFilter[] = [];
       JSON.parse(value).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
       this._filters = allFilters;
     } else {
-      this._filters = value as Array<SpotfireFilter>;
+      this._filters = value as SpotfireFilter[];
     }
     this.setFilters();
   }
@@ -183,12 +183,14 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.doConsole('SPOTFIRE-SERVER-SERVICE received event ' + JSON.stringify(e));
       this.serverStatusEvent.emit(e);
     });
-    if (!this.version) { this.version = DEFAULT_VERSION; }
+    if (!this.version) {
+      this.version = DEFAULT_VERSION;
+    }
     this.doConsole('OnInit', this.url, this.path, this.version);
     this.display();
   }
 
-  // tslint:disable-next-line:no-console
+  // eslint-disable-next-line no-console
   doConsole = (...args: any[]) => this.debug && console.log('[SPOTFIRE-VIEWER]', ...args);
 
   /**
@@ -207,7 +209,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     }
 
     if (typeof this._filters === 'string') {
-      const allFilters: Array<SpotfireFilter> = [];
+      const allFilters: SpotfireFilter[] = [];
       JSON.parse(this._filters).forEach((m: SpotfireFilter) => allFilters.push(new SpotfireFilter(m)));
       this._filters = allFilters;
     }
@@ -231,7 +233,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     if (!!changes) {
       this.display(changes);
     }
-  }
+  };
 
   stopPropagation = (e: Event) => e.stopPropagation();
   /**
@@ -322,7 +324,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.spot.nativeElement.style.padding = '30px';
       this.spot.nativeElement.textContent = this.errorMessages.join('<br>');
     }
-  }
+  };
 
   /**
    * @description
@@ -339,7 +341,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.spot.nativeElement.style.textAlign = 'center';
       this.spot.nativeElement.textContent = message;
     }
-  }
+  };
 
   private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
   private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
@@ -381,7 +383,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
             .subscribe(markingNames => markingNames.forEach(markingName => {
               const tableNames = this.markingOn === '*' ? allTableNames : this.markingOn;
               Object.keys(tableNames).forEach(tName => {
-                let columnNames: Array<string> = this.markingOn === '*' ? allTableNames[tName] : tableNames[tName];
+                let columnNames: string[] = this.markingOn === '*' ? allTableNames[tName] : tableNames[tName];
                 if (columnNames.length === 1 && columnNames[0] === '*') {
                   columnNames = allTableNames[tName];
                 }
@@ -409,7 +411,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     }
     // console.log('YES loadFilters');
     // setInterval(() => this.loadFilters(), 3000);
-  }
+  };
 
   private setFilters() {
     if (this._document && this._filters && this._document.getFiltering()) {
@@ -430,7 +432,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * @param mName Maring name
    * @param res marked rows returned by Spotfire
    */
-  private updateMarking = (tName: string, mName: string, res: {}) => {
+  private updateMarking = (tName: string, mName: string, res: any) => {
     if (Object.keys(res).length > 0) {
       this.doConsole(`We have marked rows on marking '${mName}' for table '${tName}':`, res);
       // update the marked row if partial selection
@@ -457,7 +459,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       //  this.doConsole(`No rows are marked on marking '${mName}' for table '${tName}'`);
     }
     this.loadFilters();
-  }
+  };
 
   /**
    * @description

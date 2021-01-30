@@ -1,10 +1,10 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
 
-import { Injector, NgModule } from '@angular/core';
+import { DoBootstrap, Injector, NgModule } from '@angular/core';
 import { createCustomElement } from '@angular/elements';
 import { BrowserModule } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -13,9 +13,9 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { SpotfireViewerComponent, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
 
 @NgModule({
-  imports: [BrowserModule, NoopAnimationsModule , SpotfireViewerModule ]
+  imports: [BrowserModule, NoopAnimationsModule, SpotfireViewerModule]
 })
-export class AppModule {
+export class AppModule implements DoBootstrap {
   constructor(private i: Injector) { }
   ngDoBootstrap() {
     customElements.define('spotfire-viewer', createCustomElement(SpotfireViewerComponent, { injector: this.i }));

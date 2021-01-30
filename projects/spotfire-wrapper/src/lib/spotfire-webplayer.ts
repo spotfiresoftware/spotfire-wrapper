@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019-2020. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -11,13 +11,21 @@ import { SpotfireCustomization as Customization, SpotfireFilter } from './spotfi
 
 declare let spotfire: any;
 
-function doConsole(...args: any[]) {
+const doConsole = (...args: any[]) => {
   // console.log('[SPOTFIRE-WEBPLAYER]', ...args);
+};
+class PageState {
+  index: number; pageTitle: string;
 }
-class PageState { index: number; pageTitle: string; }
-class DataTable { dataTableName: string; }
-class DataColumn { dataColumnName: string; dataTableName: string; dataType: string; values: {}; }
-class DistinctValues { count: number; values: Array<string>; }
+class DataTable {
+  dataTableName: string;
+}
+class DataColumn {
+  dataColumnName: string; dataTableName: string; dataType: string; values: any;
+}
+class DistinctValues {
+  count: number; values: string[];
+}
 
 export class SpotfireMarking {
   constructor(public _marking) { }
@@ -48,13 +56,13 @@ export class SpotfireFiltering {
   getAllModifiedFilterColumns$ = () => doCall<SpotfireFilter[]>(
     this._filtering, 'getAllModifiedFilterColumns',
     spotfire.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES
-  )
+  );
   getFilteringScheme$ = (filteringSchemeName: string) => doCall<FillteringScheme>(
-    this._filtering, 'getFilteringScheme', filteringSchemeName)
+    this._filtering, 'getFilteringScheme', filteringSchemeName);
   getFilteringSchemes$ = () => doCall<FillteringScheme>(
-    this._filtering, 'getFilteringSchemes')
+    this._filtering, 'getFilteringSchemes');
   getActiveFilteringScheme$ = () => doCall<FillteringScheme[]>(
-    this._filtering, 'getActiveFilteringScheme')
+    this._filtering, 'getActiveFilteringScheme');
 }
 
 class FillteringScheme {
@@ -75,7 +83,7 @@ export class SpotfireParameters {
   document: SpotfireDocument;
   app: any;
   _parameters: string;
-  constructor(vars?: {}) {
+  constructor(vars?: any) {
     if (vars) {
       Object.keys(vars).forEach(key => this[key] = vars[key]);
     }
@@ -97,10 +105,10 @@ export class SpotfireData {
     }),
     map(k => {
       let z = {};
-      k.forEach((p: {}) => z = { ...z, ...p });
+      k.forEach((p: any) => z = { ...z, ...p });
       return z;
     })
-  )
+  );
   getAllTables$ = () => this.getDataTables$().pipe(
     mergeMap(tables => {
       const obs = [];
@@ -110,21 +118,23 @@ export class SpotfireData {
       const dataTables = [];
       (tables[0] as []).forEach(columns => {
         const tname = columns['tabName'];
-        if (!dataTables[tname]) { dataTables[tname] = {}; }
+        if (!dataTables[tname]) {
+          dataTables[tname] = {};
+        }
         dataTables[tname][columns['colName']] = columns['vals'];
       });
       return dataTables;
-    }))
+    }));
 
   // A Spotfire analysis contains one or more data tables, retrieved by the getDataTable,
   // getActiveDataTable and getDataTables methods.
   private getDataTables$ = () => doCall<DataTable[]>(this._data, 'getDataTables');
 
   private getDataTableColNames$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t)
-    .pipe(mergeMap(f => this.getDataColumns$(f)), map(d => ({ [t]: d })))
+    .pipe(mergeMap(f => this.getDataColumns$(f)), map(d => ({ [t]: d })));
 
   private getDataTable$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t)
-    .pipe(mergeMap(f => this.getDataColumns$(f)))
+    .pipe(mergeMap(f => this.getDataColumns$(f)));
 
   // Each data table contains one or more data columns, retrieved by the getDataColumn,
   // getDataColumns and searchDataColumns.
@@ -134,7 +144,7 @@ export class SpotfireData {
       columns.forEach((col: DataColumn) => obs.push(zip(...[observableOf(col)], (a: DataColumn, b) => a.dataColumnName)));
       return forkJoin(obs);
     })
-  )
+  );
 
   // From the DataColumn class it is possible to retrieve metadata, such as column name and data type.
   // It is also possible to get a list of the unique values in the data column with the getDistinctValues method.
@@ -142,7 +152,7 @@ export class SpotfireData {
     tap(g => doConsole('Data.DistinctValues$', t, g, g.count > 0 && g.count < 25)),
     // filter(g => g.count > 0 && g.count < 25),
     //  tap(g => doConsole('[OBS]', 'DistinctValues filtres', g)),
-    pluck('values'))
+    pluck('values'));
 }
 
 export class SpotfireDocumentMetadata {
@@ -225,7 +235,7 @@ export class SpotfireDocument {
     return this.data;
   }
   getDocumentMetadata$ = (): Observable<SpotfireDocumentMetadata> =>
-    this.do<SpotfireDocumentMetadata>('getDocumentMetadata').pipe(map(g => new SpotfireDocumentMetadata(g)))
+    this.do<SpotfireDocumentMetadata>('getDocumentMetadata').pipe(map(g => new SpotfireDocumentMetadata(g)));
   /** Get a list of the pages in the current document. */
   getPages$ = () => this.do('getPages').pipe(map(m => Object.keys(m).map(f => m[f].pageTitle)));
   /** Get a list of all the properties in the document. */
@@ -310,7 +320,7 @@ export class SpotfireServer {
  * @return Observable<T> an observable that corresponds to the original callback
  *
  */
-function doCall<T>(obj, m: string, ...a: any[]): Observable<T> {
+const doCall = <T>(obj, m: string, ...a: any[]): Observable<T> => {
   doConsole('doCall -->', obj, m, a);
   return new Observable<T>(observer => {
     const oneShot = ['onDocumentReady'];
@@ -322,7 +332,9 @@ function doCall<T>(obj, m: string, ...a: any[]): Observable<T> {
     try {
       // doConsole('[OBS]', `Call ${m}(${a.join(',')})`, a.length);
       const q = (g: T) => observer.next(g);
-      const p = (g: T) => { observer.next(g); observer.complete(); };
+      const p = (g: T) => {
+        observer.next(g); observer.complete();
+      };
       return m.startsWith('on') && oneShot.indexOf(m) === -1 ? obj[m](...a, q) : obj[m](...a, p);
     } catch (err) {
       console.warn('[OBS]', 'doCall erreur: ', err);
@@ -338,12 +350,11 @@ function doCall<T>(obj, m: string, ...a: any[]): Observable<T> {
       }
       return throwError(e);
     }));
-}
+};
 
 export class SpotfireApplication {
+  readonly onApplicationReady$: Observable<boolean>;
   private readySubject = new BehaviorSubject<boolean>(false);
-  // tslint:disable-next-line:member-ordering
-  onApplicationReady$ = this.readySubject.asObservable().pipe(filter(d => d));
   private _app: any;
 
   constructor(
@@ -354,6 +365,7 @@ export class SpotfireApplication {
     public reloadAnalysisInstance: boolean,
     public version: string,
     public onCreateLoginElement) {
+    this.onApplicationReady$ = this.readySubject.asObservable().pipe(filter(d => d));
     this._app = new spotfire.webPlayer.createApplication(this.url,
       this.customization, this.path, this.parameters, this.reloadAnalysisInstance,
       this.version, this.onReadyCallback, this.onCreateLoginElement);
@@ -362,7 +374,7 @@ export class SpotfireApplication {
   getDocument$ = (id: string, page: string | number, custo?: Customization): Observable<SpotfireDocument> => {
     const doc = new SpotfireDocument(this, id, page, custo ? custo : this.customization);
     return doc.init$(this);
-  }
+  };
   openDocument = (id: string, page: string | number, custo: Customization) => this._app.openDocument(id, page, custo);
 
   private onReadyCallback = (response, newApp: SpotfireApplication) => {
@@ -380,7 +392,7 @@ export class SpotfireApplication {
       console.error('[SPOTFIRE-WEBPLAYER] Application.onReadyCallback', errMsg, response);
       this.readySubject.error(errMsg);
     }
-  }
+  };
   // Displays an error message if something goes wrong in the Web Player.
   private onErrorCallback = (errCode: string, desc: string) => console.error(`[SPOTFIRE-WEBPLAYER] ${errCode}: ${desc}`);
 }

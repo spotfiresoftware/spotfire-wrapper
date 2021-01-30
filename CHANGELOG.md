@@ -10,7 +10,6 @@ Wrapper for TIBCO Spotfire(R) Changelog
  * Upgrade to Angular 11.1.1
 
 
-
 <a name="0.13.0"></a>
 ## [0.13.0] (2020-10-16)
 

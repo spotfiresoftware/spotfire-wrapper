@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019-2020. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -22,7 +22,7 @@ export class SpotfireCustomization {
   showStatusBar = false;
   showToolBar = false;
   showUndoRedo = false;
-  constructor(vars?: {}) {
+  constructor(vars?: any) {
     if (vars) {
       Object.keys(vars).forEach(key => this[key] = vars[key]);
     }
@@ -30,13 +30,13 @@ export class SpotfireCustomization {
 }
 
 class SpotfireFilterSetting {
-  values: Array<string> = [];
+  values: string[] = [];
   lowValue = null;
   highValue = null;
   includeEmpty = true;
   searchPattern = null;
   hierarchyPaths = [];
-  constructor(vars?: {}) {
+  constructor(vars?: any) {
     if (vars) {
       Object.keys(vars).forEach(key => this[key] = vars[key]);
     }
@@ -48,8 +48,8 @@ export class SpotfireFilter {
   dataTableName: string;
   dataColumnName: string;
   filterType: string | any;
-  filterSettings: Array<SpotfireFilterSetting>;
-  constructor(vars?: {}) {
+  filterSettings: SpotfireFilterSetting[];
+  constructor(vars?: any) {
     if (vars) {
       Object.keys(vars).forEach(key => this[key] = vars[key]);
     }

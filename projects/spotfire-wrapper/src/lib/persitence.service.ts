@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -15,7 +15,7 @@ export class PersistanceService {
     } catch (e) {
       console.error('Error saving to localStorage', e);
     }
-  }
+  };
   get = (key: string) => {
     try {
       return JSON.parse(localStorage.getItem(`${this.pfx}.sw.${key}`));
@@ -23,5 +23,5 @@ export class PersistanceService {
       console.error('Error getting data from localStorage', e);
       return null;
     }
-  }
+  };
 }

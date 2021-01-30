@@ -14,7 +14,9 @@ import {
 
 import { Schema } from './schema';
 
-function createHost(tree: Tree): workspaces.WorkspaceHost {
+/* eslint-disable prefer-arrow/prefer-arrow-functions */
+// eslint-disable-next-line arrow-body-style
+const createHost = (tree: Tree): workspaces.WorkspaceHost => {
   return {
     async readFile(path: string): Promise<string> {
       const data = tree.read(path);
@@ -31,13 +33,12 @@ function createHost(tree: Tree): workspaces.WorkspaceHost {
     },
     async isFile(path: string): Promise<boolean> {
       return tree.exists(path);
-    },
+    }
   };
-}
+};
 
 // import { addDeclarationToModule } from '@schematics/angular/utility/ast-utils';
-export function ngGenDashboard(options: Schema): Rule {
-  return async (_tree: Tree, context: SchematicContext) => {
+export const ngGenDashboard = (options: Schema): Rule => async (_tree: Tree, context: SchematicContext) => {
 
     const host = createHost(_tree);
     const { workspace } = await workspaces.readWorkspace('/', host);
@@ -71,4 +72,3 @@ export function ngGenDashboard(options: Schema): Rule {
       mergeWith(templateSource)
     ]);
   };
-}

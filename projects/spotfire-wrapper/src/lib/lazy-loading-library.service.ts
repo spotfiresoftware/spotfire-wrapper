@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -13,7 +13,7 @@ import { Observable, ReplaySubject } from 'rxjs';
   providedIn: 'root'
 })
 export class LazyLoadingLibraryService {
-  private loadedLibraries: { [url: string]: ReplaySubject<any> } = {};
+  private loadedLibraries: { [url: string]: ReplaySubject<any>; } = {};
 
   constructor(@Inject(DOCUMENT) private readonly document: any) { }
 

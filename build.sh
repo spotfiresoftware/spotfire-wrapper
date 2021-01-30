@@ -19,6 +19,9 @@ cp -v projects/spotfire-wrapper/CHANGELOG.md CHANGELOG.md
 title "Install dependencies:"
 npm install
 
+title "Lint code:"
+ng lint
+
 title "[spotfire-wrapper] Build the NPM package:"
 ./node_modules/.bin/ng build spotfire-wrapper --prod
 (cd projects/spotfire-wrapper/ ; npm run build --prod )
