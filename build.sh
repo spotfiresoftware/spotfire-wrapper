@@ -40,7 +40,7 @@ title "[spotfire-wrapper-lib] Test Schematics "
 \rm -rf testapp ; 
 ng new testapp --minimal --defaults ; 
 cd testapp ; 
-npm install @angular/cdk@10 ; 
+npm install @angular/cdk@11 ; 
 ng add @tibco/spotfire-wrapper@latest )
 
 

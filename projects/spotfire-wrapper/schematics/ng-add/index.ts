@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -7,8 +7,8 @@ import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask, RunSchematicTask } from '@angular-devkit/schematics/tasks';
 import { addModuleImportToRootModule, getProjectFromWorkspace, getProjectMainFile, hasNgModuleImport } from '@angular/cdk/schematics';
 
-import { getWorkspace } from '@schematics/angular/utility/config';
 import { getAppModulePath } from '@schematics/angular/utility/ng-ast-utils';
+import { getWorkspace } from '@schematics/angular/utility/workspace';
 
 import { Schema } from './schema';
 
@@ -23,16 +23,18 @@ export function ngAdd(_options: Schema): Rule {
 
 export function ngAddSetup(_options: Schema): Rule {
   return (tree: Tree, context: SchematicContext) => {
-    const workspace = getWorkspace(tree);
-    const project = getProjectFromWorkspace(workspace, _options.project);
-    const appModulePath = getAppModulePath(tree, getProjectMainFile(project));
+    getWorkspace(tree).then(workspace => {
 
-    const moduleName = 'SpotfireViewerModule';
+      const project = getProjectFromWorkspace(workspace, _options.project);
+      const appModulePath = getAppModulePath(tree, getProjectMainFile(project));
 
-    if (!hasNgModuleImport(tree, appModulePath, moduleName)) {
-      context.logger.log('info', `Import  ${moduleName}`);
-      addModuleImportToRootModule(tree, moduleName, '@tibco/spotfire-wrapper', project);
-    }
-    return tree;
+      const moduleName = 'SpotfireViewerModule';
+
+      if (!hasNgModuleImport(tree, appModulePath, moduleName)) {
+        context.logger.log('info', `Import  ${moduleName}`);
+        addModuleImportToRootModule(tree, moduleName, '@tibco/spotfire-wrapper', project);
+      }
+      return tree;
+    });
   };
 }
