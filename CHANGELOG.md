@@ -3,6 +3,12 @@ Wrapper for TIBCO Spotfire(R) Changelog
 
 (all changes without author notice are by [@nicolasderoche](https://github.com/nicolasderoche))
 
+<a name="0.14.1"></a>
+## [0.14.1] (2021-02-01)
+
+### Improvements
+ * Publish as public package to GitHub Packages
+
 <a name="0.14.0"></a>
 ## [0.14.0] (2021-01-30)
 
