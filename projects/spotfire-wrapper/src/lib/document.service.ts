@@ -12,11 +12,10 @@ import { delay, map, mergeMap, tap } from 'rxjs/operators';
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization } from './spotfire-customization';
 import { SpotfireApplication, SpotfireDocument, SpotfireParameters } from './spotfire-webplayer';
-import { SpotfireViewerModule } from './viewer/spotfire-viewer.module';
 
 declare let spotfire: any;
 
-@Injectable({ providedIn: SpotfireViewerModule })
+@Injectable({ providedIn: 'root' })
 export class DocumentService {
   debug = false;
   constructor(private lazySvc: LazyLoadingLibraryService) { }

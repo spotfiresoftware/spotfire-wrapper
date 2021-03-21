@@ -3,6 +3,18 @@ Wrapper for TIBCO Spotfire(R) Changelog
 
 (all changes without author notice are by [@nicolasderoche](https://github.com/nicolasderoche))
 
+<a name="0.14.2"></a>
+## [0.14.2] (2021-03-21)
+
+### Improvements
+ * Upgrade to Angular 11.2.6
+ * When debug mode is set to false (its default value) the spotfire-wrapper now displays no debug messages.
+ * When `path` is modified, the dashboard is updated accordingly
+ * Monitoring of Spotfire Server status is only activated when `serverStatusEvent` is used
+
+### Bug Fixes
+ * ngOnChanges not triggered for Input parameters ([#87](https://github.com/TIBCOSoftware/spotfire-wrapper/issues/87))
+
 <a name="0.14.1"></a>
 ## [0.14.1] (2021-02-01)
 

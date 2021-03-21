@@ -10,10 +10,9 @@ import { throwError, timer, Observable, Subject } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { SpotfireServer } from './spotfire-webplayer';
-import { SpotfireViewerModule } from './viewer/spotfire-viewer.module';
 
 @Injectable({
-  providedIn: SpotfireViewerModule
+  providedIn: 'root'
 })
 /**
  * @description
