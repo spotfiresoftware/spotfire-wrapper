@@ -202,6 +202,15 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
 
   display(changes?: SimpleChanges) {
     this.doConsole('Display', changes);
+    if (this.isMonitorWiredUp) {
+      this.doConsole('Listen for Spotfire Server status changes');
+      this.spotfireServerSvc.monitorSpotfireServerStatus(this.url);
+      this.spotfireServerSvc.serverStatusEvent.subscribe((e: SpotfireServer) => {
+        this.doConsole('SPOTFIRE-SERVER-SERVICE received event ' + JSON.stringify(e));
+        this.serverStatusEvent.emit(e);
+      });
+    }
+
     if (typeof this.customization === 'string') {
       this.customization = new SpotfireCustomization(JSON.parse(this.customization));
     } else {
@@ -348,6 +357,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   private isFilteringWiredUp = () => this.filtering.observers.length > 0;
   private isReportingWiredUp = () => this.reporting.observers.length > 0;
   private isDocumentWiredUp = () => this.document.observers.length > 0;
+  private isMonitorWiredUp = () => this.serverStatusEvent.observers.length > 0;
 
   private afterDisplay = (doc: SpotfireDocument) => {
     this.doConsole(`SpotfireViewerComponent afterDisplay`, doc, ', filters:', this._filters, ', markingON', this.markingOn);
