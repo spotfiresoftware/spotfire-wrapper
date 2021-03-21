@@ -12,16 +12,17 @@ import { delay, map, mergeMap, tap } from 'rxjs/operators';
 import { LazyLoadingLibraryService } from './lazy-loading-library.service';
 import { SpotfireCustomization } from './spotfire-customization';
 import { SpotfireApplication, SpotfireDocument, SpotfireParameters } from './spotfire-webplayer';
+import { SpotfireViewerModule } from './viewer/spotfire-viewer.module';
 
 declare let spotfire: any;
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: SpotfireViewerModule })
 export class DocumentService {
-
+  debug = false;
   constructor(private lazySvc: LazyLoadingLibraryService) { }
 
   // eslint-disable-next-line no-console
-  doConsole = (...args: any[]) => console.log('[DOCUMENT-SERVICE]', ...args);
+  doConsole = (...args: any[]) => this.debug && console.log('[DOCUMENT-SERVICE]', ...args);
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //

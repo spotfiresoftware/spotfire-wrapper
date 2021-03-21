@@ -378,19 +378,21 @@ export class SpotfireApplication {
   openDocument = (id: string, page: string | number, custo: Customization) => this._app.openDocument(id, page, custo);
 
   private onReadyCallback = (response, newApp: SpotfireApplication) => {
-    doConsole('Application.onReadyCallback', response, newApp);
-    this._app = newApp;
-    // Register an error handler to catch errors.
-    this._app.onError(this.onErrorCallback);
-    if (response.status === 'OK') {
-      // The application is ready, meaning that the api is loaded and that the analysis path
-      // is validated for the current session(anonymous or logg ed in user)
-      this.readySubject.next(true);
-      this.readySubject.complete();
-    } else {
-      const errMsg = `Status not OK. ${response.status}: ${response.message}`;
-      console.error('[SPOTFIRE-WEBPLAYER] Application.onReadyCallback', errMsg, response);
-      this.readySubject.error(errMsg);
+    if (!!response && !!newApp) { //ignore undefined response
+      doConsole('Application.onReadyCallback', response, newApp);
+      this._app = newApp;
+      // Register an error handler to catch errors.
+      this._app?.onError(this.onErrorCallback);
+      if (response.status === 'OK') {
+        // The application is ready, meaning that the api is loaded and that the analysis path
+        // is validated for the current session(anonymous or logg ed in user)
+        this.readySubject.next(true);
+        this.readySubject.complete();
+      } else {
+        const errMsg = `Status not OK. ${response.status}: ${response.message}`;
+        console.error('[SPOTFIRE-WEBPLAYER] Application.onReadyCallback', errMsg, response);
+        this.readySubject.error(errMsg);
+      }
     }
   };
   // Displays an error message if something goes wrong in the Web Player.

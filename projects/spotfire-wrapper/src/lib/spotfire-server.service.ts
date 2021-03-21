@@ -10,9 +10,10 @@ import { throwError, timer, Observable, Subject } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { SpotfireServer } from './spotfire-webplayer';
+import { SpotfireViewerModule } from './viewer/spotfire-viewer.module';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: SpotfireViewerModule
 })
 /**
  * @description
@@ -22,6 +23,7 @@ import { SpotfireServer } from './spotfire-webplayer';
 export class SpotfireServerService {
   spotfireServer: SpotfireServer = new SpotfireServer('', false);
   monitoring = false;
+  debug = false;
 
   /**
    * @description
@@ -32,7 +34,7 @@ export class SpotfireServerService {
   constructor(private http: HttpClient) { }
 
   // eslint-disable-next-line no-console
-  doConsole = (...args: any[]) => console.log('[SPOTFIRE-SERVER-SERVICE]', ...args);
+  doConsole = (...args: any[]) => this.debug && console.log('[SPOTFIRE-SERVER-SERVICE]', ...args);
 
   isSpotfireServerOnline = () => this.spotfireServer.isOnline;
 

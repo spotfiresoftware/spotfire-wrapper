@@ -9,8 +9,10 @@ import { Inject, Injectable } from '@angular/core';
 
 import { Observable, ReplaySubject } from 'rxjs';
 
+import { SpotfireViewerModule } from './viewer/spotfire-viewer.module';
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: SpotfireViewerModule
 })
 export class LazyLoadingLibraryService {
   private loadedLibraries: { [url: string]: ReplaySubject<any>; } = {};

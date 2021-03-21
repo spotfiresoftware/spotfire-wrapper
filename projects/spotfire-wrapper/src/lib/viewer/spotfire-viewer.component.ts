@@ -227,10 +227,10 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     }
 
     this.doConsole('display', changes, this.url, this.version, this.path, 'PAGE=', this.page, this.customization, this.maxRows,
-      this.app, this.markingOn);
-    if (!changes || changes.url) {
-      this.openWebPlayer(this.url, this.path, this.customization);
-    } else if (this.app && changes.page) {
+    this.app, this.markingOn);
+  if (!changes || changes.url) {
+    this.openWebPlayer(this.url, this.path, this.customization);
+  } else if (this.app && changes.page) {
       this.openPage(this.page);
     } else {
       this.doConsole(`The Url attribute is not provided, flip the dashboard and display form!`);
@@ -238,7 +238,11 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.metadata = new SpotfireDocumentMetadata();
     }
   }
-  ngOnChanges = (changes: SimpleChanges) => {
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes?.debug) {
+      this.docSvc.debug = this.debug;
+      this.spotfireServerSvc.debug = this.debug;
+    }
     if (!!changes) {
       this.display(changes);
     }
