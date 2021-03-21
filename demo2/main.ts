@@ -132,11 +132,11 @@ class AppComponent {
   onMarking = (e: Event) => {
     console.log('[AppComponent] MARKING MySpot returns', e);
     this.markedData = e;
-  }
+  };
   onFiltering = (e: Event) => {
     console.log('[AppComponent] FILTERING MySpot returns', e);
     this.filtersOut = e;
-  }
+  };
 
 }
 

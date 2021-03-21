@@ -15,7 +15,7 @@ import { DocumentService } from '../document.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
 import { SpotfireServerService } from '../spotfire-server.service';
 import {
-  SpotfireApplication, SpotfireDocument, SpotfireDocumentMetadata, SpotfireFiltering, SpotfireParameters, SpotfireReporting, SpotfireServer
+  SpotfireDocument, SpotfireDocumentMetadata, SpotfireFiltering, SpotfireParameters, SpotfireReporting, SpotfireServer
 } from '../spotfire-webplayer';
 
 // https://community.tibco.com/wiki/tibco-spotfire-javascript-api-overview
@@ -151,7 +151,6 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   protected spotParams: SpotfireParameters = new SpotfireParameters();
   private _filters: SpotfireFilter[];
   private _document: SpotfireDocument;
-  private app: SpotfireApplication;
   /* Filtering observables, emitter and subject*/
   private filterSubject = new BehaviorSubject<any[]>([]);
 
@@ -178,17 +177,22 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   ngOnInit(): void {
-    this.spotfireServerSvc.monitorSpotfireServerStatus(this.url);
-    this.spotfireServerSvc.serverStatusEvent.subscribe((e: SpotfireServer) => {
-      this.doConsole('SPOTFIRE-SERVER-SERVICE received event ' + JSON.stringify(e));
-      this.serverStatusEvent.emit(e);
-    });
-    if (!this.version) {
+    if (!this.version || this.version === '') {
       this.version = DEFAULT_VERSION;
     }
-    this.doConsole('OnInit', this.url, this.path, this.version);
-    this.display();
+    //this.doConsole('OnInit', this.url, this.path, this.version);
+    // this.display();
   }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes?.debug) {
+      this.docSvc.debug = this.debug;
+      this.spotfireServerSvc.debug = this.debug;
+    }
+    if (!!changes) {
+      this.display(changes);
+    }
+  };
 
   // eslint-disable-next-line no-console
   doConsole = (...args: any[]) => this.debug && console.log('[SPOTFIRE-VIEWER]', ...args);
@@ -226,11 +230,13 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.markingOn = JSON.parse(this.markingOn);
     }
 
-    this.doConsole('display', changes, this.url, this.version, this.path, 'PAGE=', this.page, this.customization, this.maxRows,
-    this.app, this.markingOn);
-  if (!changes || changes.url) {
-    this.openWebPlayer(this.url, this.path, this.customization);
-  } else if (this.app && changes.page) {
+    this.doConsole('display', changes, this.url, this.version, this.path, this.page, this.customization, this.maxRows, this.markingOn);
+
+    if (!changes || !!changes.url) {
+      this.openWebPlayer(this.url, this.path, this.customization);
+    } else if (this.spotParams?.app && !!changes.path) {
+      this.openPath(this.path);
+    } else if (this.spotParams?.app && !!changes.page) {
       this.openPage(this.page);
     } else {
       this.doConsole(`The Url attribute is not provided, flip the dashboard and display form!`);
@@ -238,15 +244,6 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.metadata = new SpotfireDocumentMetadata();
     }
   }
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes?.debug) {
-      this.docSvc.debug = this.debug;
-      this.spotfireServerSvc.debug = this.debug;
-    }
-    if (!!changes) {
-      this.display(changes);
-    }
-  };
 
   stopPropagation = (e: Event) => e.stopPropagation();
   /**
