@@ -234,7 +234,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
 
     if (!changes || !!changes.url) {
       this.openWebPlayer(this.url, this.path, this.customization);
-    } else if (this.spotParams?.app && !!changes.path) {
+    } else if (this.spotParams?.app && (!!changes.path || !!changes.parameters)) {
       this.openPath(this.path);
     } else if (this.spotParams?.app && !!changes.page) {
       this.openPage(this.page);
@@ -290,9 +290,11 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.spotParams = {
       ...this.spotParams,
       path, url,
-      customization, version: this.version,
+      customization,
+      version: this.version,
       domid: this.spot.nativeElement.id,
-      page: this.page, _parameters: this.parameters
+      page: this.page,
+      _parameters: this.parameters
     };
 
     this.docSvc.openWebPlayer$(this.spotParams).subscribe(
@@ -312,6 +314,11 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.displayInfoMessage(`${this.url}/${path}...`);
     this.doConsole(`SpotfireViewerComponent openPath(${path})`, this.sid);
     this.spotParams = { ...this.spotParams, path, domid: this.spot.nativeElement.id };
+
+    if (this.parameters !== '') {
+      this.spotParams._parameters = this.parameters;
+    }
+
     this.docSvc.openPath$(this.spotParams).subscribe(
       doc => this.afterDisplay(doc),
       err => this.displayErrorMessage(err));
