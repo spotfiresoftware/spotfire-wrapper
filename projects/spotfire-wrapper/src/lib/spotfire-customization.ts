@@ -29,7 +29,7 @@ export class SpotfireCustomization {
   }
 }
 
-class SpotfireFilterSetting {
+export class SpotfireFilterSetting {
   values: string[] = [];
   lowValue = null;
   highValue = null;

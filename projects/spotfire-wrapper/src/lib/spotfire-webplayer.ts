@@ -205,8 +205,12 @@ export class SpotfireDocument {
   private marking: SpotfireMarking;
   private filtering: SpotfireFiltering;
   private data: SpotfireData;
+  private mainId: string;
   constructor(app, ids, page, custo) {
     // this._doc = app.openDocument(id, page, custo);
+    if(ids.length > 0) {
+      this.mainId = ids[0];
+    }
     for (const id of ids) {
       console.log('Opening ID: ' , id);
       this.docs[id] = {};
@@ -229,12 +233,14 @@ export class SpotfireDocument {
     return app.onOpened$().pipe(map((doc: SpotfireDocument) => {
       console.log('INIT DOC Open:', doc['elementId']);
       this.docs[doc['elementId']] = doc;
-      this._doc = doc;
-      // Register event handler for page change events.
-      this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
-      this.marking = new SpotfireMarking(this._doc.marking);
-      this.filtering = new SpotfireFiltering(this._doc.filtering);
-      this.data = new SpotfireData(this._doc.data);
+      if(doc['elementId'] === this.mainId) {
+        this._doc = doc;
+        // Register event handler for page change events.
+        this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
+        this.marking = new SpotfireMarking(this._doc.marking);
+        this.filtering = new SpotfireFiltering(this._doc.filtering);
+        this.data = new SpotfireData(this._doc.data);
+      }
       return this;
     }));
   }

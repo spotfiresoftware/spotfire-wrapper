@@ -8,6 +8,8 @@
  * Public API Surface of spotfire-wrapper
  */
 
+import {SpotfireFilter, SpotfireFilterSetting} from './lib/spotfire-customization';
+
 export * from './lib/viewer/spotfire-viewer.component';
 export * from './lib/viewer/spotfire-viewer.module';
 export { DocumentService } from './lib/document.service';
@@ -21,4 +23,4 @@ export {
   SpotfireReporting,
   SpotfireServer
 } from './lib/spotfire-webplayer';
-export { SpotfireCustomization } from './lib/spotfire-customization';
+export { SpotfireFilterSetting, SpotfireFilter, SpotfireCustomization } from './lib/spotfire-customization';
