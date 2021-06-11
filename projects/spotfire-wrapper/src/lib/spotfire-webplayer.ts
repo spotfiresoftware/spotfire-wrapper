@@ -56,13 +56,13 @@ export class SpotfireFiltering {
   getAllModifiedFilterColumns$ = () => doCall<SpotfireFilter[]>(
     this._filtering, 'getAllModifiedFilterColumns',
     spotfire.webPlayer.includedFilterSettings.ALL_WITH_CHECKED_HIERARCHY_NODES
-  );
+  )
   getFilteringScheme$ = (filteringSchemeName: string) => doCall<FillteringScheme>(
-    this._filtering, 'getFilteringScheme', filteringSchemeName);
+    this._filtering, 'getFilteringScheme', filteringSchemeName)
   getFilteringSchemes$ = () => doCall<FillteringScheme>(
-    this._filtering, 'getFilteringSchemes');
+    this._filtering, 'getFilteringSchemes')
   getActiveFilteringScheme$ = () => doCall<FillteringScheme[]>(
-    this._filtering, 'getActiveFilteringScheme');
+    this._filtering, 'getActiveFilteringScheme')
 }
 
 class FillteringScheme {
@@ -75,6 +75,7 @@ export class SpotfireParameters {
   path: string;
   page: string | number;
   domid: string;
+  externalDomIds: string[];
   sid: string;
   customization: Customization;
   version = '7.14'; // Nominal fall back value
@@ -108,7 +109,7 @@ export class SpotfireData {
       k.forEach((p: any) => z = { ...z, ...p });
       return z;
     })
-  );
+  )
   getAllTables$ = () => this.getDataTables$().pipe(
     mergeMap(tables => {
       const obs = [];
@@ -124,17 +125,17 @@ export class SpotfireData {
         dataTables[tname][columns['colName']] = columns['vals'];
       });
       return dataTables;
-    }));
+    }))
 
   // A Spotfire analysis contains one or more data tables, retrieved by the getDataTable,
   // getActiveDataTable and getDataTables methods.
   private getDataTables$ = () => doCall<DataTable[]>(this._data, 'getDataTables');
 
   private getDataTableColNames$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t)
-    .pipe(mergeMap(f => this.getDataColumns$(f)), map(d => ({ [t]: d })));
+    .pipe(mergeMap(f => this.getDataColumns$(f)), map(d => ({ [t]: d })))
 
   private getDataTable$ = (t) => doCall<DataTable>(this._data, 'getDataTable', t)
-    .pipe(mergeMap(f => this.getDataColumns$(f)));
+    .pipe(mergeMap(f => this.getDataColumns$(f)))
 
   // Each data table contains one or more data columns, retrieved by the getDataColumn,
   // getDataColumns and searchDataColumns.
@@ -144,7 +145,7 @@ export class SpotfireData {
       columns.forEach((col: DataColumn) => obs.push(zip(...[observableOf(col)], (a: DataColumn, b) => a.dataColumnName)));
       return forkJoin(obs);
     })
-  );
+  )
 
   // From the DataColumn class it is possible to retrieve metadata, such as column name and data type.
   // It is also possible to get a list of the unique values in the data column with the getDistinctValues method.
@@ -152,7 +153,7 @@ export class SpotfireData {
     tap(g => doConsole('Data.DistinctValues$', t, g, g.count > 0 && g.count < 25)),
     // filter(g => g.count > 0 && g.count < 25),
     //  tap(g => doConsole('[OBS]', 'DistinctValues filtres', g)),
-    pluck('values'));
+    pluck('values'))
 }
 
 export class SpotfireDocumentMetadata {
@@ -198,14 +199,24 @@ export class SpotfireProperty {
 }
 
 export class SpotfireDocument {
+  // TODO: Make multiple
+  public docs = {};
   private _doc;
   private marking: SpotfireMarking;
   private filtering: SpotfireFiltering;
   private data: SpotfireData;
-  constructor(app, id, page, custo) {
-    this._doc = app.openDocument(id, page, custo);
+  constructor(app, ids, page, custo) {
+    // this._doc = app.openDocument(id, page, custo);
+    for (const id of ids) {
+      console.log('Opening ID: ' , id);
+      this.docs[id] = {};
+      // TODO: Assign to a tuple of docs
+      // this._doc = app.openDocument(id, page, custo);
+      this.docs[id] = app.openDocument(id, page, custo);
+    }
     app.onOpened$().subscribe(doc => {
       doConsole(`Document.onOpened$: page is now opened:`, doc);
+      console.log('DOC Open:', doc);
       this._doc = doc;
       // Register event handler for page change events.
       this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
@@ -216,6 +227,8 @@ export class SpotfireDocument {
   }
   init$(app): Observable<SpotfireDocument> {
     return app.onOpened$().pipe(map((doc: SpotfireDocument) => {
+      console.log('INIT DOC Open:', doc['elementId']);
+      this.docs[doc['elementId']] = doc;
       this._doc = doc;
       // Register event handler for page change events.
       this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
@@ -235,7 +248,7 @@ export class SpotfireDocument {
     return this.data;
   }
   getDocumentMetadata$ = (): Observable<SpotfireDocumentMetadata> =>
-    this.do<SpotfireDocumentMetadata>('getDocumentMetadata').pipe(map(g => new SpotfireDocumentMetadata(g)));
+    this.do<SpotfireDocumentMetadata>('getDocumentMetadata').pipe(map(g => new SpotfireDocumentMetadata(g)))
   /** Get a list of the pages in the current document. */
   getPages$ = () => this.do('getPages').pipe(map(m => Object.keys(m).map(f => m[f].pageTitle)));
   /** Get a list of all the properties in the document. */
@@ -249,7 +262,13 @@ export class SpotfireDocument {
   /** Get the information about the active page. */
   getActivePage$ = () => this.do<PageState>('getActivePage');
   /** Change the active page. */
-  setActivePage = (p: string | number) => this._doc.setActivePage(p);
+  setActivePage = (p: string | number, id?: string) => {
+    if (id) {
+      this.docs[id].setActivePage(p);
+    } else {
+      this._doc.setActivePage(p);
+    }
+  }
   // getData = () => this.data;
   getMarking = () => this.marking;
   getFiltering = () => this.filtering;
@@ -371,14 +390,14 @@ export class SpotfireApplication {
       this.version, this.onReadyCallback, this.onCreateLoginElement);
   }
   onOpened$ = () => doCall(this._app, 'onOpened');
-  getDocument$ = (id: string, page: string | number, custo?: Customization): Observable<SpotfireDocument> => {
+  getDocument$ = (id: string[], page: string | number, custo?: Customization): Observable<SpotfireDocument> => {
     const doc = new SpotfireDocument(this, id, page, custo ? custo : this.customization);
     return doc.init$(this);
-  };
+  }
   openDocument = (id: string, page: string | number, custo: Customization) => this._app.openDocument(id, page, custo);
 
   private onReadyCallback = (response, newApp: SpotfireApplication) => {
-    if (!!response && !!newApp) { //ignore undefined response
+    if (!!response && !!newApp) { // ignore undefined response
       doConsole('Application.onReadyCallback', response, newApp);
       this._app = newApp;
       // Register an error handler to catch errors.
@@ -394,7 +413,7 @@ export class SpotfireApplication {
         this.readySubject.error(errMsg);
       }
     }
-  };
+  }
   // Displays an error message if something goes wrong in the Web Player.
   private onErrorCallback = (errCode: string, desc: string) => console.error(`[SPOTFIRE-WEBPLAYER] ${errCode}: ${desc}`);
 }

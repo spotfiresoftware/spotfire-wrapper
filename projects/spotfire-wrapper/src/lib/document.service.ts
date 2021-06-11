@@ -101,7 +101,7 @@ export class DocumentService {
         o.complete();
       });
     }
-    return params.app.getDocument$(params.domid, params.page, params.customization as SpotfireCustomization)
+    return params.app.getDocument$([params.domid, ...params.externalDomIds], params.page, params.customization as SpotfireCustomization)
       .pipe(
         tap(doc => params.document = doc),
         mergeMap(doc => doc.onDocumentReady$().pipe(

@@ -92,6 +92,13 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   @Input() markingOn: any | string;
   @Input() maxRows = 10;
 
+  /**
+   * @description
+   * Optional; an array of element id's (div id's), where the spotfire report will be displayed on as well.
+   * If set, the report is displayed multiple times and the reports are linked.
+   */
+  @Input() linkedReportIds: string[];
+
   @ViewChild('spot', { static: true, read: ElementRef }) spot: ElementRef;
 
   /**
@@ -180,7 +187,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     if (!this.version || this.version === '') {
       this.version = DEFAULT_VERSION;
     }
-    //this.doConsole('OnInit', this.url, this.path, this.version);
+    // this.doConsole('OnInit', this.url, this.path, this.version);
     // this.display();
   }
 
@@ -192,7 +199,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     if (!!changes) {
       this.display(changes);
     }
-  };
+  }
 
   // eslint-disable-next-line no-console
   doConsole = (...args: any[]) => this.debug && console.log('[SPOTFIRE-VIEWER]', ...args);
@@ -280,6 +287,9 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.url = url;
     this.path = path;
     this.customization = customization;
+    if (!this.linkedReportIds) {
+      this.linkedReportIds = [];
+    }
     this.doConsole(`SpotfireViewerComponent openWebPlayer(${url})`);
 
     this.displayInfoMessage(`${this.url}...`);
@@ -292,6 +302,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       path, url,
       customization, version: this.version,
       domid: this.spot.nativeElement.id,
+      externalDomIds: this.linkedReportIds,
       page: this.page, _parameters: this.parameters
     };
 
@@ -334,7 +345,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.spot.nativeElement.style.padding = '30px';
       this.spot.nativeElement.textContent = this.errorMessages.join('<br>');
     }
-  };
+  }
 
   /**
    * @description
@@ -351,7 +362,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.spot.nativeElement.style.textAlign = 'center';
       this.spot.nativeElement.textContent = message;
     }
-  };
+  }
 
   private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
   private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
@@ -422,7 +433,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     }
     // console.log('YES loadFilters');
     // setInterval(() => this.loadFilters(), 3000);
-  };
+  }
 
   private setFilters() {
     if (this._document && this._filters && this._document.getFiltering()) {
@@ -470,7 +481,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       //  this.doConsole(`No rows are marked on marking '${mName}' for table '${tName}'`);
     }
     this.loadFilters();
-  };
+  }
 
   /**
    * @description
