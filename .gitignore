@@ -39,3 +39,4 @@ yarn-error.log
 # *.js
 !*/spotfire-wrapper.js
 
+HugoNotes.txt
