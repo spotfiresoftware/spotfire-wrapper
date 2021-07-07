@@ -3,12 +3,19 @@
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
-import {Component, NgModule} from '@angular/core';
+import {Component, NgModule, ViewChild} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {BrowserModule} from '@angular/platform-browser';
 import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
 
-import {SpotfireDocument, SpotfireFiltering, SpotfireReporting, SpotfireServer, SpotfireViewerModule} from '@tibco/spotfire-wrapper';
+import {
+    SpotfireDocument,
+    SpotfireFiltering,
+    SpotfireReporting,
+    SpotfireServer,
+    SpotfireViewerComponent,
+    SpotfireViewerModule
+} from '@tibco/spotfire-wrapper';
 
 @Component({
     selector: 'app-root',
@@ -35,7 +42,8 @@ import {SpotfireDocument, SpotfireFiltering, SpotfireReporting, SpotfireServer, 
         </div>
         <h1>{{filterNames[b]}}</h1>
         <div style='display:flex; flex-direction: row; width: 100%'>
-            <spotfire-viewer style="width: 50%" [class.normsize]="!fullsize" [class.fullsize]="fullsize"
+            <spotfire-viewer style="width: 50%" #sfViewer 
+                             [class.normsize]="!fullsize" [class.fullsize]="fullsize"
                              [url]="url"
                              [path]="path"
                              [version]="version"
@@ -129,6 +137,8 @@ class AppComponent {
     spotfireServerStatusMessage = '';
     doc: SpotfireDocument;
 
+    @ViewChild('sfViewer', {static: false}) sfViewer: SpotfireViewerComponent;
+
     // Marking can be subscribed outside component
     onMarking = (e: Event) => {
         // console.log('[AppComponent] onMarking', e);
@@ -160,20 +170,20 @@ class AppComponent {
     setDocument = (e) => {
         console.log('[AppComponent] setDocument', e);
         this.doc = e;
-        if (this.doc.docs['secondReport']) {
-            this.doc.docs['secondReport'].getPages(pages => {
-                console.log('Pages Classic: ', pages);
-                this.doc.docs['secondReport'].setActivePage('Configuring a treemap');
-            });
-        }
-        /*
-        this.doc.getPages$().subscribe(
-            pages => {
-              console.log('Pages: ', pages);
-              // this.doc.setActivePage('Sector and industry breakdown', 'secondReport');
-              this.doc.setActivePage('Sector and industry breakdown');
-            }
-        )*/
+
+        //this.doc.setActivePage('Configuring a treemap');
+        //this.doc.setActivePage('Density plot', 'secondReport');
+
+        this.sfViewer.openPage('Configuring a treemap');
+        this.sfViewer.openPage('Density plot', 'secondReport');
+
+        this.doc.getActivePage$().subscribe( p => {
+            console.log('Main active page: ' , p);
+        });
+        this.doc.getActivePage$('secondReport').subscribe( p => {
+            console.log('Second Report active page: ' , p);
+        });
+
     }
     onReporting = (e: SpotfireReporting) => {
         console.log('[AppComponent] onReporting', e);

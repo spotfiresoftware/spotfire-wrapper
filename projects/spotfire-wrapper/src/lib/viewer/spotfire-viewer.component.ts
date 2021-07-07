@@ -259,7 +259,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    *
    * @param page the document page that will be displayed
    */
-  openPage(page: string) {
+  openPage(page: string, id?: string) {
     this.displayInfoMessage(`${this.url}/${this.path}/${page ? page : ''}...`);
     this.doConsole(`SpotfireViewerComponent openPage(${page})`);
     this.page = page;
@@ -268,7 +268,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     if (this.parameters !== '') {
       this.spotParams._parameters = this.parameters;
     }
-    this.docSvc.openPage$(p).subscribe(doc => this.afterDisplay(doc));
+    this.docSvc.openPage$(p, id).subscribe(doc => this.afterDisplay(doc));
   }
 
   /**

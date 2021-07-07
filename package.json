@@ -1,10 +1,10 @@
 {
   "name": "spotfire-wrapper",
-  "version": "0.15.4",
+  "version": "0.15.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build-webplayer": "ng build spotfire-wrapper && (cd build/spotfire-wrapper/ ; npm pack)",
+    "build-webplayer": "ng build spotfire-wrapper --prod && (cd build/spotfire-wrapper/ ; npm pack)",
     "build-wrapper": "npm run build:elements",
     "test": "ng test",
     "lint": "ng lint",
