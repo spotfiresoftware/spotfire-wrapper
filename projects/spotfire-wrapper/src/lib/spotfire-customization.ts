@@ -29,7 +29,7 @@ export class SpotfireCustomization {
   }
 }
 
-class SpotfireFilterSetting {
+export class SpotfireFilterSetting {
   values: string[] = [];
   lowValue = null;
   highValue = null;
@@ -48,7 +48,7 @@ export class SpotfireFilter {
   dataTableName: string;
   dataColumnName: string;
   filterType: string | any;
-  filterSettings: SpotfireFilterSetting[];
+  filterSettings: SpotfireFilterSetting | SpotfireFilterSetting[];
   constructor(vars?: any) {
     if (vars) {
       Object.keys(vars).forEach(key => this[key] = vars[key]);

@@ -3,6 +3,13 @@ Wrapper for TIBCO Spotfire(R) Changelog
 
 (all changes without author notice are by [@nicolasderoche](https://github.com/nicolasderoche))
 
+<a name="0.14.3"></a>
+## [0.14.2] (2021-04-14)
+
+### Improvements
+ * export SpotfireFilterSetting
+ * when `parameters` is modified, the dashboard is reloaded
+
 <a name="0.14.2"></a>
 ## [0.14.2] (2021-03-21)
 

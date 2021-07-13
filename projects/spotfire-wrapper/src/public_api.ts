@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019-2020. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -21,4 +21,4 @@ export {
   SpotfireReporting,
   SpotfireServer
 } from './lib/spotfire-webplayer';
-export { SpotfireCustomization } from './lib/spotfire-customization';
+export { SpotfireCustomization, SpotfireFilterSetting } from './lib/spotfire-customization';
