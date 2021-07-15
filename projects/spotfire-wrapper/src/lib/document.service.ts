@@ -79,7 +79,7 @@ export class DocumentService {
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //
-  openPage$(params: SpotfireParameters): Observable<SpotfireDocument> {
+  openPage$(params: SpotfireParameters, id?: string): Observable<SpotfireDocument> {
 
     this.doConsole(`openPage(${params.page})`, params);
 
@@ -95,13 +95,13 @@ export class DocumentService {
     //
     if (params.document) {
       this.doConsole(`SpotfireViewerComponent setActivePage(${params.page})`);
-      params.document.setActivePage(params.page);
+      params.document.setActivePage(params.page, id);
       return new Observable<SpotfireDocument>(o => {
         o.next(params.document as SpotfireDocument);
         o.complete();
       });
     }
-    return params.app.getDocument$(params.domid, params.page, params.customization as SpotfireCustomization)
+    return params.app.getDocument$([params.domid, ...params.externalDomIds], params.page, params.customization as SpotfireCustomization)
       .pipe(
         tap(doc => params.document = doc),
         mergeMap(doc => doc.onDocumentReady$().pipe(

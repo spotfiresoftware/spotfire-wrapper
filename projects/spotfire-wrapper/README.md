@@ -174,12 +174,29 @@ Sources are available in `demo3` directory.
 > 
 > The code of these demos has been extremely simplified. Check the `demo*/main.ts` files.
 
+### DemoLinked: Display two reports of the same Spotfire dashboard. Both are linked:
+
+see https://github.com/TIBCOSoftware/spotfire-wrapper/tree/master/demoLinked
+
+```bash
+ng serve demoLinked --port=4208 --open
+```
+
+It will open a browser `http://localhost:4208`.
+
+Sources are available in `demoLinked` directory.
+
+> Note: 
+> 
+> The code of these demos has been extremely simplified. Check the `demo*/main.ts` files.
+
+---
 ---
 
 
 # License
 
-  Copyright &copy; 2019-2020. TIBCO Software Inc.
+  Copyright &copy; 2019-2021. TIBCO Software Inc.
 
   This file is subject to the license terms contained
   in the license file that is distributed with this file.

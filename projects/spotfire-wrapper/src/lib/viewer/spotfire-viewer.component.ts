@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 
 import { BehaviorSubject, Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, tap } from 'rxjs/operators';
 
 import { DocumentService } from '../document.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
@@ -91,6 +91,13 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
 
   @Input() markingOn: any | string;
   @Input() maxRows = 10;
+
+  /**
+   * @description
+   * Optional; an array of element id's (div id's), where the spotfire report will be displayed on as well.
+   * If set, the report is displayed multiple times and the reports are linked.
+   */
+  @Input() linkedReportIds: string[];
 
   @ViewChild('spot', { static: true, read: ElementRef }) spot: ElementRef;
 
@@ -180,7 +187,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     if (!this.version || this.version === '') {
       this.version = DEFAULT_VERSION;
     }
-    //this.doConsole('OnInit', this.url, this.path, this.version);
+    // this.doConsole('OnInit', this.url, this.path, this.version);
     // this.display();
   }
 
@@ -192,7 +199,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     if (!!changes) {
       this.display(changes);
     }
-  };
+  }
 
   // eslint-disable-next-line no-console
   doConsole = (...args: any[]) => this.debug && console.log('[SPOTFIRE-VIEWER]', ...args);
@@ -234,7 +241,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
 
     if (!changes || !!changes.url) {
       this.openWebPlayer(this.url, this.path, this.customization);
-    } else if (this.spotParams?.app && (!!changes.path || !!changes.parameters)) {
+    } else if (this.spotParams?.app && !!changes.path) {
       this.openPath(this.path);
     } else if (this.spotParams?.app && !!changes.page) {
       this.openPage(this.page);
@@ -246,13 +253,14 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
   }
 
   stopPropagation = (e: Event) => e.stopPropagation();
+
   /**
    * @description
    * Open the Document page
    *
    * @param page the document page that will be displayed
    */
-  openPage(page: string) {
+  openPage(page: string, id?: string) {
     this.displayInfoMessage(`${this.url}/${this.path}/${page ? page : ''}...`);
     this.doConsole(`SpotfireViewerComponent openPage(${page})`);
     this.page = page;
@@ -261,7 +269,11 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     if (this.parameters !== '') {
       this.spotParams._parameters = this.parameters;
     }
-    this.docSvc.openPage$(p).subscribe(doc => this.afterDisplay(doc));
+    this.docSvc.openPage$(p, id).subscribe((doc) => {
+      if (!id) {
+        this.afterDisplay(doc);
+      }
+    });
   }
 
   /**
@@ -280,6 +292,9 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     this.url = url;
     this.path = path;
     this.customization = customization;
+    if (!this.linkedReportIds) {
+      this.linkedReportIds = [];
+    }
     this.doConsole(`SpotfireViewerComponent openWebPlayer(${url})`);
 
     this.displayInfoMessage(`${this.url}...`);
@@ -293,6 +308,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       customization,
       version: this.version,
       domid: this.spot.nativeElement.id,
+      externalDomIds: this.linkedReportIds,
       page: this.page,
       _parameters: this.parameters
     };
@@ -379,7 +395,9 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     }
     if (this.isDocumentWiredUp()) {
       this.doConsole(`we have observers for document`);
-      this.document.emit(this._document);
+      if (this._document) {
+        this.document.emit(this._document);
+      }
     }
     if (this.isFilteringWiredUp()) {
       this.doConsole('we have observers for filtering');
@@ -416,7 +434,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.doConsole('we have observers for filteringEvent');
       // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
       //
-      this.filter$.pipe(tap(f => this.doConsole('Emit filteringEvent', f)))
+      this.filter$.pipe(distinctUntilChanged(), debounceTime(400), tap(f => this.doConsole('Emit filteringEvent', f)))
         .subscribe(f => this.filteringEvent.emit(f));
     }
 
@@ -424,11 +442,12 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.doConsole('we have observers for markingEvent');
       // Subscribe to markingEvent and emit the result to the Output
       //
-      this.marker$.pipe(tap(f => this.doConsole('Emit markingEvent', f)))
+      this.marker$.pipe(distinctUntilChanged(), debounceTime(400), tap(f => this.doConsole('Emit markingEvent', f)))
         .subscribe(f => this.markingEvent.emit(f));
     }
     // console.log('YES loadFilters');
     // setInterval(() => this.loadFilters(), 3000);
+
   };
 
   private setFilters() {
@@ -440,6 +459,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.doConsole('setFilters', this._filters);
     }
   }
+
   /**
    * @description
    * Callback method played when marking changes are detected.
