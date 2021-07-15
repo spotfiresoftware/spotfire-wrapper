@@ -64,7 +64,7 @@ class AppComponent {
     //this.doc.setActivePage('Density plot', 'secondReport');
 
     this.sfViewer.openPage('Configuring a treemap');
-    this.sfViewer.openPage('Density plot', 'secondReport');
+    this.sfViewer.openPage('Configuring a treemap', 'secondReport');
 
     this.doc.getActivePage$().subscribe(p => {
       this.activePage = 'Main Report';
