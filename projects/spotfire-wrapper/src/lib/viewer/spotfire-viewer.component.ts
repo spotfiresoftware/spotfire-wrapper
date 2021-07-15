@@ -345,7 +345,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.spot.nativeElement.style.padding = '30px';
       this.spot.nativeElement.textContent = this.errorMessages.join('<br>');
     }
-  }
+  };
 
   /**
    * @description
@@ -362,7 +362,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.spot.nativeElement.style.textAlign = 'center';
       this.spot.nativeElement.textContent = message;
     }
-  }
+  };
 
   private isMarkingWiredUp = () => this.markingEvent.observers.length > 0;
   private isFiltingWiredUp = () => this.filteringEvent.observers.length > 0;
@@ -433,7 +433,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
     }
     // console.log('YES loadFilters');
     // setInterval(() => this.loadFilters(), 3000);
-  }
+  };
 
   private setFilters() {
     if (this._document && this._filters && this._document.getFiltering()) {
@@ -481,7 +481,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       //  this.doConsole(`No rows are marked on marking '${mName}' for table '${tName}'`);
     }
     this.loadFilters();
-  }
+  };
 
   /**
    * @description
