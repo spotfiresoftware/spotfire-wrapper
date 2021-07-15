@@ -24,6 +24,8 @@ import { SpotfireDocument, SpotfireFiltering, SpotfireReporting, SpotfireServer,
 <button mat-stroked-button color="primary" (click)="setFilters()">Change filters</button>
 <button mat-stroked-button color="primary" (click)="switchPath()">Change path</button>
 {{path}}
+<button mat-stroked-button color="primary" (click)="switchParam()">Change param</button>  
+{{param}}
 <div *ngIf="reporting">
   <button mat-stroked-button color="primary" (click)="doPrint()">Print...</button>
   <button mat-stroked-button color="primary" (click)="doPdf()">Export to PDF...</button>
@@ -121,6 +123,8 @@ class AppComponent {
     this.path = this.path === 'Samples/Sales and Marketing' ?
       'Samples/Expense Analyzer Dashboard' : 'Samples/Sales and Marketing';
   };
+  switchParam = () =>
+    this.param = this.param.includes('Book2') ? 'ApplyBookmark(bookmarkName="Book1");' : 'ApplyBookmark(bookmarkName="Book2");'
   setFilters = () => {
     this.b = (this.b + 1) % 4;
     // this.b = this.b === 3 ? 1 : this.b + 1;

@@ -10,6 +10,13 @@ Wrapper for TIBCO Spotfire(R) Changelog
  * Upgrade to Angular 11.2.14
  * Open multiple reports of the same Spotfire dashboard on one webpage, All are linked together. The marking and filtering performed on one report is reflected to the others - ([#108](https://github.com/TIBCOSoftware/spotfire-wrapper/pull/108) by [@hpeters83](https://github.com/hpeters83)
 
+<a name="0.14.3"></a>
+## [0.14.3] (2021-04-14)
+
+### Improvements
+ * export SpotfireFilterSetting
+ * when `parameters` is modified, the dashboard is reloaded
+
 <a name="0.14.2"></a>
 ## [0.14.2] (2021-03-21)
 
