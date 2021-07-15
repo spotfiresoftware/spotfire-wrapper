@@ -3,6 +3,13 @@ Wrapper for TIBCO Spotfire(R) Changelog
 
 (all changes without author notice are by [@nicolasderoche](https://github.com/nicolasderoche))
 
+<a name="0.15.0"></a>
+## [0.15.0] (2021-07-15)
+
+### Improvements
+ * Upgrade to Angular 11.2.14
+ * Open multiple reports of the same Spotfire dashboard on one webpage, All are linked together. The marking and filtering performed on one report is reflected to the others - ([#108](https://github.com/TIBCOSoftware/spotfire-wrapper/pull/108) by [@hpeters83](https://github.com/hpeters83)
+
 <a name="0.14.2"></a>
 ## [0.14.2] (2021-03-21)
 
