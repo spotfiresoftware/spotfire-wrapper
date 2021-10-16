@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019-2020. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -10,7 +10,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { DocumentService, SpotfireParameters, SpotfireViewerComponent } from '@tibco/spotfire-wrapper';
+import { DocumentService, SpotfireParameters, SpotfireViewerComponent, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
 
 @Component({
   selector: 'my-spotfire',
@@ -49,28 +49,14 @@ class MySpotfireWrapperComponent extends SpotfireViewerComponent implements OnIn
   template: `
 <h2>Angular app "{{title|uppercase}}"</h2>
 <div style='display:flex'>
-<!--
-<my-spotfire  style='width:80%; height:800px;'
-[url]="urlA"
-[page]="'Case Details'" [customization]="cust"
-(markingEvent)="onMarking($event)"
-[filters]="filtersA"
-(filteringEvent)="onFiltering($event)"
-[debug]="true">
-</my-spotfire>
--->
 
-<my-spotfire  style='width:50%'
-[url]="url" [customization]="cust"
-(markingEvent)="onMarking($event)"
-[filters]="filters"
-(filteringEvent)="onFiltering($event)"
-[debug]="true">
-</my-spotfire>
+  <my-spotfire style='width:50%' [url]="url" [customization]="cust" (markingEvent)="onMarking($event)" [filters]="filters"
+    (filteringEvent)="onFiltering($event)" [debug]="true">
+  </my-spotfire>
 
 
-<div style="display:none" id="ddom"></div>
-<mat-tab-group *ngIf="false">
+  <div style="display:none" id="ddom"></div>
+  <mat-tab-group *ngIf="false">
     <mat-tab label="First"> Content 1 </mat-tab>
     <mat-tab label="Second">
       <ng-template matTabContent>
@@ -87,35 +73,6 @@ class AppComponent {
   url = 'https://spotfire-next.cloud.tibco.com';
   cust = { showAuthor: true, showFilterPanel: true, showToolBar: true };
   filters = [];
-  filtersB = [{
-    dataColumnName: 'case_id',
-    dataTableName: 'events',
-    filterSettings: { values: ['A_07898', 'A_07896', 'A_07892'] }
-  }/*,
-  [{
-    dataColumnName: 'combinedFilter',
-    dataTableName: 'events',
-    values: ['False'],
-    filterType: 'CheckBoxFilter'
-  }*/];
-  /*[{
-    dataTableName: 'SalesAndMarketing',
-    dataColumnName: 'State',
-    filterSettings: { values: ['Florida'] }
-  }, {
-    dataTableName: 'SalesAndMarketing',
-    dataColumnName: 'City',
-    filterSettings: { values: ['Fort Lauderdale'] }
-  }, {
-    dataTableName: 'SalesAndMarketing',
-    dataColumnName: 'BCG segmentation',
-    filterSettings: { values: ['Dogs', 'Stars'] }
-  }, {
-    dataTableName: 'SalesAndMarketing',
-    dataColumnName: 'Class Sales',
-    filterSettings: { 'highValue': '123', 'lowValue': '67' }
-  }];*/
-  // { Region: ['NE'] };
   title = 'demo2';
   markedData = {};
   filtersOut = {};
@@ -142,7 +99,7 @@ class AppComponent {
 
 @NgModule({
   bootstrap: [AppComponent],
-  imports: [BrowserModule, ReactiveFormsModule, NoopAnimationsModule, MatTabsModule],
+  imports: [BrowserModule, ReactiveFormsModule, NoopAnimationsModule, MatTabsModule, SpotfireViewerModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [AppComponent, MySpotfireWrapperComponent]
 })

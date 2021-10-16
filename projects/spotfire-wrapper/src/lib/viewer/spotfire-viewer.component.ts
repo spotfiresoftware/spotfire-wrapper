@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 
 import { BehaviorSubject, Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged, tap } from 'rxjs/operators';
+import { debounceTime, tap } from 'rxjs/operators';
 
 import { DocumentService } from '../document.service';
 import { SpotfireCustomization, SpotfireFilter } from '../spotfire-customization';
@@ -75,7 +75,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
    * Defaults to 7.14.
    */
 
-  @Input() version: string;
+  @Input() version = DEFAULT_VERSION;
 
   /**
    * @description
@@ -434,7 +434,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.doConsole('we have observers for filteringEvent');
       // Subscribe to filteringEvent and emit the result to the Output if filter panel is displayed
       //
-      this.filter$.pipe(distinctUntilChanged(), debounceTime(400), tap(f => this.doConsole('Emit filteringEvent', f)))
+      this.filter$.pipe(debounceTime(500), tap(f => this.doConsole('Emit filteringEvent', f)))
         .subscribe(f => this.filteringEvent.emit(f));
     }
 
@@ -442,7 +442,7 @@ export class SpotfireViewerComponent implements OnChanges, OnInit {
       this.doConsole('we have observers for markingEvent');
       // Subscribe to markingEvent and emit the result to the Output
       //
-      this.marker$.pipe(distinctUntilChanged(), debounceTime(400), tap(f => this.doConsole('Emit markingEvent', f)))
+      this.marker$.pipe(debounceTime(500), tap(f => this.doConsole('Emit markingEvent', f)))
         .subscribe(f => this.markingEvent.emit(f));
     }
     // console.log('YES loadFilters');
