@@ -39,6 +39,7 @@ npm run build:elements --prod
 
 
 title "[spotfire-wrapper-lib] Test Schematics "
+set +e
 (cd /tmp ; 
 \rm -rf testapp ; 
 ng new testapp --minimal --defaults ; 
@@ -49,7 +50,7 @@ ng add @tibco/spotfire-wrapper@latest )
 title "Publish to npmjs.com (instructions)"
 echo " $ ./build.sh"
 echo " $ npm login"
-echo " $ npm publish build/spotfire-wrapper"
+echo " $ (cd build/spotfire-wrapper; npm publish)"
 
 title "Publish to GiHub Packages (instructions)"
 echo " -> open projects/spotfire-wrapper"
