@@ -13,7 +13,6 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "aot": true,
             "outputPath": "build/spotfire-wrapper-lib",
             "index": "demo/index.html",
             "main": "src/main.ts",
@@ -21,7 +20,13 @@
             "tsConfig": "src/tsconfig.app.json",
             "assets": [],
             "styles": [],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -41,12 +46,12 @@
               "outputHashing": "none",
               "sourceMap": false,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -105,7 +110,6 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "aot": true,
             "outputPath": "dist/container_app",
             "index": "demo1/index.html",
             "main": "demo1/main.ts",
@@ -113,9 +117,16 @@
             "tsConfig": "demo1/tsconfig.app.json",
             "assets": [],
             "styles": [],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
-          "configurations": {}
+          "configurations": {},
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -139,7 +150,6 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "aot": true,
             "outputPath": "dist/container_app",
             "index": "demo2/index.html",
             "main": "demo2/main.ts",
@@ -147,9 +157,16 @@
             "tsConfig": "demo2/tsconfig.app.json",
             "assets": [],
             "styles": [],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
-          "configurations": {}
+          "configurations": {},
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -173,7 +190,6 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "aot": true,
             "outputPath": "dist/container_app",
             "index": "demo3/index.html",
             "main": "demo3/main.ts",
@@ -181,9 +197,16 @@
             "tsConfig": "demo3/tsconfig.app.json",
             "assets": [],
             "styles": [],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
-          "configurations": {}
+          "configurations": {},
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -207,7 +230,6 @@
       "build": {
         "builder": "@angular-devkit/build-angular:browser",
         "options": {
-          "aot": true,
           "outputPath": "dist/container_app",
           "index": "demoLinked/index.html",
           "main": "demoLinked/main.ts",
@@ -215,9 +237,16 @@
           "tsConfig": "demoLinked/tsconfig.app.json",
           "assets": [],
           "styles": [],
-          "scripts": []
+          "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
         },
-        "configurations": {}
+        "configurations": {},
+          "defaultConfiguration": ""
       },
       "serve": {
         "builder": "@angular-devkit/build-angular:dev-server",

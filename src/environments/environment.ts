@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019. TIBCO Software Inc.
+* Copyright (c) 2019-2021. TIBCO Software Inc.
 * This file is subject to the license terms contained
 * in the license file that is distributed with this file.
 */
@@ -18,4 +18,4 @@ export const environment = {
  * import the following file, but please comment it out in production mode
  * because it will have performance impact when throw error
  */
-// import 'zone.js/dist/zone-error';  // Included with Angular CLI.
+// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.
