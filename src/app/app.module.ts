@@ -9,8 +9,8 @@ import { createCustomElement } from '@angular/elements';
 import { BrowserModule } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-// import { SpotfireEditorComponent, SpotfireEditorModule } from '@tibco/spotfire-wrapper';
-import { SpotfireViewerComponent, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
+// import { SpotfireEditorComponent, SpotfireEditorModule } from '@tibcosoftware/spotfire-wrapper';
+import { SpotfireViewerComponent, SpotfireViewerModule } from '@tibcosoftware/spotfire-wrapper';
 
 @NgModule({
   imports: [BrowserModule, NoopAnimationsModule, SpotfireViewerModule]

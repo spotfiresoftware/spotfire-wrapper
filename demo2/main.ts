@@ -10,7 +10,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { DocumentService, SpotfireParameters, SpotfireViewerComponent, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
+import { DocumentService, SpotfireParameters, SpotfireViewerComponent, SpotfireViewerModule } from '@tibcosoftware/spotfire-wrapper';
 
 @Component({
   selector: 'my-spotfire',

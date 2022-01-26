@@ -45,7 +45,7 @@ set +e
 ng new testapp --minimal --defaults ; 
 cd testapp ; 
 npm install @angular/cdk@11 ; 
-ng add @tibco/spotfire-wrapper@latest )
+ng add @tibcosoftware/spotfire-wrapper@latest )
 
 title "Publish to npmjs.com (instructions)"
 echo " $ ./build.sh"
@@ -54,7 +54,7 @@ echo " $ (cd build/spotfire-wrapper; npm publish)"
 
 title "Publish to GiHub Packages (instructions)"
 echo " -> open projects/spotfire-wrapper"
-echo ' -> replace "name": "@tibco/spotfire-wrapper", with "name": "@TIBCOSoftware/spotfire-wrapper"'
+echo ' -> replace "name": "@tibcosoftware/spotfire-wrapper", with "name": "@TIBCOSoftware/spotfire-wrapper"'
 echo " $ ./build.sh"
 echo " $ npm login"
 echo " $ npm publish build/spotfire-wrapper --access public"

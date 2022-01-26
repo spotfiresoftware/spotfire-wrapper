@@ -6,7 +6,7 @@ This is the home for the __Wrapper for TIBCO Spotfire(R)__ Angular package.
 Wrapper for TIBCO Spotfire(R) is an Angular Component built for and with Angular 10+.
 
 > ### Notes:
-> * NPM package can be found here: https://www.npmjs.com/package/@tibco/spotfire-wrapper
+> * NPM package can be found here: https://www.npmjs.com/package/@tibcosoftware/spotfire-wrapper
 > * Visit [JS library README](../../README.md) to read more about the JS alternate way.
 > If you 
 
@@ -27,12 +27,12 @@ Two ways to install the NPM package:
 
 Use the Angular CLI's to install schematic to add Wrapper for TIBCO Spotfire(R) to your project by running the following command:
 ```bash
-ng add @tibco/spotfire-wrapper
+ng add @tibcosoftware/spotfire-wrapper
 ```
 
 ## 2 - Install Wrapper for TIBCO Spotfire(R) with `npm install`:
 ```
-npm install @angular/cdk @tibco/spotfire-wrapper
+npm install @angular/cdk @tibcosoftware/spotfire-wrapper
 ```
 
 __Then it's really easy to get started !__
@@ -43,7 +43,7 @@ __Then it's really easy to get started !__
 Running the dashboard schematic generates a new SpotfireDashboard component that can be used and modified to display a dashboard of your Spotfire(R):
 
 ```
-ng generate @tibco/spotfire-wrapper:dashboard --name MySpot
+ng generate @tibcosoftware/spotfire-wrapper:dashboard --name MySpot
 ```
 
 Next, you will add `MySpotViewerComponent` to the array "`declarations`" of your angular modules, and use `<my-spot></my-spot>` in an HTML template of one of component declared in this module.
@@ -64,7 +64,7 @@ You may also want to create your own component:
 ```typescript
 import { BrowserModule        } from '@angular/platform-browser';
 import { NgModule, Component  } from '@angular/core';
-import { SpotfireViewerModule } from '@tibco/spotfire-wrapper';
+import { SpotfireViewerModule } from '@tibcosoftware/spotfire-wrapper';
 
 @Component({
   selector: 'app-root',

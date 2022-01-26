@@ -7,7 +7,7 @@ import { Component, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-import { SpotfireDocument, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
+import { SpotfireDocument, SpotfireViewerModule } from '@tibcosoftware/spotfire-wrapper';
 
 const WONDERS = ['Great Pyramid of Giza', 'Hanging Gardens of Babylon',
   'Temple of Artemis at Ephesus', 'Statue of Zeus at Olympia', 'My Marvellous Spotfire Dashboard',

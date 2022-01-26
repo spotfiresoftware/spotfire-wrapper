@@ -13,7 +13,7 @@ import { getWorkspace } from '@schematics/angular/utility/workspace';
 import { Schema } from './schema';
 
 export const ngAdd = (_options: Schema): Rule => (tree: Tree, context: SchematicContext) => {
-  context.logger.log('info', `Installing @tibco/spotfire-wrapper`);
+  context.logger.log('info', `Installing @tibcosoftware/spotfire-wrapper`);
   const installTaskId = context.addTask(new NodePackageInstallTask());
   context.addTask(new RunSchematicTask('ng-add-setup-project', _options), [installTaskId]);
   return tree;
@@ -29,7 +29,7 @@ export const ngAddSetup = (_options: Schema): Rule => (tree: Tree, context: Sche
 
     if (!hasNgModuleImport(tree, appModulePath, moduleName)) {
       context.logger.log('info', `Import  ${moduleName}`);
-      addModuleImportToRootModule(tree, moduleName, '@tibco/spotfire-wrapper', project);
+      addModuleImportToRootModule(tree, moduleName, '@tibcosoftware/spotfire-wrapper', project);
     }
     return tree;
   });

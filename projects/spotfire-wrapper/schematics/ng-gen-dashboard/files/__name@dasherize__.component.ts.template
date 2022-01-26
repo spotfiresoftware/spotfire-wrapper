@@ -1,4 +1,4 @@
-import { SpotfireViewerComponent, SpotfireCustomization} from '@tibco/spotfire-wrapper';
+import { SpotfireViewerComponent, SpotfireCustomization} from '@tibcosoftware/spotfire-wrapper';
 import { OnInit, Component } from '@angular/core';
 
 @Component({

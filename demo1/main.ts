@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-import { SpotfireDocument, SpotfireFiltering, SpotfireReporting, SpotfireServer, SpotfireViewerModule } from '@tibco/spotfire-wrapper';
+import { SpotfireDocument, SpotfireFiltering, SpotfireReporting, SpotfireServer, SpotfireViewerModule } from '@tibcosoftware/spotfire-wrapper';
 
 @Component({
   selector: 'app-root',
