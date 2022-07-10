@@ -3,6 +3,12 @@ Wrapper for TIBCO Spotfire(R) Changelog
 
 (all changes without author notice are by [@nicolasderoche](https://github.com/nicolasderoche))
 
+<a name="0.18.0"></a>
+## [0.18.0] (2022-07-10)
+
+### Improvements
+ * Upgrade to Angular 14.0.5 ([#157](https://github.com/TIBCOSoftware/spotfire-wrapper/pull/157) by [@Gerromie](https://github.com/Gerromie))
+
 <a name="0.16.0"></a>
 ## [0.16.0] (2021-10-26)
 
