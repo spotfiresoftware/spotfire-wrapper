@@ -23,8 +23,8 @@ title "Lint code:"
 ng lint
 
 title "[spotfire-wrapper] Build the NPM package:"
-./node_modules/.bin/ng build spotfire-wrapper --prod
-(cd projects/spotfire-wrapper/ ; npm run build --prod )
+./node_modules/.bin/ng build spotfire-wrapper --configuration production
+(cd projects/spotfire-wrapper/ ; npm run build)
 
 title "[spotfire-wrapper] Create a tarball for the package:"
 (cd build/spotfire-wrapper/ ; npm pack) 
@@ -35,7 +35,7 @@ title "[spotfire-wrapper-lib] Install the NPM package from dist"
 npm install /opt/tibco/users/spotfire-wrapper/dist/spotfire-wrapper.tgz --no-save
     
 title "[spotfire-wrapper-lib] Build the WebElement Library:"
-npm run build:elements --prod
+npm run build:elements
 
 
 title "[spotfire-wrapper-lib] Test Schematics "
