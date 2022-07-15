@@ -17,6 +17,7 @@ import {SpotfireDocument, SpotfireViewerComponent, SpotfireViewerModule} from '@
 
         <button mat-stroked-button color="primary" (click)="debug=!debug">DEBUG={{debug}}</button>
         <span>Active Page = {{activePage}}</span>
+        <button (click)="changePage()">Change Page</button>
         <div style='display:flex; flex-direction: row; width: 100%'>
             <h3 style="width: 50%">Main Report:</h3>
             <h3 style="width: 50%">Second Report:</h3>
@@ -76,6 +77,10 @@ class AppComponent {
             });
         }
     };
+    changePage() {
+        console.log('Change Page');
+        this.sfViewer.openPage('Introduction')
+    }
 }
 
 @NgModule({

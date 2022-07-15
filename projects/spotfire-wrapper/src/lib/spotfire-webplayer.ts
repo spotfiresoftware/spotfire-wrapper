@@ -12,7 +12,7 @@ import {SpotfireCustomization as Customization, SpotfireFilter} from './spotfire
 declare let spotfire: any;
 
 const doConsole = (...args: any[]) => {
-    // console.log('[SPOTFIRE-WEBPLAYER]', ...args);
+    console.log('[SPOTFIRE-WEBPLAYER]', ...args);
 };
 
 class PageState {
@@ -236,7 +236,9 @@ export class SpotfireDocument {
         }
         app.onOpened$().subscribe(doc => {
             doConsole(`Document.onOpened$: page is now opened:`, doc);
-            this._doc = doc;
+            if(doc.elementId === this.mainId) {
+                this._doc = doc;
+            }
             // Register event handler for page change events.
             this.onActivePageChanged$().subscribe(this.onActivePageChangedCallback);
             this.marking = new SpotfireMarking(this._doc.marking);
