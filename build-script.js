@@ -8,12 +8,9 @@ const concat = require('concat');
 (async function buid() {
   const bpath = './build/spotfire-wrapper-lib';
   const files = [
-    bpath + '/runtime-es5.js',
-    bpath + '/polyfills-es5.js',
-    bpath + '/main-es5.js',
-    bpath + '/runtime-es2015.js',
-    bpath + '/polyfills-es2015.js',
-    bpath + '/main-es2015.js'
+    bpath + '/runtime.js',
+    bpath + '/polyfills.js',
+    bpath + '/main.js'
   ]
   await fs.ensureDir('dist');
   await concat(files, 'dist/spotfire-wrapper.js');

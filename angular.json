@@ -294,7 +294,6 @@
       }
     }
   },
-  "defaultProject": "spotfire-wrapper-lib",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",

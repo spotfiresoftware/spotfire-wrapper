@@ -1,0 +1,49 @@
+---
+name: Spotfire Wrapper
+
+#
+# Documentation:
+# https://help.github.com/en/articles/workflow-syntax-for-github-actions
+
+#############################
+# Start the job on all push #
+#############################
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Cache node modules for the project
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: |
+            ./node_modules
+          key: |
+            ${{ runner.os }}-cicd-ui-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-cicd-ui-
+
+      - name: Setup Node ${{ matrix.node-version }} for the project
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm config set fund false
+          npm install
+
+      - name: Build the spotfire-wrapper
+        run: |
+          ./node_modules/.bin/ng build spotfire-wrapper
