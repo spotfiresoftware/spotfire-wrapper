@@ -2,6 +2,14 @@
 
 (all changes without author notice are by [@nicolasderoche](https://github.com/nicolasderoche))
 
+<a name="0.18.1"></a>
+
+## [0.18.1](2022-07-22)
+
+### Bug Fix
+
+- Change to link the main doc to the right Spotfire API ([#158](https://github.com/TIBCOSoftware/spotfire-wrapper/pull/158) by [@hpeters83](https://github.com/hpeters83))
+
 <a name="0.18.0"></a>
 
 ## [0.18.0](2022-07-10)
