@@ -11,8 +11,11 @@ import {SpotfireCustomization as Customization, SpotfireFilter} from './spotfire
 
 declare let spotfire: any;
 
+let sfDebugLog = false;
 const doConsole = (...args: any[]) => {
-    console.log('[SPOTFIRE-WEBPLAYER]', ...args);
+    if(sfDebugLog) {
+        console.log('[SPOTFIRE-WEBPLAYER]', ...args);
+    }
 };
 
 class PageState {
@@ -105,6 +108,7 @@ export class SpotfireParameters {
         // Create a Unique ID for this Spotfire dashboard
         //
         this.domid = this.domid ? this.domid : this.sid ? `${this.sid}` : `${new Date().getTime()}`;
+        sfDebugLog = this.debug;
     }
 }
 
